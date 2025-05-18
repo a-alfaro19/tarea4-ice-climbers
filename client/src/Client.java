@@ -1,20 +1,19 @@
 import java.io.*;
 import java.net.Socket;
-import java.net.UnknownHostException;
 
 public class Client {
 
-    private Socket socket = null;
-    private BufferedReader input = null;
-    private BufferedWriter out = null;
-
     public Client(String address, int port) {
+        Socket socket = null;
+        BufferedReader input = null;
+        BufferedWriter output = null;
+
         try {
             socket = new Socket(address, port);
             System.out.println("Connected");
 
             input = new BufferedReader(new InputStreamReader(System.in));
-            out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
+            output = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
 
 
         } catch (IOException e) {
@@ -29,8 +28,8 @@ public class Client {
         while (!m.equals("Over")) {
             try {
                 m = input.readLine();
-                out.write(m + '\n');
-                out.flush();
+                output.write(m + '\n');
+                output.flush();
             }
             catch (IOException i) {
                 System.out.println(i);
@@ -40,15 +39,11 @@ public class Client {
         // Close the connection
         try {
             input.close();
-            out.close();
+            output.close();
             socket.close();
         }
         catch (IOException i) {
             System.out.println(i);
         }
-    }
-
-    public static void main(String[] args) {
-        Client c = new Client("localhost", 8080);
     }
 }
