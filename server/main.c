@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <winsock2.h>
+#include <ws2tcpip.h>
 #include <conio.h>
-#include <stdbool.h>
 #pragma comment(lib, "ws2_32.lib")
 
 #define PORT 8080
@@ -10,37 +10,36 @@
 int main(void) {
     // Winsock variables
     WSADATA wsaData;
-    SOCKET clientSocket;
+    SOCKET serverSocket, clientSocket;
     struct sockaddr_in serverAddr, clientAddr;
-    int clientSize = sizeof(clientSocket);
     char buffer[BUFFER_SIZE];
-    bool running = true;
+    int clientSize;
 
     // Start Winsock
+    printf("Initialising Winsock...\n");
     if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
-        printf("Error: Winsock initialization failed\n");
+        printf("Failed. Error Code: %d", WSAGetLastError());
         return 1;
     }
     printf("Winsock initialized correctly\n");
 
-    // Create socket
-    const SOCKET serverSocket = socket(AF_INET, SOCK_STREAM, 0);
-    if (serverSocket == INVALID_SOCKET) {
-        printf("Error: Socket creation failed");
-        WSACleanup();
+    // Create server socket
+    printf("Creating Server Socket...\n");
+    if ((serverSocket = socket(AF_INET, SOCK_STREAM, 0)) == INVALID_SOCKET) {
+        printf("Could not create socket: %d", WSAGetLastError());
         return 1;
     }
-
-    printf("Socket created correctly\n");
+    printf("Server socket created correctly\n");
 
     // Setup server address
     serverAddr.sin_family = AF_INET;
     serverAddr.sin_addr.S_un.S_addr = INADDR_ANY;
-    serverAddr.sin_port = htons(8000);
+    serverAddr.sin_port = htons(PORT);
 
-    // Bind socket to address
+    // Bind socket server to address
+    printf("Binding Server Socket to address...\n");
     if (bind(serverSocket, (struct sockaddr*)&serverAddr, sizeof(serverAddr)) == SOCKET_ERROR) {
-        printf("Error: Socket bind failed\n");
+        printf("Bind failed with error code: %d", WSAGetLastError());
         closesocket(serverSocket);
         WSACleanup();
         return 1;
@@ -48,60 +47,48 @@ int main(void) {
     printf("Socket bound correctly\n");
 
     // Listen to incoming connections
-    if (listen(serverSocket, 3) == SOCKET_ERROR) {
-        printf("Error: Socket listening failed\n");
+    if (listen(serverSocket, SOMAXCONN) == SOCKET_ERROR) {
+        printf("Listen failed with error code: %d", WSAGetLastError());
         closesocket(serverSocket);
         WSACleanup();
         return 1;
     }
     printf("Listening for connections at port %d...\n", PORT);
-    printf("Press 'q' for exit\n");
 
-    // Setup unblocking socket
-    u_long mode = 1;
-    ioctlsocket(serverSocket, FIONBIO, &mode);
-
-    // Server Main Loop
-    while (running) {
-        // Check if the key was pressed
-        if (_kbhit()) {
-            const int ch = _getch();
-            if (ch == 'q' || ch == 'Q') {
-                printf("\nExiting...\n");
-                running = false;
-                break;
-            }
-        }
-
-        // Accept incoming connections
+    // Server loop
+    while (1) {
+        clientSize = sizeof(clientAddr);
         clientSocket = accept(serverSocket, (struct sockaddr*)&clientAddr, &clientSize);
+
         if (clientSocket == INVALID_SOCKET) {
-            if (WSAGetLastError() == WSAEWOULDBLOCK) {
-                printf("Error: Connection accept failed\n");
-            }
-            Sleep(100);
+            printf("Accept failed: %d\n", WSAGetLastError());
             continue;
         }
+        printf("New client connected\n");
 
-        printf("New Connection accepted\n");
+        // Receive and respond in a loop
+        while (1) {
+            int bytesReceived = recv(clientSocket, buffer, BUFFER_SIZE - 1, 0);
+            if (bytesReceived <= 0) {
+                printf("Client disconnected or error.\n");
+                break;
+            }
 
-        // Receive data from a client
-        const int bytesReceived = recv(clientSocket, buffer, BUFFER_SIZE, 0);
-        if (bytesReceived > 0) {
             buffer[bytesReceived] = '\0';
-            printf("Message received from client: %s\n", buffer);
+            printf("Received: %s\n", buffer);
 
-            // Send data to a client
-            const char* response = "Message received from server\n";
+            const char* response = "Hello, World!\n";
             send(clientSocket, response, (int)strlen(response), 0);
+            printf("Sent: %s\n", response);
         }
 
-        // Close connection
         closesocket(clientSocket);
     }
 
     // Cleaning
     closesocket(serverSocket);
     WSACleanup();
+    printf("Server closed\n");
+
     return 0;
 }
