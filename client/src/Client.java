@@ -1,9 +1,18 @@
 import java.io.*;
 import java.net.Socket;
 
-public class Client {
+public class Client implements IClient {
+    private final String address;
+    private final int port;
 
     public Client(String address, int port) {
+        this.address = address;
+        this.port = port;
+
+    }
+
+    @Override
+    public void start() {
         Socket socket = null;
         BufferedReader input = null;
         BufferedWriter output = null;

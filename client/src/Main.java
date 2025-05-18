@@ -1,7 +1,6 @@
-// Press Shift twice to open the Search Everywhere dialog and type `show whitespaces`,
-// then press Enter. You can now see whitespace characters in your code.
 public class Main {
     public static void main(String[] args) {
-        Client client = new Client("localhost", 8080);
+        IClient client = ClientFactory.createClient("default", "localhost", 8080);
+        client.start();
     }
 }
