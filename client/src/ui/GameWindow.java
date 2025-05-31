@@ -29,8 +29,8 @@ public class GameWindow extends JFrame {
         bottomPanel.setPreferredSize(new Dimension(1300, 40));
 
         // Paneles individuales alineados a izquierda y derecha
-        JPanel popoPanel = new CharacterPanel("C:/Users/Brene/OneDrive/Escritorio/tarea4-ice-climbers/client/src/ui/figuras/popo.png", "VIDAS: ");
-        JPanel nanaPanel = new CharacterPanel("C:\\Users\\Brene\\OneDrive\\Escritorio\\tarea4-ice-climbers\\client\\src\\ui\\figuras\\nana.png", "VIDAS: ");
+        JPanel popoPanel = new CharacterPanel("/ui/figuras/popo.png", "VIDAS: ");
+        JPanel nanaPanel = new CharacterPanel("/ui/figuras/nana.png", "VIDAS: ");
 
         bottomPanel.add(popoPanel, BorderLayout.WEST);
         bottomPanel.add(nanaPanel, BorderLayout.EAST);
@@ -46,15 +46,15 @@ public class GameWindow extends JFrame {
         private BufferedImage image;
         private String label;
 
-        public CharacterPanel(String imagePath, String label) {
+        public CharacterPanel(String resourcePath, String label) {
             this.label = label;
             setBackground(Color.DARK_GRAY);
             setLayout(new FlowLayout(FlowLayout.LEFT, 10, 20));
 
             try {
-                image = ImageIO.read(new File(imagePath));
-            } catch (IOException e) {
-                System.err.println("No se pudo cargar la imagen: " + imagePath);
+                image = ImageIO.read(getClass().getResource(resourcePath));
+            } catch (IOException | IllegalArgumentException e) {
+                System.err.println("No se pudo cargar la imagen: " + resourcePath);
             }
         }
 
