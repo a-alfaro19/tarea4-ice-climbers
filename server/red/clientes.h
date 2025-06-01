@@ -16,5 +16,7 @@ ClienteConectado* obtener_clientes();
 int total_clientes();
 void remover_cliente(SOCKET socket);
 int contar_observadores_de(int id_jugador);
+int get_player_clients();
+int get_observer_clients();
 
 #endif

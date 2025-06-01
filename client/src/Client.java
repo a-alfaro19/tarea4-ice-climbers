@@ -1,58 +1,31 @@
 import java.io.*;
 import java.net.Socket;
 
-public class Client implements IClient {
-    private final String address;
-    private final int port;
+public abstract class Client implements IClient {
+    protected Socket socket; // Client Socket
+    protected DataOutputStream out; // Client OutputStream
+    protected DataInputStream in; // Client InputStream
 
-    public Client(String address, int port) {
-        this.address = address;
-        this.port = port;
-
+    /**
+     * Creates a base client
+     * @param host Address of the server socket
+     * @param port Port where the server is listening
+     */
+    public Client(String host, int port) throws IOException {
+        this.socket = new Socket(host, port);
+        this.out = new DataOutputStream(socket.getOutputStream());
+        this.in = new DataInputStream(socket.getInputStream());
     }
 
     @Override
-    public void start() {
-        Socket socket = null;
-        BufferedReader input = null;
-        BufferedWriter output = null;
+    public void sendRequest(String request) throws IOException {
+        out.write(request.getBytes());
+    }
 
-        try {
-            socket = new Socket(address, port);
-            System.out.println("Connected");
-
-            input = new BufferedReader(new InputStreamReader(System.in));
-            output = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
-
-
-        } catch (IOException e) {
-            System.out.println("Connection error: " + e.getMessage());
-            e.printStackTrace();
-        }
-
-        // String to read message from input
-        String m = "";
-
-        // Keep reading until "Over" is input
-        while (!m.equals("Over")) {
-            try {
-                m = input.readLine();
-                output.write(m + '\n');
-                output.flush();
-            }
-            catch (IOException i) {
-                System.out.println(i);
-            }
-        }
-
-        // Close the connection
-        try {
-            input.close();
-            output.close();
-            socket.close();
-        }
-        catch (IOException i) {
-            System.out.println(i);
-        }
+    @Override
+    public String getResponse() throws IOException {
+        byte[] buffer = new byte[1024];
+        int bytesRead = in.read(buffer);
+        return new String(buffer, 0, bytesRead);
     }
 }

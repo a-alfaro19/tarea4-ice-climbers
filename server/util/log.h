@@ -1,8 +1,17 @@
 #ifndef LOG_H
 #define LOG_H
-#include <stdio.h>
-#include <time.h>
+
+/**
+ *
+ * @param mensaje
+ */
 void log_info(const char *mensaje);
+
+/**
+ *
+ * @param mensaje
+ */
 void log_error(const char *mensaje);
+
 
 #endif

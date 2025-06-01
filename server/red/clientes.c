@@ -3,6 +3,8 @@
 
 static ClienteConectado clientes[MAX_CLIENTES];
 static int num_clientes = 0;
+static int player_clients = 0;
+static int observer_clients = 0;
 
 int registrar_cliente(SOCKET socket, int es_jugador, int id_jugador) {
     if (num_clientes >= MAX_CLIENTES) return 0;
@@ -27,6 +29,14 @@ int registrar_cliente(SOCKET socket, int es_jugador, int id_jugador) {
 
     clientes[num_clientes++] = nuevo;
     return 1;
+}
+
+int get_player_clients() {
+    return player_clients;
+}
+
+int get_observer_clients() {
+    return observer_clients;
 }
 
 int total_clientes() {
