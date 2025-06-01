@@ -10,10 +10,13 @@
 
 #include "red/SocketServer.h"
 #include "red/mensajes.h"
+#include "juego/juego.h"
+#include "juego/obstaculo.h"
+#include "util/log.h"
+#include <windows.h>
 #include "red/clientes.h"
 #include "red/observer.h"
-#include "util/log.h"
-#include "juego/juego.h"
+
 
 #define BUFFER_SIZE 1024
 
@@ -101,6 +104,11 @@ DWORD WINAPI atender_cliente(LPVOID param) {
 }
 
 int main(void) {
+    // UTF8
+    SetConsoleOutputCP(CP_UTF8);
+    SetConsoleCP(CP_UTF8);
+
+
     const SOCKET serverSocket = get_server_socket();
     if (serverSocket == INVALID_SOCKET) {
         return 1;
@@ -128,4 +136,19 @@ int main(void) {
 
     close_server();
     return 0;
+
+    // Obstaculo* obs = crear_obstaculo(YETI, 10, 10, 10, 10);
+    // obs->direccion = DER;
+    // printf("Posición actual x: %d, y: %d\n", obs->pos.x, obs->pos.y);
+    // obs->mover(obs);
+    // printf("Posición actual x: %d, y: %d\n", obs->pos.x, obs->pos.y);
+    //
+    // if (destruir_obstaculo(obs)) {
+    //     printf("Obstáculo destruido correctamente\n");
+    //     obs = NULL;
+    // } else {
+    //     printf("Error al destruir el obstáculo\n");
+    // }
+    //
+    // return 0;
 }

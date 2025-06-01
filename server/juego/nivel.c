@@ -6,7 +6,7 @@ void inicializar_nivel(Nivel *nivel, int id) {
     nivel->num_frutas = 0;
 }
 
-void agregar_obstaculo_a_nivel(Nivel *nivel, Obstaculo obs) {
+void agregar_obstaculo_a_nivel(Nivel *nivel, Obstaculo_st obs) {
     if (nivel->num_obstaculos < 10) {
         nivel->obstaculos[nivel->num_obstaculos++] = obs;
     }
