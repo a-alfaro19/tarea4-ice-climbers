@@ -23,7 +23,7 @@ add_executable(server main.c
         red/mensajes.c
         red/mensajes.h
         juego/bloque.cpp
-        juego/bloque.h)
+        juego/bloque.h
         red/clientes.c
         red/clientes.h
         red/observer.c
