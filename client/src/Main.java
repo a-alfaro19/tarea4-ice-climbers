@@ -11,11 +11,12 @@ public class Main {
         // 2. Ejecutar cliente en otro hilo para no bloquear la GUI
         new Thread(() -> {
             try {
-                IClient playerClient = ClientFactory.createClient("OBSERVER", "localhost", 8080);
+                IClient playerClient = ClientFactory.createClient("PLAYER", "localhost", 8080);
                 playerClient.identify();
                 playerClient.sendRequest("STATE");
                 String response = playerClient.getResponse();
                 System.out.println(response);
+                playerClient.sendRequest("EXIT");
             } catch (IOException e) {
                 System.err.println("Connection Error: " + e.getMessage());
             }

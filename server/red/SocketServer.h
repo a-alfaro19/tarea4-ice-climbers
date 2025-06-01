@@ -7,10 +7,10 @@
 /**
  * Enum to identify the client type
  */
-enum ClientType {
+typedef enum {
     PLAYER,
     OBSERVER
-};
+} ClientType;
 
 /**
  * Structure to store the client information
@@ -18,7 +18,7 @@ enum ClientType {
 typedef struct {
     SOCKET socket;
     int id;
-    enum ClientType type;
+    ClientType type;
 } ClientInfo;
 
 /**
@@ -57,15 +57,41 @@ int receive_request(SOCKET socket, char *buffer, int buffer_size);
 int send_response(SOCKET socket, const char *response);
 
 /**
+ * Sends the complete game state structure over a socket connection
+ * @param clientSocket The socket descriptor for the client connection
+ * @param game Pointer to the Game structure containing the game state to be sent
+ * @return The total number of bytes sent if successful, -1 if an error occurs
+ */
+// int send_game(SOCKET clientSocket, Juego *game);
+
+/**
+ * @brief Creates a ClientInfo struct and sets the client info, it also updates de client count.
+ * @param clientSocket Client Socket
+ * @param type The Client Type
+ * @return A pointer to the ClientInfo struct created.
+ */
+ClientInfo* registerClient(SOCKET clientSocket, ClientType type);
+
+/**
+ * @brief Unregisters a client from the server and performs cleanup
+ * @param client Pointer to the ClientInfo structure of the client to be unregistered
+ */
+void unregisterClient(ClientInfo* client);
+
+/**
+ * @brief Notifies all registered observers about the current game state
+ * @param game Pointer to the Game structure containing the current game state
+ */
+// void notify_observers(const Juego *game);
+
+/**
  * @brief Handles communication with a connected client in a separate thread.
- * This function runs in a new thread for each connecting client.
  * It processes client identification (PLAYER/OBSERVER) and maintains
  * communication until the client disconnects.
  *
  * @param param Pointer to the client socket (must be freed within the function)
  * @return 0 when the client connection ends
  */
-
 DWORD WINAPI handle_client(LPVOID param);
 
 #endif //SOCKETSERVER_H

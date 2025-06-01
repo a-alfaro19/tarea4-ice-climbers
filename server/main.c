@@ -156,7 +156,6 @@ int main(void) {
     int clientSize;
 
     while (1) {
-        log_info("Waiting for client...");
         clientSize = sizeof(clientAddr);
         SOCKET *newSocket = malloc(sizeof(SOCKET));
         *newSocket = accept(serverSocket, (struct sockaddr*)&clientAddr, &clientSize);
