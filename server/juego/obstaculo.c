@@ -46,11 +46,26 @@ static void mover_bloque(Obstaculo *obs) {
     obs->pos.y += 1;
 }
 
-static void dibujar_yeti(Obstaculo* obs) {}
+static void dibujar_obstaculo(const Obstaculo* obs) {
+    switch (obs->tipo) {
+        case YETI:
+            // Cargar el dibujo del yeti
+            break;
 
-static void dibujar_ave(Obstaculo* obs) {}
+        case AVE:
+            // Cargar el dibujo del ave
+            break;
 
-static void dibujar_bloque(Obstaculo* obs) {}
+        case BLOQUE_HIELO:
+            // Cargar el dibujo del bloque de hielo
+            break;
+
+        default:
+            // Mostrar mensaje de error
+            log_error("Tipo de obstáculo inválido para dibujar");
+            exit(1);
+    }
+}
 
 Obstaculo* crear_obstaculo(const TipoObstaculo tipo, const int x, const int y, const int ancho, const int alto) {
     Obstaculo* nuevo_obstaculo = malloc(sizeof(Obstaculo));
@@ -66,21 +81,20 @@ Obstaculo* crear_obstaculo(const TipoObstaculo tipo, const int x, const int y, c
     nuevo_obstaculo->activo = 1;
     nuevo_obstaculo->tipo = tipo;
 
+    nuevo_obstaculo->dibujar = dibujar_obstaculo;
+
 
     switch (tipo) {
         case YETI:
             nuevo_obstaculo->mover = mover_yeti;
-            nuevo_obstaculo->dibujar = dibujar_yeti;
             break;
         case AVE:
             nuevo_obstaculo->direccion = DER;
             nuevo_obstaculo->mover = mover_ave;
-            nuevo_obstaculo->dibujar = dibujar_ave;
             break;
         case BLOQUE_HIELO:
             nuevo_obstaculo->direccion = ABAJO;
             nuevo_obstaculo->mover = mover_bloque;
-            nuevo_obstaculo->dibujar = dibujar_bloque;
             break;
 
         default:
