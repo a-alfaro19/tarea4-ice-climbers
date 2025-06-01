@@ -22,6 +22,8 @@ add_executable(server main.c
         util/tipos.h
         red/mensajes.c
         red/mensajes.h
+        juego/bloque.cpp
+        juego/bloque.h)
         red/clientes.c
         red/clientes.h
         red/observer.c
