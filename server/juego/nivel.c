@@ -17,3 +17,12 @@ void agregar_fruta_a_nivel(Nivel *nivel, Fruta fruta) {
         nivel->frutas[nivel->num_frutas++] = fruta;
     }
 }
+
+int hay_piso_en_y(Nivel *nivel, int x, int y) {
+    // Si hay un obstáculo justo debajo, es piso
+    for (int i = 0; i < nivel->num_obstaculos; i++) {
+        if (nivel->obstaculos[i].activo && nivel->obstaculos[i].x == x && nivel->obstaculos[i].y == y)
+            return 1;
+    }
+    return 0;
+}

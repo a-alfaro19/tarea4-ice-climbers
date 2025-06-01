@@ -1,11 +1,5 @@
 #include "mensajes.h"
-#include <stdio.h>
-#include <string.h>
 
-/**
- * Nota: Este ejemplo asume que tanto el cliente como el servidor comparten la definición exacta de struct `Juego`.
- * Para algo más robusto, deberías enviar campos por separado o usar un protocolo como JSON o Protobuf.
- */
 
 int enviar_juego(SOCKET socket_cliente, const Juego *juego) {
     int total_enviado = 0;

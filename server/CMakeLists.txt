@@ -21,7 +21,13 @@ add_executable(server main.c
         util/constantes.h
         util/tipos.h
         red/mensajes.c
-        red/mensajes.h)
+        red/mensajes.h
+        juego/bloque.cpp
+        juego/bloque.h)
+        red/clientes.c
+        red/clientes.h
+        red/observer.c
+        red/observer.h)
 
 # Include Socket lib
 if(WIN32)

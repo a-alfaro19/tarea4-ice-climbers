@@ -1,6 +1,5 @@
 #include "log.h"
-#include <stdio.h>
-#include <time.h>
+
 
 void log_info(const char *mensaje) {
     time_t t = time(NULL);

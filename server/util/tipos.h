@@ -44,4 +44,18 @@ typedef struct {
     int velocidad;
 } Juego;
 
+//Bloque para Suelo
+typedef struct {
+    int id;
+    int x, y;
+    int vida;
+    int destruido;
+} Bloque;
+
+#define MAX_BLOQUES 100
+typedef struct {
+    int cantidad;
+    Bloque bloques[MAX_BLOQUES];
+} PaqueteBloques;
+
 #endif
