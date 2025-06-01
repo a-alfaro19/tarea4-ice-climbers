@@ -1,5 +1,7 @@
 #ifndef OBSTACULO_H
 #define OBSTACULO_H
+#include "nivel.h"
+#define MAX_OBSTACULOS 20
 
 
 // Enumeración de los tipos de obstáculos del juego
@@ -57,6 +59,14 @@ Obstaculo* crear_obstaculo(TipoObstaculo tipo, int x, int y, int ancho, int alto
  * @return 1 si la operación fue exitosa, 0 para el caso contrario.
  */
 int destruir_obstaculo(const Obstaculo* obs);
-
+/**
+ * Crea un obstáculo y lo agrega al nivel especificado.
+ * @param nivel Nivel al que se desea agregar el obstáculo.
+ * @param tipo Tipo de obstáculo (YETI, AVE, BLOQUE_HIELO).
+ * @param x Coordenada X.
+ * @param y Coordenada Y.
+ * @return 1 si se agregó correctamente, 0 si hubo error.
+ */
+int crear_y_agregar_obstaculo(Nivel *nivel, TipoObstaculo tipo, int x, int y);
 
 #endif

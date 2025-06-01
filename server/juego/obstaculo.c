@@ -110,3 +110,20 @@ int destruir_obstaculo(const Obstaculo* obs) {
     free((void*)obs); // Liberar memoria
     return 1;
 }
+
+int crear_y_agregar_obstaculo(Nivel *nivel, TipoObstaculo tipo, int x, int y) {
+    if (nivel->num_obstaculos >= MAX_OBSTACULOS) {
+        log_error("Límite de obstáculos alcanzado en el nivel.");
+        return 0;
+    }
+
+    Obstaculo *nuevo = crear_obstaculo(tipo, x, y, 1, 1); // tamaño 1x1 por defecto
+    if (!nuevo) {
+        log_error("Error al crear obstáculo.");
+        return 0;
+    }
+
+    agregar_obstaculo_a_nivel(nivel, nuevo);
+    log_info("Obstáculo creado y agregado correctamente.");
+    return 1;
+}
