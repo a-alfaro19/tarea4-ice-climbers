@@ -1,8 +1,9 @@
 #ifndef SOCKETSERVER_H
 #define SOCKETSERVER_H
-
+#include "../util/tipos.h"
+#include "../juego/juego.h"
 #include <winsock2.h>
-
+extern Juego juego_global;
 
 /**
  * Enum to identify the client type

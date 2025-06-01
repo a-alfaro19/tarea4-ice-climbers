@@ -2,14 +2,20 @@
 #define JUEGO_H
 
 #include "../util/tipos.h"
-#include "obstaculo.h"
-#include "jugador.h"
 #include "nivel.h"
-#include "../util/constantes.h"
-#include <stdio.h>
-#include <stdlib.h>
+#include "jugador.h"
 #include <string.h>
+#include <stddef.h>
+#include <stdlib.h>
+#include <stdio.h>
 
+struct Juego {
+    int nivel_actual;
+    int velocidad;
+    int en_fase_bonus;
+    Nivel niveles[MAX_NIVELES];
+    Jugador jugadores[2];
+};
 
 void inicializar_juego(Juego *juego);
 void actualizar_juego(Juego *juego);

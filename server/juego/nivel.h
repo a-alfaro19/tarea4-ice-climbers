@@ -2,6 +2,16 @@
 #define NIVEL_H
 
 #include "../util/tipos.h"
+#include "obstaculo.h"
+#include "fruta.h"
+
+struct Nivel {
+    int id;
+    int num_obstaculos;
+    int num_frutas;
+    Obstaculo* obstaculos[10];
+    Fruta frutas[4];
+};
 
 void inicializar_nivel(Nivel *nivel, int id);
 void agregar_obstaculo_a_nivel(Nivel *nivel, Obstaculo *obs);

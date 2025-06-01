@@ -2,6 +2,9 @@
 #include <stdio.h>
 #include <ws2tcpip.h>
 #include "../util/log.h"
+#include "observer.h"
+
+Juego juego_global;
 
 #pragma comment(lib, "ws2_32.lib")
 
@@ -13,6 +16,8 @@ static ClientInfo clients[MAX_CLIENTS];
 static int num_clients = 0;
 static int player_clients = 0;
 static int observer_clients = 0;
+
+
 
 int initialize_winsock() {
     static int initialized = 0;
@@ -109,7 +114,6 @@ int send_response(const SOCKET socket, const char *response) {
     }
     return 1;
 }
-
 DWORD WINAPI handle_client(LPVOID param) {
     const SOCKET clientSocket = *(SOCKET*)param;
     free(param);
@@ -185,7 +189,6 @@ DWORD WINAPI handle_client(LPVOID param) {
         // Eliminar salto de línea si viene incluido
         buffer[strcspn(buffer, "\r\n")] = '\0';
 
-        // Procesar acciones
         if (strcmp(buffer, "STATE") == 0) {
             snprintf(buffer, sizeof(buffer), "STATE %d %d", player_clients, observer_clients);
             send_response(clientSocket, buffer);
@@ -194,7 +197,23 @@ DWORD WINAPI handle_client(LPVOID param) {
             strcmp(buffer, "BRINCAR") == 0 ||
             strcmp(buffer, "GOLPEAR") == 0
         ) {
-            // Aquí podrías guardar la acción o manejarla en el modelo del juego
+            // Procesar acción sobre el modelo de juego
+            if (client->type == PLAYER) {
+                Jugador *jug = &juego_global.jugadores[client->id];
+                Nivel *nivel = &juego_global.niveles[juego_global.nivel_actual];
+
+                if (strncmp(buffer, "MOVER:", 6) == 0) {
+                    mover_jugador(jug, buffer[6]);  // 'L' o 'R'
+                } else if (strcmp(buffer, "BRINCAR") == 0) {
+                    brincar_jugador(jug);
+                } else if (strcmp(buffer, "GOLPEAR") == 0) {
+                    golpear(jug, nivel);
+                }
+
+                actualizar_juego(&juego_global);
+                notificar_observers(&juego_global);
+            }
+
             char logmsg[128];
             snprintf(logmsg, sizeof(logmsg), "Acción recibida: %s", buffer);
             log_info(logmsg);
@@ -220,3 +239,4 @@ DWORD WINAPI handle_client(LPVOID param) {
 
     return 0;
 }
+

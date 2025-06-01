@@ -2,10 +2,15 @@
 #define JUGADOR_H
 
 #include "../util/tipos.h"
-#include <stdio.h>
-#include <string.h>
-#include "../util/constantes.h"
 #include "nivel.h"
+
+struct Jugador {
+    char nombre[20];
+    int x, y;
+    int puntaje;
+    int vidas;
+    char direccion;
+};
 
 void mover_jugador(Jugador *jugador, char direccion);
 void golpear(Jugador *jugador, Nivel *nivel);
@@ -14,3 +19,4 @@ void brincar_jugador(Jugador *jugador);
 void sumar_puntaje(Jugador *jugador, int puntos);
 
 #endif
+

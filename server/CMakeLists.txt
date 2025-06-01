@@ -3,32 +3,21 @@ project(server C)
 
 set(CMAKE_C_STANDARD 11)
 
-add_executable(server main.c
-        red/SocketServer.h
+add_executable(server
+        main.c
         red/SocketServer.c
-#        juego/juego.c
-#        juego/juego.h
-#        juego/jugador.c
-#        juego/jugador.h
-#        juego/obstaculo.c
-#        juego/obstaculo.h
-#        juego/fruta.c
-#        juego/fruta.h
-#        juego/nivel.c
-#        juego/nivel.h
+        red/mensajes.c
+        red/clientes.c
+        red/observer.c
+        juego/juego.c
+        juego/jugador.c
+        juego/obstaculo.c
+        juego/fruta.c
+        juego/nivel.c
+        juego/bloque.c
         util/log.c
-        util/log.h
-#        util/constantes.h
-#        util/tipos.h
-#        red/mensajes.c
-#        red/mensajes.h
-#        juego/bloque.c
-#        juego/bloque.h
-#        red/clientes.c
-#        red/clientes.h
-#        red/observer.c
-#        red/observer.h
 )
+
 
 # Include Socket lib
 if(WIN32)

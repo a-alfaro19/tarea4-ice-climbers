@@ -1,5 +1,6 @@
 #include "nivel.h"
 
+
 void inicializar_nivel(Nivel *nivel, int id) {
     nivel->id = id;
     nivel->num_obstaculos = 0;
