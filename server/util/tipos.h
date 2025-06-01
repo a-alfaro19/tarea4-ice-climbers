@@ -1,5 +1,7 @@
 #ifndef TIPOS_H
 #define TIPOS_H
+#include "../juego/obstaculo.h"
+
 
 // Jugador (Popo o Nana)
 typedef struct {
@@ -10,13 +12,6 @@ typedef struct {
     char direccion;    // 'L' o 'R'
 } Jugador;
 
-// Obstáculo: Yeti, Ave, Hielo
-typedef struct {
-    char tipo[10];     // "yeti", "ave", "hielo"
-    int x, y;
-    char direccion;    // 'L', 'R', 'U', 'D'
-    int activo;        // 1 = activo, 0 = destruido
-} Obstaculo_st;
 
 // Fruta para fase bonus
 typedef struct {
@@ -29,7 +24,7 @@ typedef struct {
 // Nivel individual
 typedef struct {
     int id;
-    Obstaculo_st obstaculos[10];
+    Obstaculo* obstaculos[10];
     Fruta frutas[4];
     int num_obstaculos;
     int num_frutas;

@@ -10,13 +10,16 @@ void mover_jugador(Jugador *jugador, char direccion) {
 void golpear(Jugador *jugador, Nivel *nivel) {
     printf("%s golpea con el martillo!\n", jugador->nombre);
     int target_x = jugador->x + (jugador->direccion == 'R' ? 1 : -1);
+
     for (int i = 0; i < nivel->num_obstaculos; i++) {
-        Obstaculo *obs = &nivel->obstaculos[i];
-        if (obs->activo && obs->x == target_x && obs->y == jugador->y) {
+        Obstaculo *obs = nivel->obstaculos[i];  // ya es puntero
+
+        if (obs->activo && obs->pos.x == target_x && obs->pos.y == jugador->y) {
             obs->activo = 0;
-            if (strcmp(obs->tipo, "yeti") == 0)
+
+            if (obs->tipo == YETI)
                 sumar_puntaje(jugador, PUNTOS_YETI);
-            else if (strcmp(obs->tipo, "ave") == 0)
+            else if (obs->tipo == AVE)
                 sumar_puntaje(jugador, PUNTOS_AVE);
         }
     }

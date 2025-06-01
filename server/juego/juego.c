@@ -13,19 +13,23 @@ void actualizar_juego(Juego *juego) {
 
     // Mover obstáculos
     for (int i = 0; i < nivel->num_obstaculos; i++) {
-        if (nivel->obstaculos[i].activo)
-            mover_obstaculo(&nivel->obstaculos[i]);
+        Obstaculo *obs = nivel->obstaculos[i];
+        if (obs->activo && obs->mover != NULL)
+            obs->mover(obs);
     }
 
     // Verificar colisiones con obstáculos
     for (int j = 0; j < 2; j++) {
         Jugador *jug = &juego->jugadores[j];
         for (int i = 0; i < nivel->num_obstaculos; i++) {
-            Obstaculo *obs = &nivel->obstaculos[i];
-            if (obs->activo && obs->x == jug->x && obs->y == jug->y) {
+            Obstaculo *obs = nivel->obstaculos[i];
+            if (obs->activo && obs->pos.x == jug->x && obs->pos.y == jug->y) {
                 perder_vida(jug);
                 obs->activo = 0;
-                printf("%s fue golpeado por un %s\n", jug->nombre, obs->tipo);
+                const char *tipo_str = (obs->tipo == YETI) ? "Yeti" :
+                                       (obs->tipo == AVE) ? "Ave" :
+                                       (obs->tipo == BLOQUE_HIELO) ? "Bloque de Hielo" : "Obstáculo";
+                printf("%s fue golpeado por un %s\n", jug->nombre, tipo_str);
             }
         }
     }
