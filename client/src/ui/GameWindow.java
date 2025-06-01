@@ -1,15 +1,19 @@
 package ui;
+import model.Juego;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.File;
+import java.io.BufferedWriter;
 import javax.imageio.ImageIO;
 import java.io.IOException;
 
 public class GameWindow extends JFrame {
+    private String nombreJugador = "";
+    private final GamePanel gamePanel;
 
-    public GameWindow() {
+    public GameWindow(String nombreJugador, BufferedWriter output) {
+        this.nombreJugador = nombreJugador;
         setTitle("iCE Climber - Cliente Jugador");
         setSize(1350, 760);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -18,8 +22,8 @@ public class GameWindow extends JFrame {
         JPanel mainPanel = new JPanel(new BorderLayout());
 
         // Panel central del juego
-        JPanel gamePanel = new JPanel();
-        gamePanel.setBackground(Color.BLACK);
+        // Panel central del juego
+        gamePanel = new GamePanel(nombreJugador, output);
         mainPanel.add(gamePanel, BorderLayout.CENTER);
 
         // Panel inferior (abajo)
@@ -195,6 +199,10 @@ public class GameWindow extends JFrame {
         }
 
         mainPanel.add(leftPanel, BorderLayout.WEST);
+    }
+    public void updateGame(Juego juego) {
+        gamePanel.setJugadores(juego.jugadores); // pasa los jugadores al GamePanel
+        gamePanel.repaint();
     }
 
 

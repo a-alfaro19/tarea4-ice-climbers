@@ -126,16 +126,20 @@ DWORD WINAPI handle_client(LPVOID param) {
 
     // Process ID
     if (strcmp(buffer, "PLAYER") == 0) {
-        // Player Client
         if (player_clients < 2) {
-            // Create client info
             client = &clients[num_clients++];
             client->socket = clientSocket;
             client->type = PLAYER;
             client->id = player_clients++;
 
-            // Send acceptance
-            if (!send_response(clientSocket, "ACCEPTED")) {
+            if (!send_response(clientSocket, "ACCEPTED\n")) {
+                closesocket(clientSocket);
+                return 0;
+            }
+
+            const char* nombre = (client->id == 0) ? "Popo      " : "Nana      ";
+            if (send(clientSocket, nombre, 10, 0) != 10) {
+                log_error("Error sending player name");
                 closesocket(clientSocket);
                 return 0;
             }
@@ -143,22 +147,18 @@ DWORD WINAPI handle_client(LPVOID param) {
             log_info("Player Client accepted");
         } else {
             log_info("Player Client rejected: maximum number of players reached");
-            send_response(clientSocket, "REJECTED");
+            send_response(clientSocket, "REJECTED\n");
             closesocket(clientSocket);
             return 0;
         }
-    }
-    else if (strcmp(buffer, "OBSERVER") == 0) {
-        // Observer Client
+    } else if (strcmp(buffer, "OBSERVER") == 0) {
         if (observer_clients < 2) {
-            // Create client info
             client = &clients[num_clients++];
             client->socket = clientSocket;
             client->type = OBSERVER;
             client->id = observer_clients++;
 
-            // Send acceptance
-            if (!send_response(clientSocket, "ACCEPTED")) {
+            if (!send_response(clientSocket, "ACCEPTED\n")) {
                 closesocket(clientSocket);
                 return 0;
             }
@@ -166,34 +166,56 @@ DWORD WINAPI handle_client(LPVOID param) {
             log_info("Observer Client accepted");
         } else {
             log_info("Client rejected: maximum number of observers reached");
-            send_response(clientSocket, "REJECTED");
+            send_response(clientSocket, "REJECTED\n");
             closesocket(clientSocket);
             return 0;
         }
-    }
-    else {
+    } else {
         log_error("Invalid ID received from client");
+        closesocket(clientSocket);
+        return 0;
     }
 
-    char msg[256];
-
-    // Start Communication Loop
-    while (client != NULL) {
+    // Loop para recibir acciones del cliente
+    while (1) {
         if (!receive_request(clientSocket, buffer, sizeof(buffer) - 1)) {
             break;
         }
 
-        if (strcmp(buffer, "STATE") == 0) {
-            // Send State
-            snprintf(msg, sizeof(msg), "STATE %d %d", player_clients, observer_clients);
-            if (!send_response(clientSocket, msg)) {
-                log_error("Error sending state to client");
-            }
-        }
+        // Eliminar salto de línea si viene incluido
+        buffer[strcspn(buffer, "\r\n")] = '\0';
 
-        closesocket(clientSocket);
-        log_info("Client disconnected");
-        break;
+        // Procesar acciones
+        if (strcmp(buffer, "STATE") == 0) {
+            snprintf(buffer, sizeof(buffer), "STATE %d %d", player_clients, observer_clients);
+            send_response(clientSocket, buffer);
+        } else if (
+            strncmp(buffer, "MOVER:", 6) == 0 ||
+            strcmp(buffer, "BRINCAR") == 0 ||
+            strcmp(buffer, "GOLPEAR") == 0
+        ) {
+            // Aquí podrías guardar la acción o manejarla en el modelo del juego
+            char logmsg[128];
+            snprintf(logmsg, sizeof(logmsg), "Acción recibida: %s", buffer);
+            log_info(logmsg);
+        } else {
+            log_info("Comando no reconocido:");
+            log_info(buffer);
+        }
+    }
+
+    log_info("Client disconnected");
+    closesocket(clientSocket);
+
+    // Limpiar contadores
+    if (client->type == PLAYER && player_clients > 0) {
+        player_clients--;
+    }
+    if (client->type == OBSERVER && observer_clients > 0) {
+        observer_clients--;
+    }
+    if (num_clients > 0) {
+        num_clients--;
     }
 
     return 0;
