@@ -3,7 +3,8 @@
 
 #include "../util/tipos.h"
 #include <winsock2.h>
-
+#include <stdio.h>
+#include <string.h>
 /**
  * @brief Envía el estado completo del juego al cliente.
  * @param socket_cliente Socket válido del cliente.

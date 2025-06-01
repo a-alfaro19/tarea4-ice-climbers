@@ -24,6 +24,10 @@ add_executable(server main.c
         red/mensajes.h
         juego/bloque.cpp
         juego/bloque.h)
+        red/clientes.c
+        red/clientes.h
+        red/observer.c
+        red/observer.h)
 
 # Include Socket lib
 if(WIN32)
