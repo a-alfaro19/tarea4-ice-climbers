@@ -11,38 +11,38 @@ int enviar_juego(SOCKET socket, const Juego* juego) {
 
         // Enviar nombre (10 bytes)
         if (send(socket, j->nombre, 10, 0) != 10) return -1;
-        imprimir_bytes(j->nombre, 10, "nombre");
+        //imprimir_bytes(j->nombre, 10, "nombre");
 
         // Enviar campos
         if (send(socket, &j->x, 4, 0) != 4) return -1;
-        imprimir_bytes(&j->x, 4, "x");
+        //imprimir_bytes(&j->x, 4, "x");
 
         if (send(socket, &j->y, 4, 0) != 4) return -1;
-        imprimir_bytes(&j->y, 4, "y");
+        //imprimir_bytes(&j->y, 4, "y");
 
         if (send(socket, &j->vidas, 4, 0) != 4) return -1;
-        imprimir_bytes(&j->vidas, 4, "vidas");
+        //imprimir_bytes(&j->vidas, 4, "vidas");
 
         if (send(socket, &j->puntaje, 4, 0) != 4) return -1;
-        imprimir_bytes(&j->puntaje, 4, "puntaje");
+        ///imprimir_bytes(&j->puntaje, 4, "puntaje");
 
         if (send(socket, &j->direccion, 1, 0) != 1) return -1;
-        imprimir_bytes(&j->direccion, 1, "direccion");
+        //imprimir_bytes(&j->direccion, 1, "direccion");
 
         char relleno = 0;
         if (send(socket, &relleno, 1, 0) != 1) return -1;
-        imprimir_bytes(&relleno, 1, "relleno");
+        //imprimir_bytes(&relleno, 1, "relleno");
     }
 
     // Enviar variables del juego
     if (send(socket, &juego->nivel_actual, 4, 0) != 4) return -1;
-    imprimir_bytes(&juego->nivel_actual, 4, "nivel_actual");
+    //imprimir_bytes(&juego->nivel_actual, 4, "nivel_actual");
 
     if (send(socket, &juego->en_fase_bonus, 4, 0) != 4) return -1;
-    imprimir_bytes(&juego->en_fase_bonus, 4, "en_fase_bonus");
+    //imprimir_bytes(&juego->en_fase_bonus, 4, "en_fase_bonus");
 
     if (send(socket, &juego->velocidad, 4, 0) != 4) return -1;
-    imprimir_bytes(&juego->velocidad, 4, "velocidad");
+    //imprimir_bytes(&juego->velocidad, 4, "velocidad");
 
     return 0;
 }
@@ -82,6 +82,7 @@ int recibir_accion(SOCKET socket_cliente, char* buffer, int tamanio) {
     return recibidos;
 }
 
+/*
 void imprimir_bytes(const void* data, size_t size, const char* etiqueta) {
     const unsigned char* bytes = (const unsigned char*)data;
     printf("[%s] %zu bytes: ", etiqueta, size);
@@ -90,4 +91,5 @@ void imprimir_bytes(const void* data, size_t size, const char* etiqueta) {
     }
     printf("\n");
 }
+*/
 

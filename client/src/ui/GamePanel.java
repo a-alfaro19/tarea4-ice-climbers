@@ -19,8 +19,6 @@ public class GamePanel extends JPanel {
     private BufferedImage nanaImg;
     private Jugador[] jugadores;
     private final int TILE_SIZE = 50;
-    private final int NIVELES_VISIBLES = 5;
-    private final int ALTURA_TOTAL_NIVELES = 32;
     private List<Bloque> bloques = new java.util.ArrayList<>();
 
     public GamePanel(String miNombre, BufferedWriter output) {

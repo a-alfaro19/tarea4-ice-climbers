@@ -38,7 +38,7 @@ PaqueteBloques obtener_bloques_visibles() {
     Nivel* actual = mapa;
     int niveles_visibles = 0;
 
-    while (actual && niveles_visibles < 4) {
+    while (actual && niveles_visibles < 8) {
         Bloque* b = actual->bloques;
         while (b && paquete.cantidad < MAX_BLOQUES) {
             if (b->activo) {
