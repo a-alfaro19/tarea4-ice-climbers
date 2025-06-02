@@ -4,10 +4,18 @@
 
 void mover_jugador(Jugador* j, char dir) {
     if (dir == 'L') {
-        j->x--;
+        if (j->x-1 < 0) {
+            j->x = 20;
+        } else {
+            j->x--;
+        }
         j->direccion = 'L';
     } else if (dir == 'R') {
-        j->x++;
+        if (j->x+1 > 20) {
+            j->x = 0;
+        } else {
+            j->x++;
+        }
         j->direccion = 'R';
     }
     printf("%s se movi\xC3\xB3 a %d\n", j->nombre, j->x);

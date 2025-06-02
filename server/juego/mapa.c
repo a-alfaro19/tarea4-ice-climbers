@@ -12,7 +12,7 @@ void inicializar_mapa() {
     Nivel* ultimo = NULL;
 
     for (int i = 0; i < 32; i++) {
-        int fila_mapa = i * 2; // fila y: cada nivel ocupa 2 líneas verticales
+        int fila_mapa = i * 4; // fila y: cada nivel ocupa 2 líneas verticales
         Nivel* n = crear_nivel(fila_mapa);
 
         for (int x = 0; x < 30; x++) {

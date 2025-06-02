@@ -53,9 +53,14 @@ public class GamePanel extends JPanel {
                     int nextX = yo.x;
                     int nextY = yo.y;
 
+                    int tilesHorizontales = 20;
+
                     switch (e.getKeyCode()) {
                         case KeyEvent.VK_LEFT -> {
                             nextX = yo.x - 1;
+                            if (nextX < 0) {
+                                nextX = tilesHorizontales;
+                            }
                             if (!hayBloqueEn(nextX, yo.y)) {
                                 output.write("MOVER:L\n");
                                 output.flush();
@@ -63,6 +68,9 @@ public class GamePanel extends JPanel {
                         }
                         case KeyEvent.VK_RIGHT -> {
                             nextX = yo.x + 1;
+                            if (nextX > tilesHorizontales) {
+                                nextX = 0;
+                            }
                             if (!hayBloqueEn(nextX, yo.y)) {
                                 output.write("MOVER:R\n");
                                 output.flush();
@@ -126,7 +134,9 @@ public class GamePanel extends JPanel {
         final int ORIGIN_Y = -2;      // fila inferior visible (donde inicia el jugador)
 
         int panelHeight = getHeight();
-        int offsetY = panelHeight - ((-ORIGIN_Y) * TILE_SIZE);
+        int offsetY = panelHeight - TILE_SIZE;
+
+
 
         // Dibujar bloques del mapa
         for (Bloque b : bloques) {
