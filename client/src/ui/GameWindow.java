@@ -204,6 +204,10 @@ public class GameWindow extends JFrame {
         gamePanel.setJugadores(juego.jugadores); // pasa los jugadores al GamePanel
         gamePanel.repaint();
     }
+    public void updateBloques(java.util.List<Bloque> bloques) {
+        gamePanel.setBloques(bloques);
+        gamePanel.repaint();
+    }
 
 
     // Clase para mostrar imagen y texto en horizontal

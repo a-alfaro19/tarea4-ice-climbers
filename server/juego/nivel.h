@@ -1,21 +1,17 @@
 #ifndef NIVEL_H
 #define NIVEL_H
 
-#include "../util/tipos.h"
-#include "obstaculo.h"
-#include "fruta.h"
+#include "bloque.h"
 
-struct Nivel {
-    int id;
-    int num_obstaculos;
-    int num_frutas;
-    Obstaculo* obstaculos[10];
-    Fruta frutas[4];
-};
+typedef struct Nivel {
+    int indice;              // 0 a 31
+    Bloque* bloques;         // lista enlazada de bloques
+    struct Nivel* siguiente;
+} Nivel;
 
-void inicializar_nivel(Nivel *nivel, int id);
-void agregar_obstaculo_a_nivel(Nivel *nivel, Obstaculo *obs);
-void agregar_fruta_a_nivel(Nivel *nivel, Fruta fruta);
-int hay_piso_en_y(Nivel *nivel, int x, int y);
+Nivel* crear_nivel(int indice);
+void agregar_bloque_a_nivel(Nivel* nivel, Bloque* b);
+void destruir_niveles(Nivel* cabeza);
+Nivel* obtener_nivel(Nivel* lista, int indice);
 
 #endif

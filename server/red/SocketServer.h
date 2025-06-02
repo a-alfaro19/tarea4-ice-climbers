@@ -1,9 +1,7 @@
 #ifndef SOCKETSERVER_H
 #define SOCKETSERVER_H
-#include "../util/tipos.h"
-#include "../juego/juego.h"
 #include <winsock2.h>
-extern Juego juego_global;
+
 
 /**
  * Enum to identify the client type
@@ -56,6 +54,7 @@ int receive_request(SOCKET socket, char *buffer, int buffer_size);
  */
 
 int send_response(SOCKET socket, const char *response);
+
 
 /**
  * @brief Handles communication with a connected client in a separate thread.

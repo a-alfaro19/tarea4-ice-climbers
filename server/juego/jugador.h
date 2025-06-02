@@ -1,22 +1,15 @@
 #ifndef JUGADOR_H
 #define JUGADOR_H
 
-#include "../util/tipos.h"
-#include "nivel.h"
+typedef struct Jugador {
+    char nombre[10];
+    int x, y;           // posición actual
+    int vidas;          // vidas restantes
+    int puntaje;        // puntos acumulados
+    char direccion;     // dirección actual ('L' o 'R')
+} Jugador;
 
-struct Jugador {
-    char nombre[20];
-    int x, y;
-    int puntaje;
-    int vidas;
-    char direccion;
-};
-
-void mover_jugador(Jugador *jugador, char direccion);
-void golpear(Jugador *jugador, Nivel *nivel);
-void perder_vida(Jugador *jugador);
-void brincar_jugador(Jugador *jugador);
-void sumar_puntaje(Jugador *jugador, int puntos);
+void perder_vida(Jugador* j);
+void sumar_puntaje(Jugador* j, int valor);
 
 #endif
-

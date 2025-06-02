@@ -1,35 +1,21 @@
 #ifndef BLOQUE_H
 #define BLOQUE_H
 
-#include <winsock2.h>
-
-/**
- * Estructura que representa un bloque destructible o interactivo en el juego.
- */
-typedef struct {
-    int id;
-    int x;
-    int y;
-    int vida;
-    int destruido;
+typedef struct Bloque {
+    int x, y;           // coordenadas
+    int tipo;           // 1 = destructible, 2 = indestructible
+    int activo;         // 1 = visible, 0 = destruido
+    struct Bloque* siguiente;
 } Bloque;
 
-/**
- * Estructura para enviar múltiples bloques en un solo paquete.
- */
 typedef struct {
-    int cantidad;
-    Bloque bloques[10]; // Puedes ajustar el tamaño si es necesario
-} PaqueteBloques;
+    int x, y;
+    int tipo;
+    int activo;
+} BloquePlano;
 
-/**
- * Crea un nuevo bloque con los parámetros dados.
- */
-Bloque crear_bloque(int id, int x, int y, int vida);
-
-/**
- * Envía un paquete de bloques a un cliente por socket.
- */
-int enviar_bloques(SOCKET socket_cliente, const PaqueteBloques *paquete);
+Bloque* crear_bloque(int x, int y, int tipo);
+void destruir_bloques(Bloque* cabeza);
+void imprimir_bloques(Bloque* cabeza);
 
 #endif

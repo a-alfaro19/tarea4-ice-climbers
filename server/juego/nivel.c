@@ -1,30 +1,32 @@
+#include <stdlib.h>
 #include "nivel.h"
 
-
-void inicializar_nivel(Nivel *nivel, int id) {
-    nivel->id = id;
-    nivel->num_obstaculos = 0;
-    nivel->num_frutas = 0;
+Nivel* crear_nivel(int indice) {
+    Nivel* n = malloc(sizeof(Nivel));
+    n->indice = indice;
+    n->bloques = NULL;
+    n->siguiente = NULL;
+    return n;
 }
 
-void agregar_obstaculo_a_nivel(Nivel *nivel, Obstaculo *obs) {
-    if (nivel->num_obstaculos < 10) {
-        nivel->obstaculos[nivel->num_obstaculos++] = obs;
+void agregar_bloque_a_nivel(Nivel* nivel, Bloque* b) {
+    b->siguiente = nivel->bloques;
+    nivel->bloques = b;
+}
+
+void destruir_niveles(Nivel* cabeza) {
+    while (cabeza) {
+        Nivel* tmp = cabeza;
+        destruir_bloques(cabeza->bloques);
+        cabeza = cabeza->siguiente;
+        free(tmp);
     }
 }
 
-
-void agregar_fruta_a_nivel(Nivel *nivel, Fruta fruta) {
-    if (nivel->num_frutas < 4) {
-        nivel->frutas[nivel->num_frutas++] = fruta;
+Nivel* obtener_nivel(Nivel* lista, int indice) {
+    while (lista) {
+        if (lista->indice == indice) return lista;
+        lista = lista->siguiente;
     }
-}
-
-int hay_piso_en_y(Nivel *nivel, int x, int y) {
-    for (int i = 0; i < nivel->num_obstaculos; i++) {
-        Obstaculo *obs = nivel->obstaculos[i];
-        if (obs->activo && obs->pos.x == x && obs->pos.y == y)
-            return 1;
-    }
-    return 0;
+    return NULL;
 }

@@ -1,20 +1,26 @@
 package ui;
+
 import java.io.DataInputStream;
 import java.io.IOException;
 
 public class Bloque {
-    public int id;
-    public int x;
-    public int y;
-    public int vida;
-    public int destruido;
-    public static Bloque readFrom(DataInputStream dis) throws IOException {
+    public Integer x, y, tipo, activo;
+
+    public static Bloque readFrom(DataInputStream in) throws IOException {
         Bloque b = new Bloque();
-        b.id = dis.readInt();
-        b.x = dis.readInt();
-        b.y = dis.readInt();
-        b.vida = dis.readInt();
-        b.destruido = dis.readInt();
+        b.x = readIntLE(in);
+        b.y = readIntLE(in);
+        b.tipo = readIntLE(in);
+        b.activo = readIntLE(in);
         return b;
     }
+
+    private static int readIntLE(DataInputStream in) throws IOException {
+        int b1 = in.readUnsignedByte();
+        int b2 = in.readUnsignedByte();
+        int b3 = in.readUnsignedByte();
+        int b4 = in.readUnsignedByte();
+        return (b4 << 24) | (b3 << 16) | (b2 << 8) | b1;
+    }
 }
+

@@ -1,98 +1,92 @@
 #include "juego.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
 
-void inicializar_juego(Juego *juego) {
-    memset(juego, 0, sizeof(Juego));
-    strcpy(juego->jugadores[0].nombre, "Popo");
-    strcpy(juego->jugadores[1].nombre, "Nana");
-    juego->jugadores[0].vidas = juego->jugadores[1].vidas = 3;
+void inicializar_juego(Juego* juego) {
+    juego->nivel_actual = 0;
+    juego->en_fase_bonus = 0;
     juego->velocidad = 1;
+
+    Jugador* popo = &juego->jugadores[0];
+    Jugador* nana = &juego->jugadores[1];
+
+    snprintf(popo->nombre, sizeof(popo->nombre), "Popo");
+    snprintf(nana->nombre, sizeof(nana->nombre), "Nana");
+
+    popo->x = 9;
+    popo->y = 1;
+    popo->vidas = 3;
+    popo->puntaje = 0;
+    popo->direccion = 'R';
+
+    nana->x = 12;
+    nana->y = 1;
+    nana->vidas = 3;
+    nana->puntaje = 0;
+    nana->direccion = 'L';
 }
 
-void actualizar_juego(Juego *juego) {
-    Nivel *nivel = &juego->niveles[juego->nivel_actual];
+void reiniciar_juego(Juego* juego) {
+    juego->nivel_actual = 0;
+    juego->en_fase_bonus = 0;
+    juego->velocidad++;
+}
 
-    // Mover obstáculos
-    for (int i = 0; i < nivel->num_obstaculos; i++) {
-        Obstaculo *obs = nivel->obstaculos[i];
-        if (obs->activo && obs->mover != NULL)
-            obs->mover(obs);
-    }
+void imprimir_estado_juego(Juego* juego) {
+    printf("Nivel: %d | Velocidad: %d | Bonus: %d\n",
+           juego->nivel_actual, juego->velocidad, juego->en_fase_bonus);
+}
 
-    // Verificar colisiones con obstáculos
-    for (int j = 0; j < 2; j++) {
-        Jugador *jug = &juego->jugadores[j];
-        for (int i = 0; i < nivel->num_obstaculos; i++) {
-            Obstaculo *obs = nivel->obstaculos[i];
-            if (obs->activo && obs->pos.x == jug->x && obs->pos.y == jug->y) {
-                perder_vida(jug);
-                obs->activo = 0;
-                const char *tipo_str = (obs->tipo == YETI) ? "Yeti" :
-                                       (obs->tipo == AVE) ? "Ave" :
-                                       (obs->tipo == BLOQUE_HIELO) ? "Bloque de Hielo" : "Obstáculo";
-                printf("%s fue golpeado por un %s\n", jug->nombre, tipo_str);
+void actualizar_juego(Juego* juego, Nivel* mapa) {
+    Nivel* nivel_actual = obtener_nivel(mapa, juego->nivel_actual);
+    if (!nivel_actual) return;
+
+    // Verifica caída libre
+    for (int i = 0; i < 2; i++) {
+        Jugador* j = &juego->jugadores[i];
+        int tiene_piso = 0;
+
+        Bloque* b = nivel_actual->bloques;
+        while (b) {
+            if (b->x == j->x && b->y == j->y + 1 && b->activo) {
+                tiene_piso = 1;
+                break;
             }
+            b = b->siguiente;
+        }
+
+        if (!tiene_piso) {
+            perder_vida(j);
+            printf("%s cayó sin piso\n", j->nombre);
         }
     }
 
-    // Verificar si deben caer por falta de piso
-    for (int j = 0; j < 2; j++) {
-        Jugador *jug = &juego->jugadores[j];
-        int abajo = jug->y + 1;
-        if (!hay_piso_en_y(nivel, jug->x, abajo)) {
-            perder_vida(jug);
-            printf("%s cayó por falta de piso y perdió una vida\n", jug->nombre);
-        }
-    }
-
-    // Sincronizar altura entre jugadores (si uno está muy abajo)
+    // Verifica separación entre jugadores
     int y0 = juego->jugadores[0].y;
     int y1 = juego->jugadores[1].y;
     if (abs(y0 - y1) > 2) {
         int abajo = (y0 > y1) ? 0 : 1;
         perder_vida(&juego->jugadores[abajo]);
         juego->jugadores[abajo].y = juego->jugadores[1 - abajo].y;
-        printf("%s estaba muy abajo y perdió una vida. Reposicionado\n", juego->jugadores[abajo].nombre);
+        printf("%s estaba muy abajo. Vida menos y reposicionado\n", juego->jugadores[abajo].nombre);
     }
 
-    // Recolección de frutas si estamos en fase bonus
-    if (juego->en_fase_bonus) {
-        for (int j = 0; j < 2; j++) {
-            Jugador *jug = &juego->jugadores[j];
-            for (int i = 0; i < nivel->num_frutas; i++) {
-                Fruta *f = &nivel->frutas[i];
-                if (!f->recolectada && f->x == jug->x && f->y == jug->y) {
-                    f->recolectada = 1;
-                    sumar_puntaje(jug, f->valor);
-                    printf("%s recolectó una %s (+%d pts)\n", jug->nombre, f->tipo, f->valor);
-                }
-            }
-        }
-    }
-
-    // Avanzar de nivel si ambos jugadores llegaron arriba (e.g. y <= 1)
-    if (!juego->en_fase_bonus && juego->nivel_actual < MAX_NIVELES - 1) {
+    // Avanza nivel si ambos llegaron arriba
+    if (!juego->en_fase_bonus && juego->nivel_actual < 31) {
         if (juego->jugadores[0].y <= 1 && juego->jugadores[1].y <= 1) {
             juego->nivel_actual++;
             printf("Avanzando al nivel %d\n", juego->nivel_actual);
         }
     }
 
-    // Entrar en fase bonus si están en último nivel
-    if (juego->nivel_actual == MAX_NIVELES - 1 && !juego->en_fase_bonus) {
+    // Inicia fase bonus al llegar al último nivel
+    if (juego->nivel_actual == 31 && !juego->en_fase_bonus) {
         juego->en_fase_bonus = 1;
-        for (int i = 0; i < 2; i++) juego->jugadores[i].vidas++;
+        for (int i = 0; i < 2; i++) {
+            juego->jugadores[i].vidas++;
+        }
         reiniciar_juego(juego);
-        printf("Entrando en fase BONUS. +1 vida y reinicio del juego.\n");
+        printf("¡BONUS! +1 vida y reinicio\n");
     }
-}
-
-void reiniciar_juego(Juego *juego) {
-    juego->nivel_actual = 0;
-    juego->en_fase_bonus = 0;
-    juego->velocidad += 1;
-}
-
-void imprimir_estado_juego(Juego *juego) {
-    printf("Nivel: %d | Velocidad: %d | Bonus: %d\n",
-           juego->nivel_actual, juego->velocidad, juego->en_fase_bonus);
 }

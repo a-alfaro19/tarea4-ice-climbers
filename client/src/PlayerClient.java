@@ -1,15 +1,17 @@
 import model.Juego;
+import ui.Bloque;
 import ui.GameWindow;
 
 import javax.swing.*;
 import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class PlayerClient extends Client implements IClient {
     private String nombreJugador;
 
     public PlayerClient(String host, int port) throws IOException {
         super(host, port);
-
     }
 
     @Override
@@ -17,7 +19,7 @@ public class PlayerClient extends Client implements IClient {
         out.write("PLAYER".getBytes());
         out.flush();
 
-        // Leer primero si fue aceptado
+        // Leer respuesta tipo "ACCEPTED\n"
         StringBuilder response = new StringBuilder();
         char ch;
         while ((ch = (char) in.readByte()) != '\n') {
@@ -35,9 +37,6 @@ public class PlayerClient extends Client implements IClient {
         System.out.println("Jugador asignado: " + nombreJugador);
     }
 
-
-
-
     @Override
     public void sendRequest(String request) throws IOException {
         out.write((request + "\n").getBytes());
@@ -51,33 +50,38 @@ public class PlayerClient extends Client implements IClient {
         return new String(buffer, 0, bytesRead);
     }
 
-
     public void startListening() {
         try {
             BufferedWriter output = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
-
-            //
-            String nombre = this.nombreJugador;
-
 
             SwingUtilities.invokeLater(() -> {
                 System.out.println("Creando ventana para " + nombreJugador);
                 GameWindow window = new GameWindow(nombreJugador, output);
 
+                // Mostrar ventana con estado inicial vacío
+                window.updateGame(new Juego());
+                window.updateBloques(new ArrayList<>());
 
-                // Juego de prueba para mostrar algo inicial
-                Juego juegoPrueba = crearJuegoDePrueba();
-                window.updateGame(juegoPrueba);
-
-                // Hilo para recibir actualizaciones del servidor
                 new Thread(() -> {
                     try {
                         while (true) {
                             Juego juego = Juego.readFrom(in);
                             window.updateGame(juego);
+
+                            int cantidad = readIntLE(in);
+                            if (cantidad < 0 || cantidad > 512) {
+                                throw new IOException("Cantidad inválida de bloques: " + cantidad);
+                            }
+
+                            List<Bloque> bloques = new ArrayList<>();
+                            for (int i = 0; i < cantidad; i++) {
+                                bloques.add(Bloque.readFrom(in));
+                            }
+                            window.updateBloques(bloques);
+
                         }
                     } catch (IOException e) {
-                        System.err.println("Conexión perdida con el servidor.");
+                        System.err.println("Conexión perdida con el servidor: " + e.getMessage());
                     }
                 }).start();
             });
@@ -87,23 +91,12 @@ public class PlayerClient extends Client implements IClient {
         }
     }
 
-
-    private Juego crearJuegoDePrueba() {
-        model.Jugador popo = new model.Jugador();
-        popo.nombre = "Popo";
-        popo.x = 3;
-        popo.y = 8;
-
-        model.Jugador nana = new model.Jugador();
-        nana.nombre = "Nana";
-        nana.x = 6;
-        nana.y = 8;
-
-        model.Juego juego = new model.Juego();
-        juego.jugadores = new model.Jugador[]{popo, nana};
-        juego.nivelActual = 0;
-        juego.enFaseBonus = 0;
-        juego.velocidad = 1;
-        return juego;
+    private int readIntLE(DataInputStream in) throws IOException {
+        int b1 = in.readUnsignedByte();
+        int b2 = in.readUnsignedByte();
+        int b3 = in.readUnsignedByte();
+        int b4 = in.readUnsignedByte();
+        return (b4 << 24) | (b3 << 16) | (b2 << 8) | b1;
     }
 }
+

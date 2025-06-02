@@ -2,7 +2,7 @@
 #define CLIENTES_H
 
 #include <winsock2.h>
-#include "../util/log.h"
+
 
 typedef struct {
     SOCKET socket;

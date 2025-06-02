@@ -4,18 +4,21 @@ project(server C)
 set(CMAKE_C_STANDARD 11)
 
 add_executable(server
-        main.c
         red/SocketServer.c
         red/mensajes.c
         red/clientes.c
-        red/observer.c
-        juego/juego.c
-        juego/jugador.c
-        juego/obstaculo.c
-        juego/fruta.c
-        juego/nivel.c
         juego/bloque.c
-        util/log.c
+        juego/bloque.h
+        juego/nivel.c
+        juego/nivel.h
+        juego/mapa.h
+        juego/mapa.c
+        juego/juego.c
+        juego/juego.h
+        juego/jugador.c
+        juego/jugador.h
+        juego/acciones.c
+        juego/acciones.h
 )
 
 

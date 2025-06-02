@@ -1,4 +1,6 @@
 #include "clientes.h"
+
+#include <stdio.h>
 #define MAX_CLIENTES 6
 
 static ClienteConectado clientes[MAX_CLIENTES];
@@ -20,7 +22,7 @@ int registrar_cliente(SOCKET socket, int es_jugador, int id_jugador) {
         } else if (contar_observadores_de(1) < 2) {
             nuevo.observando_a = 1;
         } else {
-            log_info("Límite de observadores alcanzado. Cliente rechazado.");
+            printf("Límite de observadores alcanzado. Cliente rechazado.");
             return 0;
         }
     } else {
