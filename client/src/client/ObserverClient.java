@@ -1,3 +1,5 @@
+package client;
+
 import java.io.IOException;
 
 public class ObserverClient extends Client {
@@ -10,7 +12,7 @@ public class ObserverClient extends Client {
         out.write("OBSERVER".getBytes());
         String response = getResponse();
         if (!"ACCEPTED".equals(response)) {
-            throw new IOException("Observer Client not registered: " + response);
+            throw new IOException("Observer client.Client not registered: " + response);
         }
     }
 }

@@ -1,8 +1,10 @@
+package client;
+
 import java.io.IOException;
 
 public interface IClient {
     /**
-     * Sends the Client Identification to the server.
+     * Sends the client.Client Identification to the server.
      */
     void identify() throws IOException;
 

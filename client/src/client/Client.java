@@ -1,10 +1,12 @@
+package client;
+
 import java.io.*;
 import java.net.Socket;
 
 public abstract class Client implements IClient {
-    protected Socket socket; // Client Socket
-    protected DataOutputStream out; // Client OutputStream
-    protected DataInputStream in; // Client InputStream
+    protected Socket socket; // client.Client Socket
+    protected DataOutputStream out; // client.Client OutputStream
+    protected DataInputStream in; // client.Client InputStream
 
     /**
      * Creates a base client

@@ -3,14 +3,14 @@
 #include <stdio.h>
 
 void mover_jugador(Jugador* j, char dir) {
-    if (dir == 'L') {
+    if (dir == 'L') { // Move left
         if (j->x-1 < 0) {
             j->x = 20;
         } else {
             j->x--;
         }
         j->direccion = 'L';
-    } else if (dir == 'R') {
+    } else if (dir == 'R') { // Move Right
         if (j->x+1 > 20) {
             j->x = 0;
         } else {

@@ -1,3 +1,5 @@
+package client;
+
 import model.Juego;
 import ui.Bloque;
 import ui.GameWindow;

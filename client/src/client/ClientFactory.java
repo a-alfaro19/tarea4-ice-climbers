@@ -1,3 +1,5 @@
+package client;
+
 import java.io.IOException;
 
 public class ClientFactory {
@@ -5,7 +7,7 @@ public class ClientFactory {
         return switch (type.toUpperCase()) {
             case "PLAYER" -> new PlayerClient(host, port);
             case "OBSERVER" -> new ObserverClient(host, port);
-            default -> throw new IllegalArgumentException("Invalid Client Type: " + type);
+            default -> throw new IllegalArgumentException("Invalid client.Client Type: " + type);
         };
     }
 }

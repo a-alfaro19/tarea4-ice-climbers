@@ -9,7 +9,7 @@
 
 /**
  * Mueve al jugador en la dirección indicada.
- * @param j puntero al jugador.
+ * @param j Puntero al jugador.
  * @param dir 'L' o 'R'.
  */
 void mover_jugador(Jugador* j, char dir);
