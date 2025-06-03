@@ -12,14 +12,14 @@ void inicializar_mapa() {
     Nivel* ultimo = NULL;
 
     for (int i = 0; i < 32; i++) {
-        int fila_mapa = i * 4; // fila y: cada nivel ocupa 2 líneas verticales
-        Nivel* n = crear_nivel(fila_mapa);
+        const int rows_per_level = i * 4; // fila y: cada nivel ocupa 2 líneas verticales
+        Nivel* n = crear_nivel(rows_per_level);
 
         for (int x = 0; x < 30; x++) {
-            int tipo = (rand() % 4 == 0) ? 2 : 1;
+            int tile_type = (rand() % 4 == 0) ? 2 : 1;
             if (rand() % 5 != 0) {
-                Bloque* b = crear_bloque(x, fila_mapa, tipo);
-                agregar_bloque_a_nivel(n, b);
+                Bloque* tile = crear_bloque(x, rows_per_level, tile_type);
+                agregar_bloque_a_nivel(n, tile);
             }
         }
 

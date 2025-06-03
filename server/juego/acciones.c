@@ -2,16 +2,16 @@
 #include "acciones.h"
 #include <stdio.h>
 
-void mover_jugador(Jugador* j, char dir) {
+void mover_jugador(Jugador* j, const char dir) {
     if (dir == 'L') { // Move left
-        if (j->x-1 < 0) {
+        if (j->x - 1 < 0) {
             j->x = 20;
         } else {
             j->x--;
         }
         j->direccion = 'L';
     } else if (dir == 'R') { // Move Right
-        if (j->x+1 > 20) {
+        if (j->x + 1 > 20) {
             j->x = 0;
         } else {
             j->x++;

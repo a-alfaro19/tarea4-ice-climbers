@@ -2,7 +2,7 @@ package client;
 
 import model.Juego;
 import ui.Bloque;
-import ui.GameWindow;
+import ui.GamePanel;
 
 import javax.swing.*;
 import java.io.*;
@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class PlayerClient extends Client implements IClient {
-    private String nombreJugador;
+    private String playerName;
 
     public PlayerClient(String host, int port) throws IOException {
         super(host, port);
@@ -18,25 +18,27 @@ public class PlayerClient extends Client implements IClient {
 
     @Override
     public void identify() throws IOException {
+        // Send PLAYER ID
         out.write("PLAYER".getBytes());
         out.flush();
 
-        // Leer respuesta tipo "ACCEPTED\n"
+        // Read Server Response
         StringBuilder response = new StringBuilder();
         char ch;
         while ((ch = (char) in.readByte()) != '\n') {
             response.append(ch);
         }
 
+        // Process Response
         if (!"ACCEPTED".equals(response.toString().trim())) {
-            throw new IOException("Jugador rechazado: " + response);
+            throw new IOException("Player Rejected: " + response);
         }
 
-        // Leer nombre exacto de 10 bytes
-        byte[] nombreBytes = new byte[10];
-        in.readFully(nombreBytes);
-        this.nombreJugador = new String(nombreBytes).trim();
-        System.out.println("Jugador asignado: " + nombreJugador);
+        // Read Player Name assigned by the Server
+        byte[] nameBytes = new byte[10];
+        in.readFully(nameBytes);
+        this.playerName = new String(nameBytes).trim();
+        System.out.println("Assigned player: " + playerName);
     }
 
     @Override
@@ -52,44 +54,56 @@ public class PlayerClient extends Client implements IClient {
         return new String(buffer, 0, bytesRead);
     }
 
-    public void startListening() {
+    public void start(JFrame mainFrame) {
         try {
             BufferedWriter output = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
 
             SwingUtilities.invokeLater(() -> {
-                System.out.println("Creando ventana para " + nombreJugador);
-                GameWindow window = new GameWindow(nombreJugador, output);
+                GamePanel gamePanel = new GamePanel(playerName, output);
 
-                // Mostrar ventana con estado inicial vacío
-                window.updateGame(new Juego());
-                window.updateBloques(new ArrayList<>());
+                // Load Game Data
+                gamePanel.updateGame(new Juego());
+                gamePanel.updateBloques(new ArrayList<>());
+
+                // Change Panel
+                mainFrame.setContentPane(gamePanel);
+                mainFrame.revalidate();
+                mainFrame.repaint();
+                gamePanel.requestFocusInWindow();
 
                 new Thread(() -> {
                     try {
                         while (true) {
+                            // Read Game Data from Server
                             Juego juego = Juego.readFrom(in);
-                            window.updateGame(juego);
 
+                            // Update UI
+                            gamePanel.updateGame(juego);
+
+                            // Validate Map
                             int cantidad = readIntLE(in);
                             if (cantidad < 0 || cantidad > 512) {
-                                throw new IOException("Cantidad inválida de bloques: " + cantidad);
+                                throw new IOException("Error Invalid Block Quantity: " + cantidad);
                             }
 
+                            // Read Map
                             List<Bloque> bloques = new ArrayList<>();
                             for (int i = 0; i < cantidad; i++) {
                                 bloques.add(Bloque.readFrom(in));
                             }
-                            window.updateBloques(bloques);
+
+                            // Update UI Map
+                            gamePanel.updateBloques(bloques);
 
                         }
                     } catch (IOException e) {
-                        System.err.println("Conexión perdida con el servidor: " + e.getMessage());
+                        System.err.println("Error Server Connection Lost: " + e.getMessage());
                     }
                 }).start();
             });
 
         } catch (IOException e) {
-            System.err.println("Error iniciando la ventana del juego: " + e.getMessage());
+            System.err.println("Error Starting Game Panel: " + e.getMessage());
         }
     }
 

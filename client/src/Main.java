@@ -13,7 +13,8 @@ public class Main {
             frame.setLocationRelativeTo(null);
             frame.setResizable(false);
 
-            frame.setContentPane(new MainMenuPanel());
+            MainMenuPanel menuPanel = new MainMenuPanel(frame);
+            frame.setContentPane(menuPanel);
             frame.setVisible(true);
         });
 //        Thread clientThread = new Thread(() -> {

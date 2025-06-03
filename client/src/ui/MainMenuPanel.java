@@ -10,8 +10,11 @@ import client.*;
 public class MainMenuPanel extends JPanel {
     private final String[] options = {"PLAY", "OBSERVE", "EXIT"}; // Menu options
     private int selection = 0; // Selected option index
+    private final JFrame mainFrame; // Interface Main Frame
 
-    public MainMenuPanel() {
+    public MainMenuPanel(JFrame mainFrame) {
+        this.mainFrame = mainFrame;
+
         setBackground(Color.BLACK);
         setFocusable(true);
         requestFocusInWindow();
@@ -49,9 +52,13 @@ public class MainMenuPanel extends JPanel {
                 Thread clientThread = new Thread(() -> {
                     try {
                         // Start Player Client
-                        PlayerClient client = (PlayerClient) ClientFactory.createClient("PLAYER", "localhost", 8080);
+                        PlayerClient client = (PlayerClient) ClientFactory.createClient(
+                                "PLAYER",
+                                "localhost",
+                                8080
+                        );
                         client.identify();
-                        client.startListening();
+                        client.start(mainFrame);
 
                     } catch (IOException e) {
                         // Show Error Message
@@ -87,7 +94,7 @@ public class MainMenuPanel extends JPanel {
         // Draw title
         g.setColor(Color.WHITE);
         g.setFont(new Font("Arial", Font.BOLD, 64));
-        String title = "ICE CLIMBER";
+        String title = "iCE CLIMBER";
         int titleWidth = g.getFontMetrics().stringWidth(title);
         g.drawString(title,(width - titleWidth) / 2, height / 4);
 

@@ -199,15 +199,15 @@ DWORD WINAPI handle_client(LPVOID param) {
             snprintf(buffer, sizeof(buffer), "STATE %d %d", player_clients, observer_clients);
             send_response(clientSocket, buffer);
         } else if (
-            strncmp(buffer, "MOVER:", 6) == 0 ||
-            strcmp(buffer, "BRINCAR") == 0 ||
+            strncmp(buffer, "MOVE:", 5) == 0 ||
+            strcmp(buffer, "JUMP") == 0 ||
             strcmp(buffer, "GOLPEAR") == 0
         ) {
             if (client->type == PLAYER) {
                 Jugador* jug = &juego.jugadores[client->id];
-                if (strncmp(buffer, "MOVER:", 6) == 0) {
+                if (strncmp(buffer, "MOVE:", 6) == 0) {
                     mover_jugador(jug, buffer[6]);
-                } else if (strcmp(buffer, "BRINCAR") == 0) {
+                } else if (strcmp(buffer, "JUMP") == 0) {
                     brincar_jugador(jug);
                 } else if (strcmp(buffer, "GOLPEAR") == 0) {
                     golpear(jug, mapa);
