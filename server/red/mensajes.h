@@ -3,12 +3,12 @@
 
 #include <winsock2.h>
 #include <stdio.h>
-#include "../juego/mapa.h"
+#include "../juego/Map.h"
 
-/**
- * Envía un paquete de bloques al cliente.
- */
-int enviar_bloques(SOCKET socket, const PaqueteBloques* paquete);
+// /**
+//  * Envía un paquete de bloques al cliente.
+//  */
+// int enviar_bloques(SOCKET socket, const PaqueteBloques* paquete);
 
 /**
  * Recibe una acción textual del cliente (como "MOVER:L").

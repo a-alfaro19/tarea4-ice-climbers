@@ -2,8 +2,8 @@
 #ifndef ACCIONES_H
 #define ACCIONES_H
 
-#include "../juego/nivel.h"
-#include "../juego/bloque.h"
+// #include "../juego/Floor.h"
+#include "../juego/Tile.h"
 #include "jugador.h"
 
 
@@ -19,9 +19,9 @@ void mover_jugador(Jugador* j, char dir);
  */
 void brincar_jugador(Jugador* j);
 
-/**
- * Permite al jugador destruir un bloque si está arriba.
- */
-void golpear(Jugador* j, Nivel* nivel);
+// /**
+//  * Permite al jugador destruir un bloque si está arriba.
+//  */
+// void golpear(Jugador* j, Nivel* nivel);
 
 #endif

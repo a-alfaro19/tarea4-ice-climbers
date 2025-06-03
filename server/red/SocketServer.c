@@ -5,9 +5,8 @@
 #include <string.h>
 #include <stdlib.h>
 #include <windows.h>
-#include "../juego/nivel.h"
-#include "../juego/bloque.h"
-#include "../juego/mapa.h"
+#include "../juego/Tile.h"
+#include "../juego/Map.h"
 #include "../juego/juego.h"
 #include "../juego/jugador.h"
 #include "mensajes.h"
@@ -102,175 +101,176 @@ int send_response(const SOCKET socket, const char *response) {
     return 1;
 }
 
-DWORD WINAPI handle_client(LPVOID param) {
-    const SOCKET clientSocket = *(SOCKET*)param;
-    free(param);
-
-    char buffer[BUFFER_SIZE];
-    ClientInfo *client = NULL;
-
-    if (!receive_request(clientSocket, buffer, sizeof(buffer) - 1)) {
-        printf("Error receiving ID from client\n");
-        closesocket(clientSocket);
-        return 0;
-    }
-
-    if (strcmp(buffer, "PLAYER") == 0) {
-        if (player_clients < 2) {
-            client = &clients[num_clients++];
-            client->socket = clientSocket;
-            client->type = PLAYER;
-            client->id = player_clients++;
-
-            if (!send_response(clientSocket, "ACCEPTED\n")) {
-                closesocket(clientSocket);
-                return 0;
-            }
-
-            const char* nombre = (client->id == 0) ? "Popo      " : "Nana      ";
-            if (send(clientSocket, nombre, 10, 0) != 10) {
-                printf("Error sending player name\n");
-                closesocket(clientSocket);
-                return 0;
-            }
-
-            printf("Player Client accepted\n");
-
-            if (enviar_juego(client->socket, &juego) < 0) {
-                printf("Error al enviar el juego\n");
-                return 0;
-            }
-
-            PaqueteBloques paquete = obtener_bloques_visibles();
-            if (enviar_bloques(client->socket, &paquete) < 0) {
-                printf("Error al enviar bloques\n");
-                return 0;
-            }
-
-        } else {
-            printf("Player Client rejected: maximum number of players reached\n");
-            send_response(clientSocket, "REJECTED\n");
-            closesocket(clientSocket);
-            return 0;
-        }
-    } else if (strcmp(buffer, "OBSERVER") == 0) {
-        if (observer_clients < 2) {
-            client = &clients[num_clients++];
-            client->socket = clientSocket;
-            client->type = OBSERVER;
-            client->id = observer_clients++;
-
-            if (!send_response(clientSocket, "ACCEPTED\n")) {
-                closesocket(clientSocket);
-                return 0;
-            }
-
-            printf("Observer Client accepted\n");
-
-            if (enviar_juego(client->socket, &juego) < 0) {
-                printf("Error al enviar el juego\n");
-                return 0;
-            }
-
-            PaqueteBloques paquete = obtener_bloques_visibles();
-            if (enviar_bloques(client->socket, &paquete) < 0) {
-                printf("Error al enviar bloques\n");
-                return 0;
-            }
-
-        } else {
-            printf("Client rejected: maximum number of observers reached\n");
-            send_response(clientSocket, "REJECTED\n");
-            closesocket(clientSocket);
-            return 0;
-        }
-    } else {
-        printf("Invalid ID received from client\n");
-        closesocket(clientSocket);
-        return 0;
-    }
-
-    while (1) {
-        if (!receive_request(clientSocket, buffer, sizeof(buffer) - 1)) break;
-
-        buffer[strcspn(buffer, "\r\n")] = '\0';
-
-        if (strcmp(buffer, "STATE") == 0) {
-            snprintf(buffer, sizeof(buffer), "STATE %d %d", player_clients, observer_clients);
-            send_response(clientSocket, buffer);
-        } else if (
-            strncmp(buffer, "MOVE:", 5) == 0 ||
-            strcmp(buffer, "JUMP") == 0 ||
-            strcmp(buffer, "GOLPEAR") == 0
-        ) {
-            if (client->type == PLAYER) {
-                Jugador* jug = &juego.jugadores[client->id];
-                if (strncmp(buffer, "MOVE:", 6) == 0) {
-                    mover_jugador(jug, buffer[6]);
-                } else if (strcmp(buffer, "JUMP") == 0) {
-                    brincar_jugador(jug);
-                } else if (strcmp(buffer, "GOLPEAR") == 0) {
-                    golpear(jug, mapa);
-                }
-
-                actualizar_juego(&juego, mapa);
-
-                if (enviar_juego(client->socket, &juego) < 0) {
-                    printf("Error al reenviar juego\n");
-                    return 0;
-                }
-
-                PaqueteBloques paquete = obtener_bloques_visibles();
-                if (enviar_bloques(client->socket, &paquete) < 0) {
-                    printf("Error al reenviar bloques\n");
-                    return 0;
-                }
-            }
-
-            printf("Acción recibida: %s\n", buffer);
-        } else {
-            printf("Comando no reconocido: %s\n", buffer);
-        }
-    }
-
-    printf("Client disconnected\n");
-    closesocket(clientSocket);
-
-    if (client->type == PLAYER && player_clients > 0) player_clients--;
-    if (client->type == OBSERVER && observer_clients > 0) observer_clients--;
-    if (num_clients > 0) num_clients--;
-
-    return 0;
-}
+// DWORD WINAPI handle_client(LPVOID param) {
+//     const SOCKET clientSocket = *(SOCKET*)param;
+//     free(param);
+//
+//     char buffer[BUFFER_SIZE];
+//     ClientInfo *client = NULL;
+//
+//     if (!receive_request(clientSocket, buffer, sizeof(buffer) - 1)) {
+//         printf("Error receiving ID from client\n");
+//         closesocket(clientSocket);
+//         return 0;
+//     }
+//
+//     if (strcmp(buffer, "PLAYER") == 0) {
+//         if (player_clients < 2) {
+//             client = &clients[num_clients++];
+//             client->socket = clientSocket;
+//             client->type = PLAYER;
+//             client->id = player_clients++;
+//
+//             if (!send_response(clientSocket, "ACCEPTED\n")) {
+//                 closesocket(clientSocket);
+//                 return 0;
+//             }
+//
+//             const char* nombre = (client->id == 0) ? "Popo      " : "Nana      ";
+//             if (send(clientSocket, nombre, 10, 0) != 10) {
+//                 printf("Error sending player name\n");
+//                 closesocket(clientSocket);
+//                 return 0;
+//             }
+//
+//             printf("Player Client accepted\n");
+//
+//             if (enviar_juego(client->socket, &juego) < 0) {
+//                 printf("Error al enviar el juego\n");
+//                 return 0;
+//             }
+//
+//             PaqueteBloques paquete = obtener_bloques_visibles();
+//             if (enviar_bloques(client->socket, &paquete) < 0) {
+//                 printf("Error al enviar bloques\n");
+//                 return 0;
+//             }
+//
+//         } else {
+//             printf("Player Client rejected: maximum number of players reached\n");
+//             send_response(clientSocket, "REJECTED\n");
+//             closesocket(clientSocket);
+//             return 0;
+//         }
+//     } else if (strcmp(buffer, "OBSERVER") == 0) {
+//         if (observer_clients < 2) {
+//             client = &clients[num_clients++];
+//             client->socket = clientSocket;
+//             client->type = OBSERVER;
+//             client->id = observer_clients++;
+//
+//             if (!send_response(clientSocket, "ACCEPTED\n")) {
+//                 closesocket(clientSocket);
+//                 return 0;
+//             }
+//
+//             printf("Observer Client accepted\n");
+//
+//             if (enviar_juego(client->socket, &juego) < 0) {
+//                 printf("Error al enviar el juego\n");
+//                 return 0;
+//             }
+//
+//             PaqueteBloques paquete = obtener_bloques_visibles();
+//             if (enviar_bloques(client->socket, &paquete) < 0) {
+//                 printf("Error al enviar bloques\n");
+//                 return 0;
+//             }
+//
+//         } else {
+//             printf("Client rejected: maximum number of observers reached\n");
+//             send_response(clientSocket, "REJECTED\n");
+//             closesocket(clientSocket);
+//             return 0;
+//         }
+//     } else {
+//         printf("Invalid ID received from client\n");
+//         closesocket(clientSocket);
+//         return 0;
+//     }
+//
+//     while (1) {
+//         if (!receive_request(clientSocket, buffer, sizeof(buffer) - 1)) break;
+//
+//         buffer[strcspn(buffer, "\r\n")] = '\0';
+//
+//         if (strcmp(buffer, "STATE") == 0) {
+//             snprintf(buffer, sizeof(buffer), "STATE %d %d", player_clients, observer_clients);
+//             send_response(clientSocket, buffer);
+//         } else if (
+//             strncmp(buffer, "MOVE:", 5) == 0 ||
+//             strcmp(buffer, "JUMP") == 0 ||
+//             strcmp(buffer, "GOLPEAR") == 0
+//         ) {
+//             if (client->type == PLAYER) {
+//                 Jugador* jug = &juego.jugadores[client->id];
+//                 if (strncmp(buffer, "MOVE:", 6) == 0) {
+//                     mover_jugador(jug, buffer[6]);
+//                 } else if (strcmp(buffer, "JUMP") == 0) {
+//                     brincar_jugador(jug);
+//                 } else if (strcmp(buffer, "GOLPEAR") == 0) {
+//                     golpear(jug, map);
+//                 }
+//
+//                 actualizar_juego(&juego, map);
+//
+//                 if (enviar_juego(client->socket, &juego) < 0) {
+//                     printf("Error al reenviar juego\n");
+//                     return 0;
+//                 }
+//
+//                 // PaqueteBloques paquete = obtener_bloques_visibles();
+//                 if (enviar_bloques(client->socket, &paquete) < 0) {
+//                     printf("Error al reenviar bloques\n");
+//                     return 0;
+//                 }
+//             }
+//
+//             printf("Acción recibida: %s\n", buffer);
+//         } else {
+//             printf("Comando no reconocido: %s\n", buffer);
+//         }
+//     }
+//
+//     printf("Client disconnected\n");
+//     closesocket(clientSocket);
+//
+//     if (client->type == PLAYER && player_clients > 0) player_clients--;
+//     if (client->type == OBSERVER && observer_clients > 0) observer_clients--;
+//     if (num_clients > 0) num_clients--;
+//
+//     return 0;
+// }
 
 
 
 int main(void) {
-    inicializar_mapa();
-    inicializar_juego(&juego);
-    SetConsoleOutputCP(CP_UTF8);
-    SetConsoleCP(CP_UTF8);
-
-    const SOCKET serverSocket = get_server_socket();
-    if (serverSocket == INVALID_SOCKET) return 1;
-
-    struct sockaddr_in clientAddr;
-    int clientSize;
-
-    while (1) {
-        printf("Waiting for client...\n");
-        clientSize = sizeof(clientAddr);
-        SOCKET *newSocket = malloc(sizeof(SOCKET));
-        *newSocket = accept(serverSocket, (struct sockaddr*)&clientAddr, &clientSize);
-
-        if (*newSocket == INVALID_SOCKET) {
-            printf("Failed to accept client connection.\n");
-            free(newSocket);
-            continue;
-        }
-
-        CreateThread(NULL, 0, handle_client, newSocket, 0, NULL);
-    }
+    initialize_map();
+    print_map();
+    // inicializar_juego(&juego);
+    // SetConsoleOutputCP(CP_UTF8);
+    // SetConsoleCP(CP_UTF8);
+    //
+    // const SOCKET serverSocket = get_server_socket();
+    // if (serverSocket == INVALID_SOCKET) return 1;
+    //
+    // struct sockaddr_in clientAddr;
+    // int clientSize;
+    //
+    // while (1) {
+    //     printf("Waiting for client...\n");
+    //     clientSize = sizeof(clientAddr);
+    //     SOCKET *newSocket = malloc(sizeof(SOCKET));
+    //     *newSocket = accept(serverSocket, (struct sockaddr*)&clientAddr, &clientSize);
+    //
+    //     if (*newSocket == INVALID_SOCKET) {
+    //         printf("Failed to accept client connection.\n");
+    //         free(newSocket);
+    //         continue;
+    //     }
+    //
+    //     // CreateThread(NULL, 0, handle_client, newSocket, 0, NULL);
+    // }
 
     close_server();
     return 0;

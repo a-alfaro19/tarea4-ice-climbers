@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <winsock2.h>
-#include "../juego/mapa.h"
+#include "../juego/Map.h"
 #include "../juego/juego.h"
 #include "mensajes.h"
 #include <string.h>

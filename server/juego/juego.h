@@ -1,7 +1,6 @@
 #ifndef JUEGO_H
 #define JUEGO_H
 
-#include "nivel.h"
 #include "jugador.h"
 
 typedef struct {
@@ -29,6 +28,6 @@ void imprimir_estado_juego(Juego* juego);
 /**
  * Avanza la lógica del juego (nivel, puntaje, vidas, etc.).
  */
-void actualizar_juego(Juego* juego, Nivel* mapa);
+// void actualizar_juego(Juego* juego, Nivel* mapa);
 
 #endif
