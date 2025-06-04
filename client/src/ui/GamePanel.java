@@ -156,13 +156,14 @@ public class GamePanel extends JPanel {
         final int MAP_ROWS = map.length;
         final int MAP_COLS = map[0].length;
 
-        final int VISIBLE_ROWS = 4;
+        final int VISIBLE_ROWS = 19;
 
         final int TILE_WIDTH = PANEL_WIDTH / MAP_COLS;
-        final int TILE_HEIGHT = PANEL_HEIGHT / MAP_ROWS;
+        final int TILE_HEIGHT = PANEL_HEIGHT / VISIBLE_ROWS;
 
         // Draw map
-        for (int i = 0; i < MAP_ROWS; i++) {
+        for (int i = MAP_ROWS - VISIBLE_ROWS, visibleRow = 0;
+             i < MAP_ROWS; i++, visibleRow++) {
             for (int j = 0; j < MAP_COLS; j++) {
                 Tile tile = map[i][j];
 
@@ -175,7 +176,7 @@ public class GamePanel extends JPanel {
 
                 // Invert Row
                 int x = j * TILE_WIDTH;
-                int y = PANEL_HEIGHT - (i + 1) * TILE_HEIGHT;
+                int y = PANEL_HEIGHT - (visibleRow + 1) * TILE_HEIGHT;
 
                 // Draw Tile
                 g.fillRect(x, y, TILE_WIDTH, TILE_HEIGHT);
