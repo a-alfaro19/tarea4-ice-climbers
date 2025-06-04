@@ -1,15 +1,15 @@
 #ifndef SOCKETSERVER_H
 #define SOCKETSERVER_H
-#include <winsock2.h>
 
+#include <winsock2.h>
 
 /**
  * Enum to identify the client type
  */
-enum ClientType {
+typedef enum {
     PLAYER,
     OBSERVER
-};
+} ClientType;
 
 /**
  * Structure to store the client information
@@ -17,12 +17,12 @@ enum ClientType {
 typedef struct {
     SOCKET socket;
     int id;
-    enum ClientType type;
+    ClientType type;
 } ClientInfo;
 
 /**
- * @brief Initialize winsock and sets its initialized state as true.
- * @return Integer that represents if winsock was initialized.
+ * @brief Initialize Winsock and sets its initialized state as true.
+ * @return 1 if Winsock was initialized successfully, 0 otherwise.
  */
 int initialize_winsock();
 
@@ -52,9 +52,7 @@ int receive_request(SOCKET socket, char *buffer, int buffer_size);
  * @param response Character string containing the response to be sent
  * @return 1 if sending was successful, 0 if there was an error
  */
-
 int send_response(SOCKET socket, const char *response);
-
 
 /**
  * @brief Handles communication with a connected client in a separate thread.
@@ -65,7 +63,12 @@ int send_response(SOCKET socket, const char *response);
  * @param param Pointer to the client socket (must be freed within the function)
  * @return 0 when the client connection ends
  */
-
 DWORD WINAPI handle_client(LPVOID param);
 
-#endif //SOCKETSERVER_H
+/**
+ * @brief Loop de juego que actualiza y envía el estado a todos los clientes conectados.
+ * Este loop se ejecuta constantemente en segundo plano, independientemente de las acciones del jugador.
+ */
+DWORD WINAPI game_loop(LPVOID param);
+
+#endif // SOCKETSERVER_H

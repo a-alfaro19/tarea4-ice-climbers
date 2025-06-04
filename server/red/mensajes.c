@@ -14,9 +14,10 @@ int enviar_juego(SOCKET socket, const Juego* juego) {
         if (send(socket, &j->y, 4, 0) != 4) return -1;
         if (send(socket, &j->vidas, 4, 0) != 4) return -1;
         if (send(socket, &j->puntaje, 4, 0) != 4) return -1;
-        if (send(socket, &j->saltando, 4, 0) != 4) return -1;
-        if (send(socket, &j->direccion, 1, 0) != 1) return -1;
+        if (send(socket, &j->vy, sizeof(float), 0) != sizeof(float)) return -1;
+        if (send(socket, &j->en_el_aire, sizeof(int), 0) != sizeof(int)) return -1;
 
+        if (send(socket, &j->direccion, 1, 0) != 1) return -1;
         char relleno = 0;
         if (send(socket, &relleno, 1, 0) != 1) return -1;
     }

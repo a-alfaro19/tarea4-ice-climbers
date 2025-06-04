@@ -41,37 +41,33 @@ void imprimir_estado_juego(Juego* juego) {
 }
 
 void actualizar_juego(Juego* juego, Nivel* mapa) {
-    // Aplica gravedad a ambos jugadores
     for (int i = 0; i < 2; i++) {
-        Jugador* j = &juego->jugadores[i];
-        if (j->saltando > 0) {
-            int y_arriba = j->y + 1;
-            if (y_arriba < TOTAL_ROWS && !hay_bloque_en(j->x, y_arriba)) {
-                j->y = y_arriba;
-                printf("%s está saltando a y=%d\n", j->nombre, j->y);
-            }
-            j->saltando--;  // disminuye cada frame
-        } else {
-            aplicar_gravedad(j);  // solo si no está saltando
-        }
+        actualizar_fisica(&juego->jugadores[i]);
     }
-
 
     // Verifica separación vertical entre jugadores
     int y0 = juego->jugadores[0].y;
     int y1 = juego->jugadores[1].y;
+
+    int abajo = (y0 > y1) ? 0 : 1;
+    int arriba = 1 - abajo;
+
+    Jugador* j_abajo = &juego->jugadores[abajo];
+    Jugador* j_arriba = &juego->jugadores[arriba];
+
     if (abs(y0 - y1) > 2) {
-        int abajo = (y0 > y1) ? 0 : 1;
-        perder_vida(&juego->jugadores[abajo]);
-        juego->jugadores[abajo].y = juego->jugadores[1 - abajo].y;
-        printf("%s estaba muy abajo. Vida menos y reposicionado\n", juego->jugadores[abajo].nombre);
+        // Solo castigar si el de abajo no está en el aire
+        if (!j_abajo->en_el_aire) {
+            perder_vida(j_abajo);
+            j_abajo->y = j_arriba->y;
+            printf("%s estaba muy abajo. Vida menos y reposicionado\n", j_abajo->nombre);
+        }
     }
 
     // Avanza nivel si ambos llegaron arriba
     if (!juego->en_fase_bonus && juego->nivel_actual < 31) {
         if (juego->jugadores[0].y <= 1 && juego->jugadores[1].y <= 1) {
             juego->nivel_actual++;
-            printf("Avanzando al nivel %d\n", juego->nivel_actual);
         }
     }
 
@@ -91,4 +87,6 @@ void actualizar_juego(Juego* juego, Nivel* mapa) {
     int nivel_mas_alto = (nivel_popo > nivel_nana) ? nivel_popo : nivel_nana;
     juego->nivel_actual = nivel_mas_alto;
 }
+
+
 

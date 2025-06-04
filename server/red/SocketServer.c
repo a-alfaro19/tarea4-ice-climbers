@@ -1,4 +1,3 @@
-
 #include "SocketServer.h"
 #include <stdio.h>
 #include <ws2tcpip.h>
@@ -86,7 +85,6 @@ void close_server() {
 int receive_request(const SOCKET socket, char *buffer, const int buffer_size) {
     const int bytes_received = recv(socket, buffer, buffer_size, 0);
     if (bytes_received <= 0) {
-        printf("Error receiving request: %d\n", WSAGetLastError());
         return 0;
     }
     buffer[bytes_received] = '\0';
@@ -95,11 +93,28 @@ int receive_request(const SOCKET socket, char *buffer, const int buffer_size) {
 
 int send_response(const SOCKET socket, const char *response) {
     const int bytes_sent = send(socket, response, (int)strlen(response), 0);
-    if (bytes_sent <= 0) {
-        printf("Error sending response: %d\n", WSAGetLastError());
-        return 0;
+    return (bytes_sent > 0);
+}
+
+// Game loop global
+DWORD WINAPI game_loop(LPVOID param) {
+    (void)param;
+
+    while (1) {
+        actualizar_juego(&juego, mapa);
+
+        for (int i = 0; i < num_clients; i++) {
+            if (clients[i].type == PLAYER || clients[i].type == OBSERVER) {
+                if (enviar_juego(clients[i].socket, &juego) < 0) continue;
+                PaqueteBloques paquete = obtener_bloques_visibles();
+                enviar_bloques(clients[i].socket, &paquete);
+            }
+        }
+
+        Sleep(50);  // 20 FPS
     }
-    return 1;
+
+    return 0;
 }
 
 DWORD WINAPI handle_client(LPVOID param) {
@@ -136,23 +151,12 @@ DWORD WINAPI handle_client(LPVOID param) {
 
             printf("Player Client accepted\n");
 
-            if (enviar_juego(client->socket, &juego) < 0) {
-                printf("Error al enviar el juego\n");
-                return 0;
-            }
-
-            PaqueteBloques paquete = obtener_bloques_visibles();
-            if (enviar_bloques(client->socket, &paquete) < 0) {
-                printf("Error al enviar bloques\n");
-                return 0;
-            }
-
         } else {
-            printf("Player Client rejected: maximum number of players reached\n");
             send_response(clientSocket, "REJECTED\n");
             closesocket(clientSocket);
             return 0;
         }
+
     } else if (strcmp(buffer, "OBSERVER") == 0) {
         if (observer_clients < 2) {
             client = &clients[num_clients++];
@@ -167,29 +171,24 @@ DWORD WINAPI handle_client(LPVOID param) {
 
             printf("Observer Client accepted\n");
 
-            if (enviar_juego(client->socket, &juego) < 0) {
-                printf("Error al enviar el juego\n");
-                return 0;
-            }
-
-            PaqueteBloques paquete = obtener_bloques_visibles();
-            if (enviar_bloques(client->socket, &paquete) < 0) {
-                printf("Error al enviar bloques\n");
-                return 0;
-            }
-
         } else {
-            printf("Client rejected: maximum number of observers reached\n");
             send_response(clientSocket, "REJECTED\n");
             closesocket(clientSocket);
             return 0;
         }
+
     } else {
         printf("Invalid ID received from client\n");
         closesocket(clientSocket);
         return 0;
     }
 
+    // Enviar estado inicial
+    if (enviar_juego(clientSocket, &juego) < 0) return 0;
+    PaqueteBloques paquete = obtener_bloques_visibles();
+    if (enviar_bloques(clientSocket, &paquete) < 0) return 0;
+
+    // Escucha comandos del cliente
     while (1) {
         if (!receive_request(clientSocket, buffer, sizeof(buffer) - 1)) break;
 
@@ -212,21 +211,7 @@ DWORD WINAPI handle_client(LPVOID param) {
                 } else if (strcmp(buffer, "GOLPEAR") == 0) {
                     golpear(jug, mapa);
                 }
-
-                actualizar_juego(&juego, mapa);
-
-                if (enviar_juego(client->socket, &juego) < 0) {
-                    printf("Error al reenviar juego\n");
-                    return 0;
-                }
-
-                PaqueteBloques paquete = obtener_bloques_visibles();
-                if (enviar_bloques(client->socket, &paquete) < 0) {
-                    printf("Error al reenviar bloques\n");
-                    return 0;
-                }
             }
-
             printf("Acción recibida: %s\n", buffer);
         } else {
             printf("Comando no reconocido: %s\n", buffer);
@@ -243,14 +228,14 @@ DWORD WINAPI handle_client(LPVOID param) {
     return 0;
 }
 
-
-
 int main(void) {
     inicializar_mapa();
-
     inicializar_juego(&juego);
     SetConsoleOutputCP(CP_UTF8);
     SetConsoleCP(CP_UTF8);
+
+    //  Lanza el loop global del juego
+    CreateThread(NULL, 0, game_loop, NULL, 0, NULL);
 
     const SOCKET serverSocket = get_server_socket();
     if (serverSocket == INVALID_SOCKET) return 1;

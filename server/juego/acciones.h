@@ -1,4 +1,3 @@
-// acciones.h
 #ifndef ACCIONES_H
 #define ACCIONES_H
 
@@ -7,26 +6,22 @@
 #include "jugador.h"
 
 /**
- * Aplica gravedad al jugador, haciéndolo caer hasta el siguiente bloque debajo.
- * Si no hay piso, cae hasta el fondo.
+ * Procesa física del jugador: salto (vy > 0) o gravedad (caída).
  */
-void aplicar_gravedad(Jugador* j);
+void actualizar_fisica(Jugador* j);
 
 /**
- * Mueve al jugador en la dirección indicada ('L' = izquierda, 'R' = derecha),
- * si no hay un bloque sólido en esa dirección. Aplica gravedad tras moverse.
+ * Mueve al jugador lateralmente si el camino está libre.
  */
 void mover_jugador(Jugador* j, char dir);
 
 /**
- * Hace que el jugador suba una posición si el espacio está libre.
- * Luego aplica gravedad automáticamente.
+ * Inicia un salto si el jugador no está en el aire.
  */
 void brincar_jugador(Jugador* j, Nivel* mapa);
 
 /**
- * Permite al jugador destruir un bloque destructible (tipo 1) justo arriba,
- * si existe y está activo.
+ * Permite destruir un bloque destructible justo encima.
  */
 void golpear(Jugador* j, Nivel* nivel);
 

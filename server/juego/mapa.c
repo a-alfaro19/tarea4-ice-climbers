@@ -95,13 +95,13 @@ void debug_imprimir_bloques_altos() {
     }
 }
 
-// Revisa si hay un bloque activo (no vacío) en una posición
 int hay_bloque_en(int x, int y) {
     Nivel* actual = mapa;
     while (actual) {
         Bloque* b = actual->bloques;
         while (b) {
-            if (b->activo && b->x == x && b->y == y && b->tipo != 0) {
+            // Solo verifica bloques activos y sólidos (tipo != 0)
+            if (b->activo && b->tipo != 0 && b->x == x && b->y == y) {
                 return 1;
             }
             b = b->siguiente;
