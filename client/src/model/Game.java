@@ -1,26 +1,37 @@
 package model;
 
+import ui.Tile;
+
 import java.io.DataInputStream;
 import java.io.IOException;
 
-public class Juego {
+public class Game {
     public Jugador[] jugadores = new Jugador[2];
     public Integer nivelActual;
     public Integer enFaseBonus;
     public Integer velocidad;
+    private Tile[][] map;
 
-    public static Juego readFrom(DataInputStream in) throws IOException {
-        Juego juego = new Juego();
+    public void setMap(Tile[][] map) {
+        this.map = map;
+    }
+
+    public Tile[][] getMap() {
+        return this.map;
+    }
+
+    public static Game readFrom(DataInputStream in) throws IOException {
+        Game game = new Game();
 
         for (int i = 0; i < 2; i++) {
-            juego.jugadores[i] = Jugador.readFrom(in);
+            game.jugadores[i] = Jugador.readFrom(in);
         }
 
-        juego.nivelActual = readIntLE(in);
-        juego.enFaseBonus = readIntLE(in);
-        juego.velocidad = readIntLE(in);
+        game.nivelActual = readIntLE(in);
+        game.enFaseBonus = readIntLE(in);
+        game.velocidad = readIntLE(in);
 
-        return juego;
+        return game;
     }
 
     private static int readIntLE(DataInputStream in) throws IOException {

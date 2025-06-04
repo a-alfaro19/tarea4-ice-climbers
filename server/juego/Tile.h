@@ -13,7 +13,4 @@ typedef struct {
     TileType type;
 } Tile;
 
-Tile* create_tile(int x, int y, TileType type);
-
-
 #endif

@@ -53,33 +53,7 @@ void initialize_map() {
     }
 }
 
-
-// PaqueteBloques obtener_bloques_visibles() {
-//     PaqueteBloques paquete = {0};
-//     Nivel* actual = mapa;
-//     int niveles_visibles = 0;
-//
-//     while (actual && niveles_visibles < 8) {
-//         Bloque* b = actual->bloques;
-//         while (b && paquete.cantidad < MAX_BLOQUES) {
-//             if (b->activo) {
-//                 paquete.bloques[paquete.cantidad++] = *b;
-//             }
-//             b = b->siguiente;
-//         }
-//         actual = actual->siguiente;
-//         niveles_visibles++;
-//     }
-//
-//     return paquete;
-// }
-//
-// void destruir_mapa() {
-//     destruir_niveles(mapa);
-//     mapa = NULL;
-// }
-
-const char* tile_type_to_char(TileType type) {
+const char* tile_type_to_char(const TileType type) {
     switch (type) {
         case EMPTY:  return " ";
         case NORMAL: return "N";
@@ -99,3 +73,5 @@ void print_map() {
         printf("\n");
     }
 }
+
+//TODO Pasar el mapa al cliente y mostrarlo en la intefaz

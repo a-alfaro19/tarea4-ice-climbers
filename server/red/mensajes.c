@@ -5,71 +5,63 @@
 #include "mensajes.h"
 #include <string.h>
 
-int enviar_juego(SOCKET socket, const Juego* juego) {
-    for (int i = 0; i < 2; i++) {
-        Jugador* j = &juego->jugadores[i];
+// int enviar_juego(SOCKET socket, const Juego* juego) {
+//     for (int i = 0; i < 2; i++) {
+//         Jugador* j = &juego->jugadores[i];
+//
+//         // Enviar nombre (10 bytes)
+//         if (send(socket, j->nombre, 10, 0) != 10) return -1;
+//         //imprimir_bytes(j->nombre, 10, "nombre");
+//
+//         // Enviar campos
+//         if (send(socket, &j->x, 4, 0) != 4) return -1;
+//         //imprimir_bytes(&j->x, 4, "x");
+//
+//         if (send(socket, &j->y, 4, 0) != 4) return -1;
+//         //imprimir_bytes(&j->y, 4, "y");
+//
+//         if (send(socket, &j->vidas, 4, 0) != 4) return -1;
+//         //imprimir_bytes(&j->vidas, 4, "vidas");
+//
+//         if (send(socket, &j->puntaje, 4, 0) != 4) return -1;
+//         ///imprimir_bytes(&j->puntaje, 4, "puntaje");
+//
+//         if (send(socket, &j->direccion, 1, 0) != 1) return -1;
+//         //imprimir_bytes(&j->direccion, 1, "direccion");
+//
+//         char relleno = 0;
+//         if (send(socket, &relleno, 1, 0) != 1) return -1;
+//         //imprimir_bytes(&relleno, 1, "relleno");
+//     }
+//
+//     // Enviar variables del juego
+//     if (send(socket, &juego->nivel_actual, 4, 0) != 4) return -1;
+//     //imprimir_bytes(&juego->nivel_actual, 4, "nivel_actual");
+//
+//     if (send(socket, &juego->en_fase_bonus, 4, 0) != 4) return -1;
+//     //imprimir_bytes(&juego->en_fase_bonus, 4, "en_fase_bonus");
+//
+//     if (send(socket, &juego->velocidad, 4, 0) != 4) return -1;
+//     //imprimir_bytes(&juego->velocidad, 4, "velocidad");
+//
+//     return 0;
+// }
 
-        // Enviar nombre (10 bytes)
-        if (send(socket, j->nombre, 10, 0) != 10) return -1;
-        //imprimir_bytes(j->nombre, 10, "nombre");
+int send_map(const SOCKET socket, Tile map[TOTAL_ROWS][TILES_PER_ROW]) {
+    int rows = TOTAL_ROWS;
+    int cols = TILES_PER_ROW;
 
-        // Enviar campos
-        if (send(socket, &j->x, 4, 0) != 4) return -1;
-        //imprimir_bytes(&j->x, 4, "x");
+    printf("Map rows: %d\n", rows);
+    printf("Map cols: %d\n", cols);
 
-        if (send(socket, &j->y, 4, 0) != 4) return -1;
-        //imprimir_bytes(&j->y, 4, "y");
+    // Send Map Size
+    if (send(socket, (char*)&rows, sizeof(int), 0) != sizeof(int)) return 0;
+    if (send(socket, (char*)&cols, sizeof(int), 0) != sizeof(int)) return 0;
 
-        if (send(socket, &j->vidas, 4, 0) != 4) return -1;
-        //imprimir_bytes(&j->vidas, 4, "vidas");
+    // Send Map
+    if (send(socket, (char*)map, sizeof(Tile) * TOTAL_ROWS * TILES_PER_ROW, 0) != sizeof(Tile) * TOTAL_ROWS * TILES_PER_ROW) return 0;
 
-        if (send(socket, &j->puntaje, 4, 0) != 4) return -1;
-        ///imprimir_bytes(&j->puntaje, 4, "puntaje");
-
-        if (send(socket, &j->direccion, 1, 0) != 1) return -1;
-        //imprimir_bytes(&j->direccion, 1, "direccion");
-
-        char relleno = 0;
-        if (send(socket, &relleno, 1, 0) != 1) return -1;
-        //imprimir_bytes(&relleno, 1, "relleno");
-    }
-
-    // Enviar variables del juego
-    if (send(socket, &juego->nivel_actual, 4, 0) != 4) return -1;
-    //imprimir_bytes(&juego->nivel_actual, 4, "nivel_actual");
-
-    if (send(socket, &juego->en_fase_bonus, 4, 0) != 4) return -1;
-    //imprimir_bytes(&juego->en_fase_bonus, 4, "en_fase_bonus");
-
-    if (send(socket, &juego->velocidad, 4, 0) != 4) return -1;
-    //imprimir_bytes(&juego->velocidad, 4, "velocidad");
-
-    return 0;
-}
-
-int enviar_bloques(SOCKET socket, const PaqueteBloques* paquete) {
-    int cantidad = paquete->cantidad;
-    if (send(socket, (const char*)&cantidad, sizeof(int), 0) != sizeof(int)) {
-        printf("Error al enviar la cantidad de bloques\n");
-        return -1;
-    }
-
-    BloquePlano planos[MAX_BLOQUES];
-    for (int i = 0; i < cantidad; i++) {
-        planos[i].x = paquete->bloques[i].x;
-        planos[i].y = paquete->bloques[i].y;
-        planos[i].tipo = paquete->bloques[i].tipo;
-        planos[i].activo = paquete->bloques[i].activo;
-    }
-
-    int total_bytes = cantidad * sizeof(BloquePlano);
-    int enviados = send(socket, (const char*)planos, total_bytes, 0);
-    if (enviados != total_bytes) {
-        printf("Error al enviar los bloques planos\n");
-        return -1;
-    }
-
-    return enviados;
+    return 1;
 }
 
 int recibir_accion(SOCKET socket_cliente, char* buffer, int tamanio) {
@@ -81,15 +73,4 @@ int recibir_accion(SOCKET socket_cliente, char* buffer, int tamanio) {
     buffer[recibidos] = '\0';
     return recibidos;
 }
-
-/*
-void imprimir_bytes(const void* data, size_t size, const char* etiqueta) {
-    const unsigned char* bytes = (const unsigned char*)data;
-    printf("[%s] %zu bytes: ", etiqueta, size);
-    for (size_t i = 0; i < size; i++) {
-        printf("%02X ", bytes[i]);
-    }
-    printf("\n");
-}
-*/
 

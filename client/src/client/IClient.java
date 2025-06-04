@@ -1,5 +1,7 @@
 package client;
 
+import ui.Tile;
+
 import java.io.IOException;
 
 public interface IClient {
@@ -9,14 +11,27 @@ public interface IClient {
     void identify() throws IOException;
 
     /**
+     * Receive the Game Map from the Server
+     * @return Game Map from the game
+     */
+    Tile[][] receiveMap() throws IOException;
+
+    /**
+     * Receives and sets Game data from Server
+     */
+    void fetch() throws IOException;
+
+    /**
      * Sends a request to the server.
      * @param request Request to send to the server.
      */
-    void sendRequest(String request) throws IOException;
+    void sendMessage(String request) throws IOException;
 
     /**
      * Receive the server response.
      * @return String with the server response.
      */
-    String getResponse() throws IOException;
+    String receiveMessage() throws IOException;
+
+
 }

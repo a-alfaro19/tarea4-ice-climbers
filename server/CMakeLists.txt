@@ -5,9 +5,8 @@ set(CMAKE_C_STANDARD 11)
 
 add_executable(server
         red/SocketServer.c
-#        red/mensajes.c
+        red/mensajes.c
 #        red/clientes.c
-        juego/Tile.c
         juego/Tile.h
         juego/Map.h
         juego/Map.c

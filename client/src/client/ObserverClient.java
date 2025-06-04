@@ -10,7 +10,7 @@ public class ObserverClient extends Client {
     @Override
     public void identify() throws IOException {
         out.write("OBSERVER".getBytes());
-        String response = getResponse();
+        String response = receiveMessage();
         if (!"ACCEPTED".equals(response)) {
             throw new IOException("Observer client.Client not registered: " + response);
         }

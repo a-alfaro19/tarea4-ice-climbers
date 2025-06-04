@@ -26,11 +26,21 @@
 
 extern Tile map[TOTAL_ROWS][TILES_PER_ROW];
 
+/**
+ * @brief Creates a random map
+ */
 void initialize_map();
-// PaqueteBloques obtener_bloques_visibles();  // Solo primeros 4 niveles
-// void destruir_mapa();
 
+/**
+ * @brief Transform a TileType to its equivalent in String
+ * @param type Type of the tile
+ * @return A String representation of the Tile Type
+ */
 const char* tile_type_to_char(TileType type);
+
+/**
+ * @brief Prints the Game Map on console
+ */
 void print_map();
 
 #endif
