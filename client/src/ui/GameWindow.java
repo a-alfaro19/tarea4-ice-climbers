@@ -201,7 +201,7 @@ public class GameWindow extends JFrame {
         mainPanel.add(leftPanel, BorderLayout.WEST);
     }
     public void updateGame(Game game) {
-        gamePanel.setPlayers(game.jugadores); // pasa los jugadores al GamePanel
+        gamePanel.setPlayers(game.players); // pasa los jugadores al GamePanel
         gamePanel.repaint();
     }
     public void updateBloques(java.util.List<Tile> bloques) {

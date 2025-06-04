@@ -99,14 +99,12 @@ public class GamePanel extends JPanel {
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
 
-        final int MAX_LIVES = 3;
-
         final int PANEL_WIDTH = getWidth();
         final int PANEL_HEIGHT = getHeight();
 
         final int ORIGIN_Y = -2;      // fila inferior visible (donde inicia el jugador)
 
-        int panelHeight = getHeight();
+        final int MAX_LIVES = 3;
 
         // Draw Players Lives
         int LIVE_ICON_SIZE = 20;
@@ -188,24 +186,24 @@ public class GamePanel extends JPanel {
         }
 
         // Draw Players
-//        if (players != null) {
-//            for (Jugador j : players) {
-//                if (j == null) continue;
-//
-//                int drawX = j.x * TILE_SIZE;
-//                int drawY = offsetY - (j.y * TILE_SIZE);
-//
-//                if ("Popo".equalsIgnoreCase(j.nombre) && popoImg != null) {
-//                    g.drawImage(popoImg, drawX, drawY, TILE_SIZE, TILE_SIZE, this);
-//                } else if ("Nana".equalsIgnoreCase(j.nombre) && nanaImg != null) {
-//                    g.drawImage(nanaImg, drawX, drawY, TILE_SIZE, TILE_SIZE, this);
-//                }
-//            }
-//        }
+        if (players != null) {
+            for (Jugador player : players) {
+                if (player == null) continue;
+
+                int drawX = player.x * TILE_WIDTH;
+                int drawY = PANEL_HEIGHT - ((player.y + 1) * TILE_HEIGHT);
+
+                if ("Popo".equalsIgnoreCase(player.nombre) && popoImg != null) {
+                    g.drawImage(popoImg, drawX, drawY, TILE_WIDTH, TILE_HEIGHT, this);
+                } else if ("Nana".equalsIgnoreCase(player.nombre) && nanaImg != null) {
+                    g.drawImage(nanaImg, drawX, drawY, TILE_WIDTH, TILE_HEIGHT, this);
+                }
+            }
+        }
     }
 
     public void updateGame(Game game) {
-        setPlayers(game.jugadores); // pasa los jugadores al GamePanel
+        setPlayers(game.players);
         repaint();
     }
 

@@ -6,7 +6,7 @@ import java.io.DataInputStream;
 import java.io.IOException;
 
 public class Game {
-    public Jugador[] jugadores = new Jugador[2];
+    public Jugador[] players = new Jugador[2];
     public Integer nivelActual;
     public Integer enFaseBonus;
     public Integer velocidad;
@@ -24,7 +24,7 @@ public class Game {
         Game game = new Game();
 
         for (int i = 0; i < 2; i++) {
-            game.jugadores[i] = Jugador.readFrom(in);
+            game.players[i] = Jugador.readFrom(in);
         }
 
         game.nivelActual = readIntLE(in);
