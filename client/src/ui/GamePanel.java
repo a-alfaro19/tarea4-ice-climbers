@@ -1,6 +1,6 @@
 package ui;
 
-import model.Juego;
+import model.Game;
 import model.Jugador;
 
 import javax.swing.*;
@@ -10,7 +10,6 @@ import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.io.BufferedWriter;
 import java.io.IOException;
-import java.util.List;
 import java.util.Objects;
 import javax.imageio.ImageIO;
 
@@ -21,7 +20,7 @@ public class GamePanel extends JPanel {
     private BufferedImage nanaImg;
     private BufferedImage liveImg;
     private Jugador[] players;
-    private List<Bloque> bloques = new java.util.ArrayList<>();
+    private Tile[][] map;
 
     public GamePanel(String playerName, BufferedWriter output) {
         this.playerName = playerName;
@@ -72,13 +71,13 @@ public class GamePanel extends JPanel {
                             output.write("JUMP\n");
                             output.flush();
                         }
-                        case KeyEvent.VK_SPACE -> {
-                            Bloque bloqueArriba = obtenerBloqueEn(clientPlayer.x, clientPlayer.y - 1);
-                            if (bloqueArriba != null && bloqueArriba.tipo == 1 && bloqueArriba.activo == 1) {
-                                output.write("GOLPEAR\n");
-                                output.flush();
-                            }
-                        }
+//                        case KeyEvent.VK_SPACE -> {
+//                            Tile bloqueArriba = obtenerBloqueEn(clientPlayer.x, clientPlayer.y - 1);
+//                            if (bloqueArriba != null && bloqueArriba.tipo == 1 && bloqueArriba.activo == 1) {
+//                                output.write("GOLPEAR\n");
+//                                output.flush();
+//                            }
+//                        }
                     }
 
                 } catch (IOException ex) {
@@ -92,39 +91,20 @@ public class GamePanel extends JPanel {
         this.players = players;
     }
 
-    public void setBloques(List<Bloque> bloques) {
-        this.bloques = bloques;
-    }
-    private boolean hayBloqueEn(int x, int y) {
-        for (Bloque b : bloques) {
-            if (b.activo == 1 && b.x == x && b.y == y) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private Bloque obtenerBloqueEn(int x, int y) {
-        for (Bloque b : bloques) {
-            if (b.activo == 1 && b.x == x && b.y == y) {
-                return b;
-            }
-        }
-        return null;
+    public void setMap(Tile[][] map) {
+        this.map = map;
     }
 
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
 
-        final int MAX_LIVES = 3;
+        final int PANEL_WIDTH = getWidth();
+        final int PANEL_HEIGHT = getHeight();
 
-        final int TILE_SIZE = 50;
-        final int VISIBLE_ROWS = 12;  // cantidad de filas que se pueden ver en pantalla
         final int ORIGIN_Y = -2;      // fila inferior visible (donde inicia el jugador)
 
-        int panelHeight = getHeight();
-        int offsetY = panelHeight - TILE_SIZE;
+        final int MAX_LIVES = 3;
 
         // Draw Players Lives
         int LIVE_ICON_SIZE = 20;
@@ -171,46 +151,64 @@ public class GamePanel extends JPanel {
             }
         }
 
+        final int MAP_ROWS = map.length;
+        final int MAP_COLS = map[0].length;
+
+        final int VISIBLE_ROWS = 19;
+
+        final int TILE_WIDTH = PANEL_WIDTH / MAP_COLS;
+        final int TILE_HEIGHT = PANEL_HEIGHT / VISIBLE_ROWS;
+
         // Draw map
-        for (Bloque b : bloques) {
-            if (b.activo == 1) {
-                g.setColor(switch (b.tipo) {
-                    case 1 -> Color.CYAN;
+        for (int i = MAP_ROWS - VISIBLE_ROWS, visibleRow = 0;
+             i < MAP_ROWS; i++, visibleRow++) {
+            for (int j = 0; j < MAP_COLS; j++) {
+                Tile tile = map[i][j];
+
+                // Select Tile Color
+                g.setColor(switch (tile.type) {
+                    case 0, 1 -> Color.CYAN;
                     case 2 -> Color.GRAY;
                     default -> Color.BLACK;
                 });
 
-                int drawX = b.x * TILE_SIZE;
-                int drawY = offsetY - (b.y * TILE_SIZE);
+                // Invert Row
+                int x = j * TILE_WIDTH;
+                int y = PANEL_HEIGHT - (visibleRow + 1) * TILE_HEIGHT;
 
-                g.fillRect(drawX, drawY, TILE_SIZE, TILE_SIZE);
+                // Draw Tile
+                g.fillRect(x, y, TILE_WIDTH, TILE_HEIGHT);
+
+                // Draw Shadow
+                g.setColor(Color.BLACK);
+                g.drawRect(x, y, TILE_WIDTH, TILE_HEIGHT);
             }
         }
 
         // Draw Players
         if (players != null) {
-            for (Jugador j : players) {
-                if (j == null) continue;
+            for (Jugador player : players) {
+                if (player == null) continue;
 
-                int drawX = j.x * TILE_SIZE;
-                int drawY = offsetY - (j.y * TILE_SIZE);
+                int drawX = player.x * TILE_WIDTH;
+                int drawY = PANEL_HEIGHT - ((player.y + 1) * TILE_HEIGHT);
 
-                if ("Popo".equalsIgnoreCase(j.nombre) && popoImg != null) {
-                    g.drawImage(popoImg, drawX, drawY, TILE_SIZE, TILE_SIZE, this);
-                } else if ("Nana".equalsIgnoreCase(j.nombre) && nanaImg != null) {
-                    g.drawImage(nanaImg, drawX, drawY, TILE_SIZE, TILE_SIZE, this);
+                if ("Popo".equalsIgnoreCase(player.nombre) && popoImg != null) {
+                    g.drawImage(popoImg, drawX, drawY, TILE_WIDTH, TILE_HEIGHT, this);
+                } else if ("Nana".equalsIgnoreCase(player.nombre) && nanaImg != null) {
+                    g.drawImage(nanaImg, drawX, drawY, TILE_WIDTH, TILE_HEIGHT, this);
                 }
             }
         }
     }
 
-    public void updateGame(Juego juego) {
-        setPlayers(juego.jugadores); // pasa los jugadores al GamePanel
+    public void updateGame(Game game) {
+        setPlayers(game.players);
         repaint();
     }
 
-    public void updateBloques(java.util.List<Bloque> bloques) {
-        setBloques(bloques);
+    public void updateMap(Tile[][] map) {
+        setMap(map);
         repaint();
     }
 

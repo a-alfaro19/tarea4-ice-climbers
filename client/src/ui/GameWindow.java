@@ -1,5 +1,5 @@
 package ui;
-import model.Juego;
+import model.Game;
 
 import javax.swing.*;
 import java.awt.*;
@@ -200,12 +200,12 @@ public class GameWindow extends JFrame {
 
         mainPanel.add(leftPanel, BorderLayout.WEST);
     }
-    public void updateGame(Juego juego) {
-        gamePanel.setPlayers(juego.jugadores); // pasa los jugadores al GamePanel
+    public void updateGame(Game game) {
+        gamePanel.setPlayers(game.players); // pasa los jugadores al GamePanel
         gamePanel.repaint();
     }
-    public void updateBloques(java.util.List<Bloque> bloques) {
-        gamePanel.setBloques(bloques);
+    public void updateBloques(java.util.List<Tile> bloques) {
+//        gamePanel.setMap(bloques);
         gamePanel.repaint();
     }
 

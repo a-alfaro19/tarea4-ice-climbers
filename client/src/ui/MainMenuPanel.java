@@ -57,7 +57,13 @@ public class MainMenuPanel extends JPanel {
                                 "localhost",
                                 8080
                         );
+                        // Identify
                         client.identify();
+
+                        // Receive Game Data
+                        client.fetch();
+
+                        // Start Game
                         client.start(mainFrame);
 
                     } catch (IOException e) {
