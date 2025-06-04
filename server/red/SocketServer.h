@@ -38,21 +38,13 @@ SOCKET get_server_socket();
 void close_server();
 
 /**
- * @brief Received the message len using big endian.
- * @param socket Server socket
- * @param len Var where to store the message len
- * @return 1 if the len was received correctly, 0 if not
- */
-int receive_Int_BE(SOCKET socket, int *len);
-
-/**
  * @brief Receives a request from the client through the socket
  * @param socket The client socket from which to receive the request
  * @param buffer Buffer where the received message will be stored
  * @param buffer_size Maximum size of the buffer
  * @return 1 if reception was successful, 0 if there was an error
  */
-int receive_message(SOCKET socket, char *buffer, int buffer_size);
+int receive_request(SOCKET socket, char *buffer, int buffer_size);
 
 /**
  * @brief Sends a response to the client through the socket.
@@ -61,7 +53,7 @@ int receive_message(SOCKET socket, char *buffer, int buffer_size);
  * @return 1 if sending was successful, 0 if there was an error
  */
 
-int send_message(SOCKET socket, const char *response);
+int send_response(SOCKET socket, const char *response);
 
 
 /**

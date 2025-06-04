@@ -1,5 +1,5 @@
 package ui;
-import model.Game;
+import model.Juego;
 
 import javax.swing.*;
 import java.awt.*;
@@ -43,47 +43,6 @@ public class GameWindow extends JFrame {
         setContentPane(mainPanel);
         setVisible(true);
 
-        // Panel derecho para los números
-        JPanel rightPanel = new JPanel();
-        rightPanel.setBackground(Color.BLACK);
-        rightPanel.setLayout(new BoxLayout(rightPanel, BoxLayout.Y_AXIS));
-        rightPanel.setPreferredSize(new Dimension(100, 0)); // ancho del panel derecho
-
-        try {
-            BufferedImage img1 = ImageIO.read(getClass().getResource("/ui/figuras/uno.png"));
-            BufferedImage img2 = ImageIO.read(getClass().getResource("/ui/figuras/dos.png"));
-            BufferedImage img3 = ImageIO.read(getClass().getResource("/ui/figuras/tres.png"));
-            BufferedImage img4 = ImageIO.read(getClass().getResource("/ui/figuras/cuatro.png"));
-
-            ImageIcon icon1 = new ImageIcon(img1.getScaledInstance(80, 80, Image.SCALE_SMOOTH));
-            ImageIcon icon2 = new ImageIcon(img2.getScaledInstance(80, 80, Image.SCALE_SMOOTH));
-            ImageIcon icon3 = new ImageIcon(img3.getScaledInstance(80, 80, Image.SCALE_SMOOTH));
-            ImageIcon icon4 = new ImageIcon(img4.getScaledInstance(80, 80, Image.SCALE_SMOOTH));
-
-            JLabel lbl1 = new JLabel(icon1);
-            JLabel lbl2 = new JLabel(icon2);
-            JLabel lbl3 = new JLabel(icon3);
-            JLabel lbl4 = new JLabel(icon4);
-
-            lbl1.setAlignmentX(Component.CENTER_ALIGNMENT);
-            lbl2.setAlignmentX(Component.CENTER_ALIGNMENT);
-            lbl3.setAlignmentX(Component.CENTER_ALIGNMENT);
-            lbl4.setAlignmentX(Component.CENTER_ALIGNMENT);
-
-            rightPanel.add(Box.createVerticalStrut(20));
-            rightPanel.add(lbl4);
-            rightPanel.add(Box.createVerticalStrut(110));
-            rightPanel.add(lbl3);
-            rightPanel.add(Box.createVerticalStrut(110));
-            rightPanel.add(lbl2);
-            rightPanel.add(Box.createVerticalStrut(110));
-            rightPanel.add(lbl1);
-
-        } catch (IOException | IllegalArgumentException e) {
-            System.err.println("No se pudieron cargar las imágenes.");
-        }
-
-        mainPanel.add(rightPanel, BorderLayout.EAST);
 
         // Panel izquierdo para funcionalidades avanzadas
         JPanel leftPanel = new JPanel(null);  // Layout nulo para posicionar libremente
@@ -200,12 +159,14 @@ public class GameWindow extends JFrame {
 
         mainPanel.add(leftPanel, BorderLayout.WEST);
     }
-    public void updateGame(Game game) {
-        gamePanel.setPlayers(game.players); // pasa los jugadores al GamePanel
+    public void updateGame(Juego juego) {
+        gamePanel.setJugadores(juego.jugadores);
+        gamePanel.setNivelActual(juego.nivelActual);
         gamePanel.repaint();
     }
-    public void updateBloques(java.util.List<Tile> bloques) {
-//        gamePanel.setMap(bloques);
+
+    public void updateBloques(java.util.List<Bloque> bloques) {
+        gamePanel.setBloques(bloques, 30, 187);
         gamePanel.repaint();
     }
 

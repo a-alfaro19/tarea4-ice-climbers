@@ -1,16 +1,19 @@
 package ui;
 
+import client.ClientFactory;
+import client.PlayerClient;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
-import client.*;
 
 public class MainMenuPanel extends JPanel {
-    private final String[] options = {"PLAY", "OBSERVE", "EXIT"}; // Menu options
-    private int selection = 0; // Selected option index
-    private final JFrame mainFrame; // Interface Main Frame
+    private final String[] options = {"JUGAR", "OBSERVAR", "SALIR"};
+    private int selection = 0;
+    private final JFrame mainFrame;
+    private boolean started = false;
 
     public MainMenuPanel(JFrame mainFrame) {
         this.mainFrame = mainFrame;
@@ -19,7 +22,6 @@ public class MainMenuPanel extends JPanel {
         setFocusable(true);
         requestFocusInWindow();
 
-        // Capture key press
         addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
@@ -28,92 +30,89 @@ public class MainMenuPanel extends JPanel {
                         selection = (selection - 1 + options.length) % options.length;
                         repaint();
                     }
-
                     case KeyEvent.VK_DOWN -> {
                         selection = (selection + 1) % options.length;
                         repaint();
                     }
-
                     case KeyEvent.VK_ENTER -> executeOption();
                 }
             }
         });
     }
 
-    /**
-     * @brief Executes the action associated with the currently selected option.
-     */
     private void executeOption() {
-        String selectedOption = options[selection];
-        switch (selectedOption) {
-            case "PLAY" -> {
-                System.out.println("Initializing Game...");
+        if (started) return;
 
-                Thread clientThread = new Thread(() -> {
+        String selected = options[selection];
+        switch (selected) {
+            case "JUGAR" -> {
+                started = true;
+                new Thread(() -> {
                     try {
-                        // Start Player Client
-                        PlayerClient client = (PlayerClient) ClientFactory.createClient(
-                                "PLAYER",
-                                "localhost",
-                                8080
-                        );
-                        // Identify
+                        PlayerClient client = (PlayerClient) ClientFactory.createClient("PLAYER", "localhost", 8080);
                         client.identify();
-
-                        // Receive Game Data
-                        client.fetch();
-
-                        // Start Game
-                        client.start(mainFrame);
-
+                        client.startListening();
+                        SwingUtilities.invokeLater(() -> mainFrame.dispose()); // Cierra el menú
                     } catch (IOException e) {
-                        // Show Error Message
+                        started = false;
                         SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(
                                 this,
-                                "Error starting client:\n" + e.getMessage(),
-                                "Connection Error",
+                                "Error al iniciar el cliente jugador:\n" + e.getMessage(),
+                                "Conexión fallida",
                                 JOptionPane.ERROR_MESSAGE
                         ));
-                        System.err.println("Error starting client: " + e.getMessage());
                     }
-                });
-
-                clientThread.start();
+                }).start();
             }
-            case "OBSERVE" -> System.out.println("Observer Mode...");
-            case "EXIT" -> System.exit(0);
+
+            case "OBSERVAR" -> {
+                started = true;
+                new Thread(() -> {
+                    try {
+                        PlayerClient client = (PlayerClient) ClientFactory.createClient("OBSERVER", "localhost", 8080);
+                        client.identify();
+                        client.startListening();
+                        SwingUtilities.invokeLater(() -> mainFrame.dispose()); // Cierra el menú
+                    } catch (IOException e) {
+                        started = false;
+                        SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(
+                                this,
+                                "Error al iniciar como observador:\n" + e.getMessage(),
+                                "Conexión fallida",
+                                JOptionPane.ERROR_MESSAGE
+                        ));
+                    }
+                }).start();
+            }
+
+            case "SALIR" -> System.exit(0);
         }
     }
 
-    /**
-     * @brief Draws the Main Menu Panel
-     * @param g the <code>Graphics</code> object to protect
-     */
+
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
 
-        // Window Dimensions
         int width = getWidth();
         int height = getHeight();
 
-        // Draw title
         g.setColor(Color.WHITE);
         g.setFont(new Font("Arial", Font.BOLD, 64));
         String title = "iCE CLIMBER";
         int titleWidth = g.getFontMetrics().stringWidth(title);
-        g.drawString(title,(width - titleWidth) / 2, height / 4);
+        g.drawString(title, (width - titleWidth) / 2, height / 4);
 
-        // Draw options
         g.setFont(new Font("Arial", Font.PLAIN, 36));
         int optionHeight = 50;
         int startY = height / 2 - (options.length * optionHeight) / 2;
 
         for (int i = 0; i < options.length; i++) {
-            String text = (i == selection ? "> " : "   ") + options[i];
+            String text = (i == selection ? "> " : "  ") + options[i];
             g.setColor(i == selection ? Color.YELLOW : Color.WHITE);
             int textWidth = g.getFontMetrics().stringWidth(text);
             g.drawString(text, (width - textWidth) / 2, startY + i * optionHeight);
         }
     }
 }
+

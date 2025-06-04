@@ -7,6 +7,7 @@ public class Jugador {
     public String nombre;
     public Integer x, y, vidas, puntaje;
     public Character direccion;
+    public Integer saltando;
 
     public static Jugador readFrom(DataInputStream in) throws IOException {
         Jugador j = new Jugador();
@@ -19,7 +20,8 @@ public class Jugador {
         j.x = readIntLE(in);  //printInt("x", j.x);
         j.y = readIntLE(in);  //printInt("y", j.y);
         j.vidas = readIntLE(in);  //printInt("vidas", j.vidas);
-        j.puntaje = readIntLE(in); //printInt("puntaje", j.puntaje);
+        j.puntaje = readIntLE(in);
+        j.saltando = readIntLE(in);
 
         byte dir = in.readByte();
         j.direccion = (char) dir;
