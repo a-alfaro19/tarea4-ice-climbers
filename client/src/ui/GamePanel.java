@@ -21,6 +21,7 @@ public class GamePanel extends JPanel {
     private final boolean dosJugadores;
     private Jugador[] jugadores;
     private Tile[][] mapa;
+    private boolean gameOver = false;
 
     public GamePanel(String miNombre, BufferedWriter output, boolean dosJugadores) {
         this.miNombre = miNombre;
@@ -233,3 +234,4 @@ public class GamePanel extends JPanel {
         return mapa;
     }
 }
+

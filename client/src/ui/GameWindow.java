@@ -11,6 +11,7 @@ import java.io.IOException;
 public class GameWindow extends JFrame {
     private String nombreJugador = "";
     private final GamePanel gamePanel;
+    private  GameOverPanel gameOverPanel;
 
     public GameWindow(String nombreJugador, BufferedWriter output, boolean dosJugadores) {
         this.nombreJugador = nombreJugador;
@@ -39,6 +40,7 @@ public class GameWindow extends JFrame {
         gamePanel.setBloques(bloques, 30, 91);
         gamePanel.repaint();
     }
+
 
 
     // Clase para mostrar imagen y texto en horizontal
