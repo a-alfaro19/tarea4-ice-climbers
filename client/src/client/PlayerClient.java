@@ -11,6 +11,7 @@ import java.util.List;
 
 public class PlayerClient extends Client implements IClient {
     private String nombreJugador;
+    private boolean dosJugadores = false;
 
     public PlayerClient(String host, int port) throws IOException {
         super(host, port);
@@ -58,8 +59,7 @@ public class PlayerClient extends Client implements IClient {
 
             SwingUtilities.invokeLater(() -> {
                 System.out.println("Creando ventana para " + nombreJugador);
-                GameWindow window = new GameWindow(nombreJugador, output);
-
+                GameWindow window = new GameWindow(nombreJugador, output, this.dosJugadores);
 
                 new Thread(() -> {
                     try {
@@ -91,6 +91,14 @@ public class PlayerClient extends Client implements IClient {
     }
     public String getNombreJugador() {
         return nombreJugador;
+    }
+
+    public void setDosJugadores(boolean valor) {
+        this.dosJugadores = valor;
+    }
+
+    public boolean isDosJugadores() {
+        return dosJugadores;
     }
 
     private int readIntLE(DataInputStream in) throws IOException {

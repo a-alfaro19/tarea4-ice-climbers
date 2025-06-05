@@ -12,7 +12,7 @@ public class GameWindow extends JFrame {
     private String nombreJugador = "";
     private final GamePanel gamePanel;
 
-    public GameWindow(String nombreJugador, BufferedWriter output) {
+    public GameWindow(String nombreJugador, BufferedWriter output, boolean dosJugadores) {
         this.nombreJugador = nombreJugador;
         setTitle("iCE Climber - Cliente Jugador");
         setSize(1250, 660);
@@ -22,8 +22,7 @@ public class GameWindow extends JFrame {
         JPanel mainPanel = new JPanel(new BorderLayout());
 
         // Panel central del juego
-        // Panel central del juego
-        gamePanel = new GamePanel(nombreJugador, output);
+        gamePanel = new GamePanel(nombreJugador, output, dosJugadores);
         mainPanel.add(gamePanel, BorderLayout.CENTER);
 
         setContentPane(mainPanel);

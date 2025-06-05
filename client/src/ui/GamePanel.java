@@ -1,7 +1,6 @@
 package ui;
 
 import model.Jugador;
-
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
@@ -19,13 +18,14 @@ public class GamePanel extends JPanel {
     private BufferedImage popoImg;
     private BufferedImage nanaImg;
     private int nivelActual = 0;
-
+    private final boolean dosJugadores;
     private Jugador[] jugadores;
     private Tile[][] mapa;
 
-    public GamePanel(String miNombre, BufferedWriter output) {
+    public GamePanel(String miNombre, BufferedWriter output, boolean dosJugadores) {
         this.miNombre = miNombre;
         this.output = output;
+        this.dosJugadores = dosJugadores;
 
         setBackground(Color.BLACK);
         setFocusable(true);
@@ -82,8 +82,8 @@ public class GamePanel extends JPanel {
                 }
             }
         });
-
     }
+
     public void setNivelActual(int nivelActual) {
         this.nivelActual = nivelActual;
     }
@@ -111,7 +111,7 @@ public class GamePanel extends JPanel {
         final int PANEL_HEIGHT = getHeight();
         final int ROWS = mapa.length;
         final int COLS = mapa[0].length;
-        final int filasPorNivel = 6; // piso + prepiso + separación
+        final int filasPorNivel = 6;
         final int VISIBLE_ROWS = 19;
         int maxY = 0;
         if (jugadores != null) {
@@ -123,11 +123,9 @@ public class GamePanel extends JPanel {
         }
         final int FIRST_VISIBLE_ROW = Math.max(0, Math.min(maxY - VISIBLE_ROWS / 2, mapa.length - VISIBLE_ROWS));
 
-
         final int TILE_WIDTH = PANEL_WIDTH / COLS;
         final int TILE_HEIGHT = PANEL_HEIGHT / VISIBLE_ROWS;
 
-// Dibujar mapa
         for (int i = FIRST_VISIBLE_ROW, visibleRow = 0; i < ROWS && visibleRow < VISIBLE_ROWS; i++, visibleRow++) {
             int nivel = i / filasPorNivel;
             boolean esBonus = nivel >= 9;
@@ -136,11 +134,10 @@ public class GamePanel extends JPanel {
                 Tile tile = mapa[i][j];
 
                 g.setColor(switch (tile.type) {
-                    case NORMAL -> esBonus ? new Color(180, 100, 255) : Color.CYAN;      // morado claro
-                    case FIXED_TILE -> esBonus ? new Color(120, 48, 191) : Color.GRAY;   // morado oscuro
+                    case NORMAL -> esBonus ? new Color(180, 100, 255) : Color.CYAN;
+                    case FIXED_TILE -> esBonus ? new Color(120, 48, 191) : Color.GRAY;
                     default -> Color.BLACK;
                 });
-
 
                 int x = j * TILE_WIDTH;
                 int y = PANEL_HEIGHT - (visibleRow + 1) * TILE_HEIGHT;
@@ -161,11 +158,11 @@ public class GamePanel extends JPanel {
             }
         }
 
-
         // Dibujar jugadores
         if (jugadores != null) {
             for (Jugador j : jugadores) {
-                if (j == null || j.vidas <= 0) continue; // aquí se filtran los muertos
+                if (j == null || j.vidas <= 0) continue;
+                if (!dosJugadores && j.nombre.equalsIgnoreCase("Nana")) continue;// ocultar Nana
 
                 int visibleRow = j.y - FIRST_VISIBLE_ROW;
                 if (visibleRow < 0 || visibleRow >= VISIBLE_ROWS) continue;
@@ -173,31 +170,50 @@ public class GamePanel extends JPanel {
                 int drawX = j.x * TILE_WIDTH;
                 int drawY = PANEL_HEIGHT - (visibleRow + 1) * TILE_HEIGHT;
 
-                if ("Popo".equalsIgnoreCase(j.nombre) && popoImg != null) {
+                if (j.nombre.equalsIgnoreCase("Popo") && popoImg != null) {
                     g.drawImage(popoImg, drawX, drawY, TILE_WIDTH, TILE_HEIGHT, this);
-                } else if ("Nana".equalsIgnoreCase(j.nombre) && nanaImg != null) {
+                } else if (j.nombre.equalsIgnoreCase("Nana") && nanaImg != null) {
                     g.drawImage(nanaImg, drawX, drawY, TILE_WIDTH, TILE_HEIGHT, this);
                 }
             }
         }
 
-        // Dibujar vidas como texto
+        // Dibujar vidas
         if (jugadores != null) {
             g.setColor(Color.WHITE);
             g.setFont(new Font("Arial", Font.BOLD, 14));
 
             for (Jugador j : jugadores) {
                 if (j == null) continue;
-                String texto = j.nombre + ": " + j.vidas + " vidas";
+                if (miNombre.equalsIgnoreCase("Popo") && j.nombre.equalsIgnoreCase("Nana")) continue; // ocultar Nana
 
-                if ("Popo".equalsIgnoreCase(j.nombre)) {
+                String texto = j.nombre + ": " + j.vidas + " vidas";
+                if (j.nombre.equalsIgnoreCase("Popo")) {
                     g.drawString(texto, 10, 25);
-                } else if ("Nana".equalsIgnoreCase(j.nombre)) {
+                } else if (j.nombre.equalsIgnoreCase("Nana")) {
+                    int textWidth = g.getFontMetrics().stringWidth(texto);
+                    g.drawString(texto, getWidth() - textWidth - 10, 25);
+                }
+            }
+        }// Dibujar vidas
+        if (jugadores != null) {
+            g.setColor(Color.WHITE);
+            g.setFont(new Font("Arial", Font.BOLD, 14));
+
+            for (Jugador j : jugadores) {
+                if (j == null) continue;
+                if (!dosJugadores && j.nombre.equalsIgnoreCase("Nana")) continue;
+
+                String texto = j.nombre + ": " + j.vidas + " vidas";
+                if (j.nombre.equalsIgnoreCase("Popo")) {
+                    g.drawString(texto, 10, 25);
+                } else if (j.nombre.equalsIgnoreCase("Nana")) {
                     int textWidth = g.getFontMetrics().stringWidth(texto);
                     g.drawString(texto, getWidth() - textWidth - 10, 25);
                 }
             }
         }
+
     }
 
     public static Tile[][] convertirBloquesAMatriz(List<Bloque> bloques, int ancho, int alto) {

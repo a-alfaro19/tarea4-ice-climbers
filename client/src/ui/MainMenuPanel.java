@@ -57,6 +57,7 @@ public class MainMenuPanel extends JPanel {
         new Thread(() -> {
             try {
                 PlayerClient client = (PlayerClient) ClientFactory.createClient("PLAYER", "localhost", 8080);
+                client.setDosJugadores(esperarSegundoJugador);
                 client.identify();
 
                 if (esperarSegundoJugador && client.getNombreJugador().equalsIgnoreCase("Popo")) {
