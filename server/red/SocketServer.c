@@ -151,13 +151,23 @@ DWORD WINAPI handle_client(LPVOID param) {
 
             printf("Player Client accepted\n");
 
+            //  Si este es el segundo jugador (Nana), avisar a Popo que empiece
+            if (client->id == 1) {
+                for (int i = 0; i < num_clients; i++) {
+                    if (clients[i].type == PLAYER && clients[i].id == 0) {
+                        send_response(clients[i].socket, "START\n");
+                        break;
+                    }
+                }
+            }
+
         } else {
             send_response(clientSocket, "REJECTED\n");
             closesocket(clientSocket);
             return 0;
         }
-
-    } else if (strcmp(buffer, "OBSERVER") == 0) {
+    }
+    else if (strcmp(buffer, "OBSERVER") == 0) {
         if (observer_clients < 2) {
             client = &clients[num_clients++];
             client->socket = clientSocket;
