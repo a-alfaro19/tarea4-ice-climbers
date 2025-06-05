@@ -68,7 +68,7 @@ public class PlayerClient extends Client implements IClient {
                             window.updateGame(juego);
 
                             int cantidad = readIntLE(in);
-                            if (cantidad < 0 || cantidad > 6000) {
+                            if (cantidad < 0 || cantidad > 3001) {
                                 throw new IOException("Cantidad inválida de bloques: " + cantidad);
                             }
 

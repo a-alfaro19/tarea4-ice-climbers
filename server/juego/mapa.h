@@ -3,8 +3,8 @@
 
 #include "nivel.h"
 
-#define MAX_BLOQUES 6000  // máximo a enviar
-#define FLOORS_PER_LEVEL 32
+#define MAX_BLOQUES 3000  // máximo a enviar
+#define FLOORS_PER_LEVEL 16
 #define FLOOR_HEIGHT 1
 #define PRE_FLOOR_HEIGHT 1
 #define ROWS_BETWEEN_FLOORS 4

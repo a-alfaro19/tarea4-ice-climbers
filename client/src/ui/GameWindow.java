@@ -166,7 +166,7 @@ public class GameWindow extends JFrame {
     }
 
     public void updateBloques(java.util.List<Bloque> bloques) {
-        gamePanel.setBloques(bloques, 30, 187);
+        gamePanel.setBloques(bloques, 30, 91);
         gamePanel.repaint();
     }
 

@@ -128,14 +128,18 @@ public class GamePanel extends JPanel {
 
 // Dibujar mapa
         for (int i = FIRST_VISIBLE_ROW, visibleRow = 0; i < ROWS && visibleRow < VISIBLE_ROWS; i++, visibleRow++) {
+            int nivel = i / filasPorNivel;
+            boolean esBonus = nivel >= 9;
+
             for (int j = 0; j < COLS; j++) {
                 Tile tile = mapa[i][j];
 
                 g.setColor(switch (tile.type) {
-                    case NORMAL -> Color.CYAN;
-                    case FIXED_TILE -> Color.GRAY;
+                    case NORMAL -> esBonus ? new Color(180, 100, 255) : Color.CYAN;      // morado claro
+                    case FIXED_TILE -> esBonus ? new Color(120, 48, 191) : Color.GRAY;   // morado oscuro
                     default -> Color.BLACK;
                 });
+
 
                 int x = j * TILE_WIDTH;
                 int y = PANEL_HEIGHT - (visibleRow + 1) * TILE_HEIGHT;
@@ -148,12 +152,12 @@ public class GamePanel extends JPanel {
             int filaDentroNivel = i % filasPorNivel;
             if (filaDentroNivel == 4) {
                 int y = PANEL_HEIGHT - (visibleRow + 1) * TILE_HEIGHT;
-                int nivel = i / filasPorNivel;
                 g.setColor(Color.YELLOW);
                 g.setFont(new Font("Monospaced", Font.BOLD, 12));
-                g.drawString("Nivel " + nivel, PANEL_WIDTH - 80, y + TILE_HEIGHT - 4);
-            }
 
+                String label = (nivel >= 9) ? "Fase Bonus" : "Nivel " + nivel;
+                g.drawString(label, PANEL_WIDTH - 100, y + TILE_HEIGHT - 4);
+            }
         }
 
 

@@ -9,8 +9,8 @@
 #include <math.h>
 #define GRAVEDAD -0.05f           // caída más suave
 #define FUERZA_SALTO 5.5f         // salto más alto
-#define VELOCIDAD_TERMINAL -1.5f // caída controlada
-#define PASO_VERTICAL 0.1f        // precisión de movimiento vertical
+#define VELOCIDAD_TERMINAL -2.5f // caída controlada
+#define PASO_VERTICAL 0.01f        // precisión de movimiento vertical
 
 void actualizar_fisica(Jugador* j) {
     //  Punto 1: Verificación de si debería empezar a caer
