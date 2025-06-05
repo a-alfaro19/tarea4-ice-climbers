@@ -39,6 +39,19 @@ void imprimir_estado_juego(Juego* juego) {
     printf("Nivel: %d | Velocidad: %d | Bonus: %d\n",
            juego->nivel_actual, juego->velocidad, juego->en_fase_bonus);
 }
+int obtener_nivel_actual_de_jugador(Jugador* j) {
+    // Primero intenta detectar si hay un bloque justo debajo o cerca
+    for (int offset = 0; offset <= 6; offset++) {
+        int y_check = j->y - offset;
+        if (y_check >= 0 && hay_bloque_en(j->x, y_check)) {
+            return y_check / (TOTAL_FLOOR_HEIGHT + ROWS_BETWEEN_FLOORS);
+        }
+    }
+
+    // Como fallback, usa la altura estimada
+    return j->y / (TOTAL_FLOOR_HEIGHT + ROWS_BETWEEN_FLOORS);
+}
+
 
 void actualizar_juego(Juego* juego, Nivel* mapa) {
     for (int i = 0; i < 2; i++) {
@@ -82,8 +95,8 @@ void actualizar_juego(Juego* juego, Nivel* mapa) {
     }
 
     // Actualiza el nivel actual real según altura de los jugadores
-    int nivel_popo = juego->jugadores[0].y / (TOTAL_FLOOR_HEIGHT + ROWS_BETWEEN_FLOORS);
-    int nivel_nana = juego->jugadores[1].y / (TOTAL_FLOOR_HEIGHT + ROWS_BETWEEN_FLOORS);
+    int nivel_popo = obtener_nivel_actual_de_jugador(&juego->jugadores[0]);
+    int nivel_nana = obtener_nivel_actual_de_jugador(&juego->jugadores[1]);
     int nivel_mas_alto = (nivel_popo > nivel_nana) ? nivel_popo : nivel_nana;
     juego->nivel_actual = nivel_mas_alto;
 }

@@ -18,7 +18,7 @@ void mover_jugador(Jugador* j, char dir);
 /**
  * Inicia un salto si el jugador no está en el aire.
  */
-void brincar_jugador(Jugador* j, Nivel* mapa);
+void brincar_jugador(Jugador* j);
 
 /**
  * Permite destruir un bloque destructible justo encima.

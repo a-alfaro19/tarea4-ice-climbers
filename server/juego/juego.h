@@ -26,6 +26,8 @@ void reiniciar_juego(Juego* juego);
  */
 void imprimir_estado_juego(Juego* juego);
 
+int obtener_nivel_actual_de_jugador(Jugador* j);
+
 /**
  * Avanza la lógica del juego (nivel, puntaje, vidas, etc.).
  */

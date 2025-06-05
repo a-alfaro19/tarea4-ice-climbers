@@ -24,7 +24,6 @@ public class Jugador {
 
         // Leer float vy (4 bytes LE)
         j.vy = readFloatLE(in);
-
         // Leer en_el_aire (int, 4 bytes LE)
         j.en_el_aire = readIntLE(in);
 

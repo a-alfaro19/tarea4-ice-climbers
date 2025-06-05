@@ -15,7 +15,7 @@ public class GameWindow extends JFrame {
     public GameWindow(String nombreJugador, BufferedWriter output) {
         this.nombreJugador = nombreJugador;
         setTitle("iCE Climber - Cliente Jugador");
-        setSize(1350, 760);
+        setSize(1250, 660);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setResizable(false);
         setLocationRelativeTo(null);
@@ -29,7 +29,7 @@ public class GameWindow extends JFrame {
         // Panel inferior (abajo)
         JPanel bottomPanel = new JPanel(new BorderLayout());
         bottomPanel.setBackground(Color.DARK_GRAY);
-        bottomPanel.setPreferredSize(new Dimension(1350, 40));
+        bottomPanel.setPreferredSize(new Dimension(1250, 40));
 
         // Paneles individuales alineados a izquierda y derecha
         JPanel popoPanel = new CharacterPanel("/ui/figuras/popo.png", "VIDAS: ");

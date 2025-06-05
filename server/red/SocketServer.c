@@ -207,7 +207,7 @@ DWORD WINAPI handle_client(LPVOID param) {
                 if (strncmp(buffer, "MOVER:", 6) == 0) {
                     mover_jugador(jug, buffer[6]);
                 } else if (strcmp(buffer, "BRINCAR") == 0) {
-                    brincar_jugador(jug, mapa);
+                    brincar_jugador(jug);
                 } else if (strcmp(buffer, "GOLPEAR") == 0) {
                     golpear(jug, mapa);
                 }
