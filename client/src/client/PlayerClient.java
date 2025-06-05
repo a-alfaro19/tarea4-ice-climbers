@@ -89,6 +89,9 @@ public class PlayerClient extends Client implements IClient {
             System.err.println("Error iniciando la ventana del juego: " + e.getMessage());
         }
     }
+    public String getNombreJugador() {
+        return nombreJugador;
+    }
 
     private int readIntLE(DataInputStream in) throws IOException {
         int b1 = in.readUnsignedByte();

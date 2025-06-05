@@ -165,7 +165,7 @@ public class GamePanel extends JPanel {
         // Dibujar jugadores
         if (jugadores != null) {
             for (Jugador j : jugadores) {
-                if (j == null || j.vidas <= 0) continue; // ⚠️ aquí se filtran los muertos
+                if (j == null || j.vidas <= 0) continue; // aquí se filtran los muertos
 
                 int visibleRow = j.y - FIRST_VISIBLE_ROW;
                 if (visibleRow < 0 || visibleRow >= VISIBLE_ROWS) continue;
