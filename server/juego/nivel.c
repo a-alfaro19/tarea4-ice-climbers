@@ -30,3 +30,22 @@ Nivel* obtener_nivel(Nivel* lista, int indice) {
     }
     return NULL;
 }
+Nivel* obtener_o_crear_nivel(Nivel** mapa_ref, int y) {
+    Nivel* actual = *mapa_ref;
+    Nivel* anterior = NULL;
+
+    while (actual) {
+        if (actual->indice == y) return actual;
+        anterior = actual;
+        actual = actual->siguiente;
+    }
+
+    // No encontrado, lo creamos
+    Nivel* nuevo = crear_nivel(y);
+    if (!*mapa_ref) {
+        *mapa_ref = nuevo;
+    } else {
+        anterior->siguiente = nuevo;
+    }
+    return nuevo;
+}

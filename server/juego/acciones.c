@@ -7,54 +7,75 @@
 #include "mapa.h"
 #include <stdio.h>
 #include <math.h>
-#define GRAVEDAD -0.08f           // caída más suave
+#define GRAVEDAD -0.05f           // caída más suave
 #define FUERZA_SALTO 5.5f         // salto más alto
 #define VELOCIDAD_TERMINAL -1.5f // caída controlada
-#define PASO_VERTICAL 0.2f        // precisión de movimiento vertical
+#define PASO_VERTICAL 0.1f        // precisión de movimiento vertical
 
 void actualizar_fisica(Jugador* j) {
-    if (!j->en_el_aire && !hay_bloque_en(j->x, j->y - 1)) {
+    //  Punto 1: Verificación de si debería empezar a caer
+    int y_abajo = j->y - 1;
+    int bloque_abajo = hay_bloque_en(j->x, y_abajo);
+    //printf("[CHECK CAIDA] y_real=%.2f  y=%d  y_abajo=%d  bloque_abajo=%d  en_el_aire=%d\n",
+           //j->y_real, j->y, y_abajo, bloque_abajo, j->en_el_aire);
+
+    if (!j->en_el_aire && !bloque_abajo) {
         j->en_el_aire = 1;
         j->vy = -0.1f;
+        printf("→ Comienza a caer\n");
     }
 
     if (!j->en_el_aire) return;
 
+    //  Aplicar gravedad
     j->vy += GRAVEDAD;
     if (j->vy < VELOCIDAD_TERMINAL) j->vy = VELOCIDAD_TERMINAL;
 
-    float y = (float)j->y;
-    float y_objetivo = y + j->vy;
+    float y_objetivo = j->y_real + j->vy;
     float paso = (j->vy > 0) ? PASO_VERTICAL : -PASO_VERTICAL;
 
-    while ((paso > 0 && y < y_objetivo) || (paso < 0 && y > y_objetivo)) {
-        y += paso;
-        int y_int = (int)(y + 0.5f);
+    while ((paso > 0 && j->y_real < y_objetivo) || (paso < 0 && j->y_real > y_objetivo)) {
+        j->y_real += paso;
+        int y_int = (int)(j->y_real + 0.5f);
 
-        // Salirse del mapa
         if (y_int < 0 || y_int >= TOTAL_ROWS) {
-            j->y = (y_int < 0) ? 0 : TOTAL_ROWS - 1;
+            j->y_real = (y_int < 0) ? 0 : TOTAL_ROWS - 1;
+            j->y = (int)(j->y_real + 0.5f);
             j->vy = 0;
             j->en_el_aire = 0;
+            printf("Fuera del mapa, ajustado a y=%d\n", j->y);
             return;
         }
 
         if (hay_bloque_en(j->x, y_int)) {
+            int bloque_arriba = hay_bloque_en(j->x, y_int + 1);
+            printf("[COLISION] en y_int=%d, vy=%.2f, bloque_arriba=%d\n", y_int, j->vy, bloque_arriba);
+
             if (j->vy < 0) {
-                j->y = y_int + 1;
-                j->en_el_aire = 0;  // Aterriza solo si choca con el suelo
+                if (!bloque_arriba) {
+                    j->y_real = (float)(y_int + 1);
+                    j->vy = 0;
+                    j->en_el_aire = 0;
+                    j->y = y_int + 1;
+                    printf("Aterrizó en y=%d (y_real=%.2f)\n", j->y, j->y_real);
+                } else {
+                    printf("No pudo aterrizar, hay bloque arriba en y=%d\n", y_int + 1);
+                }
             } else {
-                j->y = y_int - 1;
-                // sigue en el aire aunque pegue techo
+                j->y_real = (float)(y_int - 1);
+                j->vy = 0;
+                printf("Pegó techo en y=%d\n", y_int);
             }
-            j->vy = 0;
-            return;
+            break;
         }
-
-
-        j->y = y_int;
     }
+
+    j->y = (int)(j->y_real + 0.5f);
+    printf("[ACTUALIZADO] y_real=%.2f  y=%d  en_el_aire=%d  vy=%.2f\n\n",
+           j->y_real, j->y, j->en_el_aire, j->vy);
 }
+
+
 
 void brincar_jugador(Jugador* j) {
     printf("Intentando brincar... en_el_aire=%d, bloque_abajo=%d\n",

@@ -3,6 +3,7 @@
 
 typedef struct Jugador {
     char nombre[10];
+    float y_real;
     int x, y;            // posición en el mapa
     int vidas;
     int puntaje;
