@@ -222,6 +222,18 @@ DWORD WINAPI handle_client(LPVOID param) {
             generate_random_obstacle(&juego);
             printObstacles(&juego);
         }
+
+        // Move Obstacles
+        move_obstacles(&juego);
+
+        // Check for an obstacle out of the map
+        // delete
+
+        // Check for an obstacle hit a player
+        //  lose live
+
+        // Check for a player hit an obstacle
+        // delete
     }
 
     printf("Client disconnected\n");

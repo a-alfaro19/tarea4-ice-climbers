@@ -39,6 +39,8 @@ void actualizar_juego(Juego* juego, Nivel* mapa);
 
 void generate_random_obstacle(Juego* juego);
 
+void move_obstacles(Juego* juego);
+
 void printObstacles(const Juego* juego);
 
 #endif

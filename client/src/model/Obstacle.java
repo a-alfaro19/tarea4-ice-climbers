@@ -2,6 +2,7 @@ package model;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
+import java.io.DataInputStream;
 import java.io.File;
 import java.io.IOException;
 
@@ -23,11 +24,11 @@ public class Obstacle {
             case ICE_BLOCK -> "ice_block.png";
         };
 
-        try {
-            image = ImageIO.read(new File(filePath));
-        } catch (IOException e) {
-            System.err.println("Error loading Obstacle Image: " + e.getMessage());
-        }
+//        try {
+//            image = ImageIO.read(new File(filePath));
+//        } catch (IOException e) {
+//            System.err.println("Error loading Obstacle Image: " + e.getMessage());
+//        }
 
         this.x = x;
         this.y = y;
@@ -55,5 +56,22 @@ public class Obstacle {
      */
     public BufferedImage getImage() {
         return this.image;
+    }
+
+    public static Obstacle readFrom(DataInputStream in) throws IOException {
+        // Read type
+        int type = readIntLE(in);
+        int x = readIntLE(in);
+        int y = readIntLE(in);
+
+        return new Obstacle(ObstacleType.values()[type], x, y);
+    }
+
+    private static int readIntLE(DataInputStream in) throws IOException {
+        int b1 = in.readUnsignedByte();
+        int b2 = in.readUnsignedByte();
+        int b3 = in.readUnsignedByte();
+        int b4 = in.readUnsignedByte();
+        return (b4 << 24) | (b3 << 16) | (b2 << 8) | b1;
     }
 }

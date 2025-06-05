@@ -150,6 +150,16 @@ void generate_random_obstacle(Juego* juego) {
     add_obstacle(&juego->obstacles, obstacle);
 }
 
+void move_obstacles(Juego* juego) {
+    const int size = juego->obstacles.size;
+    const ObstacleList* obstacles = &juego->obstacles;
+
+    for (int i = 0; i < size; i++) {
+        Obstacle current = obstacles->obstacles[i];
+        moveObstacle(&current);
+    }
+}
+
 void printObstacles(const Juego* juego) {
     const ObstacleList* obstacles = &juego->obstacles;
     const int size = obstacles->size;

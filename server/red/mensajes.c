@@ -5,7 +5,7 @@
 #include "mensajes.h"
 #include <string.h>
 
-int enviar_juego(SOCKET socket, const Juego* juego) {
+int enviar_juego(SOCKET socket, Juego* juego) {
     for (int i = 0; i < 2; i++) {
         Jugador* j = &juego->jugadores[i];
 
@@ -20,6 +20,22 @@ int enviar_juego(SOCKET socket, const Juego* juego) {
         if (send(socket, &j->direccion, 1, 0) != 1) return -1;
         char relleno = 0;
         if (send(socket, &relleno, 1, 0) != 1) return -1;
+    }
+
+    // Send Obstacles size
+    const Obstacle* obstacles = juego->obstacles.obstacles;
+    const int size = juego->obstacles.size;
+
+    if (send(socket, &size, 4, 0) != 4) return -1;
+
+    // Send Obstacles
+    for (int i = 0; i < size; i++) {
+        Obstacle obstacle = obstacles[i];
+
+        int typeInt = obstacle.type;
+        if (send(socket, &typeInt, 4, 0) != 4) return -1;
+        if (send(socket, &obstacle.x, 4, 0) != 4) return -1;
+        if (send(socket, &obstacle.y, 4, 0) != 4) return -1;
     }
 
     // Enviar variables del juego

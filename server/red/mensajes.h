@@ -16,7 +16,7 @@ int enviar_bloques(SOCKET socket, const PaqueteBloques* paquete);
 int recibir_accion(SOCKET socket_cliente, char* buffer, int tamanio);
 
 
-int enviar_juego(SOCKET socket, const Juego* juego);
+int enviar_juego(SOCKET socket, Juego* juego);
 
 void imprimir_bytes(const void* data, size_t size, const char* etiqueta);
 
