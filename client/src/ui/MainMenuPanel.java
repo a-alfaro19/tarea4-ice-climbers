@@ -14,6 +14,8 @@ public class MainMenuPanel extends JPanel {
     private int selection = 0;
     private final JFrame mainFrame;
     private boolean started = false;
+    private volatile boolean esperandoSegundoJugador = false;
+
 
     public MainMenuPanel(JFrame mainFrame) {
         this.mainFrame = mainFrame;
@@ -61,24 +63,17 @@ public class MainMenuPanel extends JPanel {
                 client.identify();
 
                 if (esperarSegundoJugador && client.getNombreJugador().equalsIgnoreCase("Popo")) {
-                    JFrame waitFrame = new JFrame("Esperando Segundo Jugador");
-                    waitFrame.setSize(400, 200);
-                    waitFrame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
-                    waitFrame.setLocationRelativeTo(null);
-
-                    JLabel label = new JLabel("Esperando conexión del segundo jugador...", SwingConstants.CENTER);
-                    label.setFont(new Font("Arial", Font.BOLD, 20));
-                    waitFrame.add(label);
-                    waitFrame.setVisible(true);
+                    esperandoSegundoJugador = true;
+                    repaint();
 
                     while (true) {
                         String respuesta = client.getResponse();
                         if (respuesta.trim().equals("START")) break;
                     }
 
-                    waitFrame.dispose();
+                    esperandoSegundoJugador = false;
+                    repaint();
                 }
-
 
                 client.startListening();
                 SwingUtilities.invokeLater(() -> mainFrame.dispose());
@@ -138,5 +133,14 @@ public class MainMenuPanel extends JPanel {
             int textWidth = g.getFontMetrics().stringWidth(text);
             g.drawString(text, (width - textWidth) / 2, startY + i * optionHeight);
         }
+        if (esperandoSegundoJugador) {
+            g.setColor(new Color(200, 100, 255)); // morado claro
+            g.setFont(new Font("Arial", Font.BOLD, 24));
+            String texto = "Esperando conexión del segundo jugador...";
+            int textWidth = g.getFontMetrics().stringWidth(texto);
+            int textY = startY + options.length * optionHeight + 40;
+            g.drawString(texto, (width - textWidth) / 2, textY);
+        }
+
     }
 }
