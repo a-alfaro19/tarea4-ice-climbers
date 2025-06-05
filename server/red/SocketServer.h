@@ -20,6 +20,14 @@ typedef struct {
     ClientType type;
 } ClientInfo;
 
+
+typedef enum {
+    SIN_PARTIDA,
+    MODO_UNO_JUGADOR,
+    MODO_DOS_JUGADORES
+} ModoJuego;
+
+
 /**
  * @brief Initialize Winsock and sets its initialized state as true.
  * @return 1 if Winsock was initialized successfully, 0 otherwise.

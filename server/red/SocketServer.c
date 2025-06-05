@@ -22,6 +22,7 @@ static int num_clients = 0;
 static int player_clients = 0;
 static int observer_clients = 0;
 static Juego juego;
+static ModoJuego modo_actual = SIN_PARTIDA;
 
 int initialize_winsock() {
     static int initialized = 0;
@@ -129,44 +130,66 @@ DWORD WINAPI handle_client(LPVOID param) {
         closesocket(clientSocket);
         return 0;
     }
-
-    if (strcmp(buffer, "PLAYER") == 0) {
-        if (player_clients < 2) {
+    buffer[strcspn(buffer, "\r\n")] = '\0';
+    if (strcmp(buffer, "PLAYER1") == 0) {
+        if (modo_actual == SIN_PARTIDA) {
             client = &clients[num_clients++];
             client->socket = clientSocket;
             client->type = PLAYER;
             client->id = player_clients++;
+            modo_actual = MODO_UNO_JUGADOR;
 
-            if (!send_response(clientSocket, "ACCEPTED\n")) {
-                closesocket(clientSocket);
-                return 0;
-            }
+            send_response(clientSocket, "ACCEPTED\n");
+            const char* nombre = "Popo      ";
+            send(clientSocket, nombre, 10, 0);
+            printf("Jugador Popo conectado (modo 1 jugador)\n");
 
-            const char* nombre = (client->id == 0) ? "Popo      " : "Nana      ";
-            if (send(clientSocket, nombre, 10, 0) != 10) {
-                printf("Error sending player name\n");
-                closesocket(clientSocket);
-                return 0;
-            }
+        } else {
+            send_response(clientSocket, "REJECTED\n");
+            closesocket(clientSocket);
+            printf("Conexión rechazada: ya hay una partida activa\n");
+            return 0;
+        }
 
-            printf("Player Client accepted\n");
+        } else if (strcmp(buffer, "PLAYER2") == 0) {
+            if (modo_actual == SIN_PARTIDA) {
+                client = &clients[num_clients++];
+                client->socket = clientSocket;
+                client->type = PLAYER;
+                client->id = player_clients++;
+                modo_actual = MODO_DOS_JUGADORES;
 
-            //  Si este es el segundo jugador (Nana), avisar a Popo que empiece
-            if (client->id == 1) {
+                send_response(clientSocket, "ACCEPTED\n");
+                const char* nombre = "Popo      ";
+                send(clientSocket, nombre, 10, 0);
+                printf("Jugador Popo conectado (modo 2 jugadores)\n");
+
+            } else if (modo_actual == MODO_DOS_JUGADORES && player_clients == 1) {
+                client = &clients[num_clients++];
+                client->socket = clientSocket;
+                client->type = PLAYER;
+                client->id = player_clients++;
+
+                send_response(clientSocket, "ACCEPTED\n");
+                const char* nombre = "Nana      ";
+                send(clientSocket, nombre, 10, 0);
+                printf("Jugador Nana conectado (modo 2 jugadores)\n");
+
+                // Avisar a Popo que puede iniciar
                 for (int i = 0; i < num_clients; i++) {
                     if (clients[i].type == PLAYER && clients[i].id == 0) {
                         send_response(clients[i].socket, "START\n");
                         break;
                     }
                 }
-            }
-
         } else {
             send_response(clientSocket, "REJECTED\n");
             closesocket(clientSocket);
+            printf("Conexión rechazada: no se puede unir a modo 2 jugadores\n");
             return 0;
         }
     }
+
     else if (strcmp(buffer, "OBSERVER") == 0) {
         if (observer_clients < 2) {
             client = &clients[num_clients++];
@@ -235,7 +258,11 @@ DWORD WINAPI handle_client(LPVOID param) {
     if (client->type == OBSERVER && observer_clients > 0) observer_clients--;
     if (num_clients > 0) num_clients--;
 
-    return 0;
+    if (player_clients == 0) {
+        modo_actual = SIN_PARTIDA;
+        printf("Modo de juego reiniciado a SIN_PARTIDA\n");
+        return 0;
+    }
 }
 
 int main(void) {

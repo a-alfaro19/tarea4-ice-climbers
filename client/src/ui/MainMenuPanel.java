@@ -82,7 +82,7 @@ public class MainMenuPanel extends JPanel {
                 started = false;
                 SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(
                         this,
-                        "Error al iniciar el cliente jugador:\n" + e.getMessage(),
+                        "Ya hay una partida activa, intente conectarse como Observador.\n" + e.getMessage(),
                         "Conexión fallida",
                         JOptionPane.ERROR_MESSAGE
                 ));

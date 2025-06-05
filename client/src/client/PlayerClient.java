@@ -19,7 +19,12 @@ public class PlayerClient extends Client implements IClient {
 
     @Override
     public void identify() throws IOException {
-        out.write("PLAYER".getBytes());
+        if (dosJugadores) {
+            out.write("PLAYER2\n".getBytes());
+        } else {
+            out.write("PLAYER1\n".getBytes());
+        }
+
         out.flush();
 
         // Leer respuesta tipo "ACCEPTED\n"
@@ -30,7 +35,7 @@ public class PlayerClient extends Client implements IClient {
         }
 
         if (!"ACCEPTED".equals(response.toString().trim())) {
-            throw new IOException("Jugador rechazado: " + response);
+            throw new IOException("Jugador: " + response);
         }
 
         // Leer nombre exacto de 10 bytes
