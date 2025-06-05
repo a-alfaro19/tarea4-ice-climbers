@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-
+#include <time.h>
 
 void inicializar_juego(Juego* juego) {
     juego->nivel_actual = 0;
@@ -63,63 +63,59 @@ int obtener_nivel_actual_de_jugador(Jugador* j) {
 
 
 void actualizar_juego(Juego* juego, Nivel* mapa) {
+    int niveles_previos = juego->nivel_actual;
+
     for (int i = 0; i < 2; i++) {
         actualizar_fisica(&juego->jugadores[i]);
     }
 
-    float y0_real = juego->jugadores[0].y_real;
-    float y1_real = juego->jugadores[1].y_real;
-
-    int abajo = (y0_real > y1_real) ? 0 : 1;
-    int arriba = 1 - abajo;
-
-    Jugador* j_abajo = &juego->jugadores[abajo];
-    Jugador* j_arriba = &juego->jugadores[arriba];
-
-    if (fabsf(y0_real - y1_real) > 2.5f && !j_abajo->en_el_aire) {
-        perder_vida(j_abajo);
-
-        // Solo reposicionar si realmente está más abajo
-        if (j_abajo->y_real < j_arriba->y_real) {
-            j_abajo->y_real = j_arriba->y_real;
-            j_abajo->y = (int)(j_abajo->y_real + 0.5f);
-            //printf("%s estaba muy abajo. Reposicionado a y=%.2f\n", j_abajo->nombre, j_abajo->y_real);
-        } else {
-            //printf("%s perdió vida, pero no fue reposicionado porque ya estaba arriba\n", j_abajo->nombre);
-        }
-    }
-
-
-
-    // Avanza nivel si ambos llegaron arriba
-    if (!juego->en_fase_bonus && juego->nivel_actual < 31) {
-        if (juego->jugadores[0].y <= 1 && juego->jugadores[1].y <= 1) {
-            juego->nivel_actual++;
-        }
-    }
-
-    // Inicia fase bonus al llegar al último nivel
-    if (juego->nivel_actual == 31 && !juego->en_fase_bonus) {
-        juego->en_fase_bonus = 1;
-        for (int i = 0; i < 2; i++) {
-            juego->jugadores[i].vidas++;
-        }
-        reiniciar_juego(juego);
-        printf("¡BONUS! +1 vida y reinicio\n");
-    }
-
-    // Actualiza el nivel actual real según altura de los jugadores
-    // Actualiza el nivel actual real según altura de los jugadores
+    // Calcular nivel actual de cada jugador
     int nivel_popo = obtener_nivel_actual_de_jugador(&juego->jugadores[0]);
     int nivel_nana = obtener_nivel_actual_de_jugador(&juego->jugadores[1]);
     int nivel_mas_alto = (nivel_popo > nivel_nana) ? nivel_popo : nivel_nana;
 
-    // Solo actualizar si es un nuevo nivel más alto
-    if (nivel_mas_alto > juego->nivel_actual) {
-        juego->nivel_actual = nivel_mas_alto;
+    // Detectar caída individual con margen visual
+    for (int i = 0; i < 2; i++) {
+        Jugador* j = &juego->jugadores[i];
+        int y_limite = juego->nivel_actual * (TOTAL_FLOOR_HEIGHT + ROWS_BETWEEN_FLOORS);
+
+        if (j->y < y_limite - 2) {  // -2 para permitir que baje unos cuadros
+            perder_vida(j);
+
+            // Reaparecer en el último nivel alcanzado (más alto de ambos)
+            int nivel_rescate = nivel_mas_alto;
+            int y_base = nivel_rescate * (TOTAL_FLOOR_HEIGHT + ROWS_BETWEEN_FLOORS);
+
+            // Escoge una nueva posición x (centrado aleatorio entre 5 y 24)
+            int nueva_x = 5 + rand() % 20;
+
+            j->x = nueva_x;
+            j->y_real = (float)(y_base + 1);
+            j->y = y_base + 1;
+            j->vy = 0;
+            j->en_el_aire = 0;
+
+            printf("%s cayó al vacío. Reaparece en nivel %d, x=%d\n", j->nombre, nivel_rescate, j->x);
+        }
     }
 
+    // Si subieron a un nuevo nivel
+    if (nivel_mas_alto > juego->nivel_actual) {
+        for (int nivel = 0; nivel < nivel_mas_alto; nivel++) {
+            int y_base = nivel * (TOTAL_FLOOR_HEIGHT + ROWS_BETWEEN_FLOORS);
+            for (int offset = -1; offset <= ROWS_BETWEEN_FLOORS; offset++) {
+                vaciar_nivel(y_base + offset);
+            }
+        }
+
+        juego->nivel_actual = nivel_mas_alto;
+
+        if (!juego->en_fase_bonus && juego->nivel_actual >= 9) {
+            juego->en_fase_bonus = 1;
+            for (int i = 0; i < 2; i++) {
+                juego->jugadores[i].vidas++;
+            }
+            printf("¡Fase BONUS iniciada! +1 vida\n");
+        }
+    }
 }
-
-
-

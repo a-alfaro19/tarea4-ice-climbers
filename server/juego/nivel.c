@@ -1,6 +1,8 @@
 #include <stdlib.h>
 #include "nivel.h"
 
+#include "mapa.h"
+
 Nivel* crear_nivel(int indice) {
     Nivel* n = malloc(sizeof(Nivel));
     n->indice = indice;
@@ -48,4 +50,16 @@ Nivel* obtener_o_crear_nivel(Nivel** mapa_ref, int y) {
         anterior->siguiente = nuevo;
     }
     return nuevo;
+}
+
+void vaciar_nivel(int y) {
+    Nivel* n = obtener_nivel(mapa, y);
+    if (!n) return;
+
+    Bloque* b = n->bloques;
+    while (b) {
+        b->tipo = 0;
+        b->activo = 1;  // para que el cliente vea el bloque vacío
+        b = b->siguiente;
+    }
 }

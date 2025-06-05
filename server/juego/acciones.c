@@ -43,13 +43,13 @@ void actualizar_fisica(Jugador* j) {
             j->y = (int)(j->y_real + 0.5f);
             j->vy = 0;
             j->en_el_aire = 0;
-            printf("Fuera del mapa, ajustado a y=%d\n", j->y);
+            //printf("Fuera del mapa, ajustado a y=%d\n", j->y);
             return;
         }
 
         if (hay_bloque_en(j->x, y_int)) {
             int bloque_arriba = hay_bloque_en(j->x, y_int + 1);
-            printf("[COLISION] en y_int=%d, vy=%.2f, bloque_arriba=%d\n", y_int, j->vy, bloque_arriba);
+            //printf("[COLISION] en y_int=%d, vy=%.2f, bloque_arriba=%d\n", y_int, j->vy, bloque_arriba);
 
             if (j->vy < 0) {
                 if (!bloque_arriba) {
@@ -71,8 +71,7 @@ void actualizar_fisica(Jugador* j) {
     }
 
     j->y = (int)(j->y_real + 0.5f);
-    printf("[ACTUALIZADO] y_real=%.2f  y=%d  en_el_aire=%d  vy=%.2f\n\n",
-           j->y_real, j->y, j->en_el_aire, j->vy);
+    //printf("[ACTUALIZADO] y_real=%.2f  y=%d  en_el_aire=%d  vy=%.2f\n\n",j->y_real, j->y, j->en_el_aire, j->vy);
 }
 
 

@@ -14,4 +14,6 @@ void agregar_bloque_a_nivel(Nivel* nivel, Bloque* b);
 void destruir_niveles(Nivel* cabeza);
 Nivel* obtener_nivel(Nivel* lista, int indice);
 Nivel* obtener_o_crear_nivel(Nivel** mapa_ref, int y);
+void vaciar_nivel(int y);
+
 #endif

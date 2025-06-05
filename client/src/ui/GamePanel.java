@@ -45,7 +45,7 @@ public class GamePanel extends JPanel {
 
                 try {
                     for (Jugador j : jugadores) {
-                        if (j != null && j.nombre.equalsIgnoreCase(miNombre)) {
+                        if (j != null && j.nombre.equalsIgnoreCase(miNombre) && j.vidas > 0) {
                             int ancho = mapa[0].length;
                             int alto = mapa.length;
 
@@ -73,9 +73,10 @@ public class GamePanel extends JPanel {
                                     output.flush();
                                 }
                             }
-                            break; // Ya encontramos el jugador
+                            break;
                         }
                     }
+
                 } catch (IOException ex) {
                     ex.printStackTrace();
                 }
@@ -164,7 +165,7 @@ public class GamePanel extends JPanel {
         // Dibujar jugadores
         if (jugadores != null) {
             for (Jugador j : jugadores) {
-                if (j == null) continue;
+                if (j == null || j.vidas <= 0) continue; // ⚠️ aquí se filtran los muertos
 
                 int visibleRow = j.y - FIRST_VISIBLE_ROW;
                 if (visibleRow < 0 || visibleRow >= VISIBLE_ROWS) continue;
