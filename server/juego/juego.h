@@ -1,11 +1,15 @@
 #ifndef JUEGO_H
 #define JUEGO_H
 
+#define MAX_OBSTACLES 4
+
 #include "nivel.h"
 #include "jugador.h"
+#include "ObstacleList.h"
 
 typedef struct {
     Jugador jugadores[2];  // Popo y Nana
+    ObstacleList obstacles; // Obstacles list
     int nivel_actual;      // Índice actual (0 a 31)
     int en_fase_bonus;     // 1 = sí, 0 = no
     int velocidad;         // Para futuras animaciones o lógica
@@ -32,5 +36,9 @@ int obtener_nivel_actual_de_jugador(Jugador* j);
  * Avanza la lógica del juego (nivel, puntaje, vidas, etc.).
  */
 void actualizar_juego(Juego* juego, Nivel* mapa);
+
+void generate_random_obstacle(Juego* juego);
+
+void printObstacles(const Juego* juego);
 
 #endif

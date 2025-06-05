@@ -21,6 +21,8 @@ add_executable(server
         juego/acciones.h
         juego/Obstacle.c
         juego/Obstacle.h
+        juego/ObstacleList.c
+        juego/ObstacleList.h
 )
 
 

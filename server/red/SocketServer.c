@@ -189,7 +189,7 @@ DWORD WINAPI handle_client(LPVOID param) {
     if (enviar_bloques(clientSocket, &paquete) < 0) return 0;
 
     // Escucha comandos del cliente
-    while (1) {
+    while (1) { // -> Game loop
         if (!receive_request(clientSocket, buffer, sizeof(buffer) - 1)) break;
 
         buffer[strcspn(buffer, "\r\n")] = '\0';
@@ -215,6 +215,12 @@ DWORD WINAPI handle_client(LPVOID param) {
             printf("Acción recibida: %s\n", buffer);
         } else {
             printf("Comando no reconocido: %s\n", buffer);
+        }
+
+        // Generate Obstacles
+        if (juego.obstacles.size < 4) {
+            generate_random_obstacle(&juego);
+            printObstacles(&juego);
         }
     }
 

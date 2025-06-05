@@ -119,3 +119,44 @@ void actualizar_juego(Juego* juego, Nivel* mapa) {
         }
     }
 }
+
+void generate_random_obstacle(Juego* juego) {
+    const ObstacleType obstacle_types[] = {YETI, BIRD, ICE_BLOCK};
+    const ObstacleType randomType = obstacle_types[rand() % 3];
+
+    int x = 0;
+    int y = 0;
+    // Set Origin
+    switch (randomType) {
+        case YETI:
+            const Dir validDirs[] = {LEFT, RIGHT};
+            const Dir randomDir = validDirs[rand() % 2];
+            x = randomDir == LEFT ? 0 : 30;
+            y = juego->nivel_actual;
+            break;
+
+        case BIRD:
+            x = 0;
+            y = juego->nivel_actual;
+            break;
+
+        case ICE_BLOCK:
+            x = rand() % 30;
+            y = 0;
+            break;
+    }
+
+    const Obstacle* obstacle = createObstacle(randomType, x, y);
+    add_obstacle(&juego->obstacles, obstacle);
+}
+
+void printObstacles(const Juego* juego) {
+    const ObstacleList* obstacles = &juego->obstacles;
+    const int size = obstacles->size;
+
+    printf("Game contains %d obstacles\n", size);
+    for (int i = 0; i < size; i++) {
+        const Obstacle current = obstacles->obstacles[i];
+        printf("Type: %d, Pos: (%d, %d), Dir: %d\n", current.type, current.x, current.y, current.dir);
+    }
+}
