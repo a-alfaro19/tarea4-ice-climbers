@@ -11,7 +11,8 @@ import java.io.IOException;
 public class GameWindow extends JFrame {
     private String nombreJugador = "";
     private final GamePanel gamePanel;
-    private  GameOverPanel gameOverPanel;
+    private GameOverWindow gameOverPanel;
+
 
     public GameWindow(String nombreJugador, BufferedWriter output, boolean dosJugadores) {
         this.nombreJugador = nombreJugador;
@@ -28,11 +29,21 @@ public class GameWindow extends JFrame {
 
         setContentPane(mainPanel);
         setVisible(true);
-
     }
+
+    public void mostrarGameOverWindow() {
+        this.dispose(); // Cierra esta ventana (GameWindow)
+
+        SwingUtilities.invokeLater(() -> {
+            GameOverWindow gameOverWindow = new GameOverWindow();
+            gameOverWindow.setVisible(true);  // Abre nueva ventana
+        });
+    }
+
     public void updateGame(Juego juego) {
         gamePanel.setJugadores(juego.jugadores);
         gamePanel.setNivelActual(juego.nivelActual);
+        gamePanel.verificarSiTodosMuertos();
         gamePanel.repaint();
     }
 

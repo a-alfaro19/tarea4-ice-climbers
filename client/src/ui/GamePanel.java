@@ -3,8 +3,8 @@ package ui;
 import model.Jugador;
 import javax.imageio.ImageIO;
 import javax.swing.*;
-import java.awt.*;
-import java.awt.event.KeyAdapter;
+        import java.awt.*;
+        import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.io.BufferedWriter;
@@ -22,6 +22,8 @@ public class GamePanel extends JPanel {
     private Jugador[] jugadores;
     private Tile[][] mapa;
     private boolean gameOver = false;
+
+    private GameWindow gameWindow;
 
     public GamePanel(String miNombre, BufferedWriter output, boolean dosJugadores) {
         this.miNombre = miNombre;
@@ -100,6 +102,7 @@ public class GamePanel extends JPanel {
     public void updateGame(Jugador[] jugadores, List<Bloque> bloques, int ancho, int alto) {
         setJugadores(jugadores);
         setBloques(bloques, ancho, alto);
+        verificarSiTodosMuertos();
         repaint();
     }
 
@@ -232,6 +235,56 @@ public class GamePanel extends JPanel {
         }
 
         return mapa;
+    }
+    public void verificarSiTodosMuertos() {
+        System.out.println("→ Entrando a verificarSiTodosMuertos");
+
+        if (jugadores == null || jugadores.length == 0) {
+            System.out.println("→ Lista de jugadores vacía o nula");
+            return;
+        }
+
+        int jugadoresActivos = 0;
+        boolean todosMuertos = true;
+
+        for (Jugador j : jugadores) {
+            if (j == null || !j.activo) continue;
+
+            jugadoresActivos++;
+            System.out.println("→ Jugador: " + j.nombre + " | Vidas: " + j.vidas);
+
+            if (j.vidas != null && j.vidas > 0) {
+                todosMuertos = false;
+                break;
+            }
+        }
+
+        if (jugadoresActivos == 0) {
+            System.out.println("⚠️ No hay jugadores activos en la partida");
+            return;
+        }
+
+        if (todosMuertos && !gameOver) {
+            gameOver = true;
+            System.out.println("✅ Todos los jugadores activos han muerto. Fin del juego.");
+
+            if (output != null) {
+                try {
+                    output.write("GAME_OVER\n");
+                    output.flush();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            } else {
+                System.out.println("⚠️ Output es null");
+            }
+
+            if (gameWindow != null) {
+                gameWindow.mostrarGameOverWindow();
+            } else {
+                System.out.println("⚠️ GameWindow es null");
+            }
+        }
     }
 }
 

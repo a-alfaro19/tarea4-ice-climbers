@@ -9,6 +9,7 @@ public class Jugador {
     public float vy;
     public int en_el_aire;
     public Character direccion;
+    public boolean activo = false;  // ← NUEVO CAMPO
 
     public static Jugador readFrom(DataInputStream in) throws IOException {
         Jugador j = new Jugador();
@@ -31,6 +32,9 @@ public class Jugador {
         j.direccion = (char) dir;
 
         byte relleno = in.readByte();
+
+        // Establecer 'activo' automáticamente si tiene vidas y posición válida
+        j.activo = (j.vidas != null && j.vidas > 0) || (j.x != null && j.y != null && (j.x != 0 || j.y != 0));
 
         return j;
     }

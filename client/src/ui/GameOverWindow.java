@@ -6,15 +6,17 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import javax.imageio.ImageIO;
 
-public class GameOverPanel extends JPanel {
-    public GameOverPanel(JFrame finalFrame) {
-        setLayout(new GridBagLayout()); // Esto centra el leftPanel
+public class GameOverWindow extends JFrame {
+    public GameOverWindow() {
+        setTitle("¡Game Over!");
+        setSize(300, 700);
+        setLocationRelativeTo(null); // Centra la ventana en pantalla
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setResizable(false);
 
-        JPanel leftPanel = new JPanel(null);  // Layout nulo para posición libre
+        JPanel leftPanel = new JPanel(null);  // Layout absoluto
         leftPanel.setBackground(Color.BLACK);
 
-        // No necesitas setPreferredSize si no quieres controlar proporciones
-        // Añadir todos los elementos visuales
         try {
             BufferedImage aveV = ImageIO.read(getClass().getResource("/ui/figuras/aveN.png"));
             BufferedImage hieloV = ImageIO.read(getClass().getResource("/ui/figuras/hielo.png"));
@@ -88,6 +90,7 @@ public class GameOverPanel extends JPanel {
             textLabel12.setFont(new Font("Monospaced", Font.BOLD, 18));
             textLabel12.setBounds(70, 610, 200, 20);
 
+            // Añadir todos los elementos al panel
             leftPanel.add(itemLabel);
             leftPanel.add(itemLabel2);
             leftPanel.add(itemLabel3);
@@ -113,10 +116,6 @@ public class GameOverPanel extends JPanel {
             System.err.println("Error al cargar imágenes del panel Game Over: " + e.getMessage());
         }
 
-        // Centrar el leftPanel en GameOverPanel
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        add(leftPanel, gbc);
+        add(leftPanel); // Agregar panel al JFrame
     }
 }
