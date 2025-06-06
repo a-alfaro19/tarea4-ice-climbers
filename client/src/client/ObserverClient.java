@@ -12,15 +12,16 @@ import java.util.List;
 
 public class ObserverClient extends Client {
     private final GameObservable observable = new GameObservable();
+    private boolean dosJugadores = false;
 
     public ObserverClient(String host, int port) throws IOException {
         super(host, port);
     }
 
-    //Metodo requerido por IClient
+    // Metodo requerido por IClient
     @Override
     public String identify() throws IOException {
-        return identify("OBSERVER"); // por defecto, modo 1 jugador
+        return identify("OBSERVER");
     }
 
     // Metodo extendido para selección Popo/Nana
@@ -36,12 +37,20 @@ public class ObserverClient extends Client {
         }
 
         if (!"ACCEPTED".equals(response.toString().trim())) {
-            throw new IOException("\nIntente más tarde o con otro jugador. ");
+            throw new IOException("\nIntente más tarde o con otro jugador.");
         }
 
         // Leer int LE indicando a quién se observa
         int observandoA = readIntLE(in);
+
+        // Leer un byte indicando si es modo de 2 jugadores
+        this.dosJugadores = in.readUnsignedByte() == 1;
+
         return (observandoA == 0) ? "Popo" : "Nana";
+    }
+
+    public boolean isDosJugadores() {
+        return dosJugadores;
     }
 
     public void addObserver(GameObserver observer) {
@@ -53,15 +62,15 @@ public class ObserverClient extends Client {
             try {
                 while (true) {
                     Juego juego = Juego.readFrom(in);
-
                     int cantidad = readIntLE(in);
                     List<Bloque> bloques = new ArrayList<>();
                     for (int i = 0; i < cantidad; i++) {
                         bloques.add(Bloque.readFrom(in));
                     }
 
-                    observable.notifyObservers(juego);  // Notifica a todos los observadores
+                    observable.notifyObservers(juego, bloques);
                 }
+
             } catch (IOException e) {
                 System.err.println("Conexión perdida (observador): " + e.getMessage());
             }
@@ -76,3 +85,4 @@ public class ObserverClient extends Client {
         return (b4 << 24) | (b3 << 16) | (b2 << 8) | b1;
     }
 }
+

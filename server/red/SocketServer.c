@@ -298,6 +298,10 @@ DWORD WINAPI handle_client(LPVOID param) {
         bytes[3] = (observando_a >> 24) & 0xFF;
         send(clientSocket, (const char*)bytes, 4, 0);
 
+        // Envia byte indicando si el juego es de 2 jugadores
+        unsigned char modo_byte = (modo_actual == MODO_DOS_JUGADORES) ? 1 : 0;
+        send(clientSocket, (const char*)&modo_byte, 1, 0);
+        
         printf("Observer Client accepted (observando a %s)\n", observando_a == 0 ? "Popo" : "Nana");
         printf("Observadores actuales: Popo = %d, Nana = %d\n", contar_observadores_de(0), contar_observadores_de(1));
     }
@@ -349,8 +353,17 @@ DWORD WINAPI handle_client(LPVOID param) {
     if (player_clients == 0) {
         modo_actual = SIN_PARTIDA;
         printf("Modo de juego reiniciado a SIN_PARTIDA\n");
+
+        // Reiniciar juego y mapa
+        inicializar_mapa();
+        inicializar_juego(&juego);
+
+        observer_clients = 0;
+        num_clients = 0;
+
         return 0;
     }
+
 }
 
 int main(void) {

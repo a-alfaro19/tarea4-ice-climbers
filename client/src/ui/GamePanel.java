@@ -180,8 +180,8 @@ public class GamePanel extends JPanel {
                 // Jugador controlable en modo 1 jugador: ocultar Nana
                 if (esControlable && !dosJugadores && j.nombre.equalsIgnoreCase("Nana")) continue;
 
-                // Observador: mostrar solo al jugador observado
-                if (!esControlable && !j.nombre.equalsIgnoreCase(miNombre)) continue;
+                // Observador: si no es controlable, y el juego es de 1 jugador, ocultar a Nana
+                if (!esControlable && !dosJugadores && j.nombre.equalsIgnoreCase("Nana")) continue;
 
                 int visibleRow = j.y - FIRST_VISIBLE_ROW;
                 if (visibleRow < 0 || visibleRow >= VISIBLE_ROWS) continue;
@@ -205,15 +205,13 @@ public class GamePanel extends JPanel {
             for (Jugador j : jugadores) {
                 if (j == null) continue;
 
-                // JUGADOR controlable
+                // Jugador controlable
                 if (esControlable) {
-                    // En modo 1 jugador, solo mostrar a Popo
                     if (!dosJugadores && j.nombre.equalsIgnoreCase("Nana")) continue;
                 }
-                // OBSERVADOR: mostrar solo al jugador observado
-                else {
-                    if (!j.nombre.equalsIgnoreCase(miNombre)) continue;
-                }
+
+                // Observador: si es solo Popo, no mostrar a Nana
+                if (!esControlable && !dosJugadores && j.nombre.equalsIgnoreCase("Nana")) continue;
 
                 String texto = j.nombre + ": " + j.vidas + " vidas";
                 if (j.nombre.equalsIgnoreCase("Popo")) {

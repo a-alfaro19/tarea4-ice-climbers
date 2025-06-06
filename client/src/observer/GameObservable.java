@@ -1,5 +1,8 @@
 package observer;
 
+import model.Bloque;
+import model.Juego;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,10 +17,11 @@ public class GameObservable {
         observers.remove(observer);
     }
 
-    public void notifyObservers(model.Juego juego) {
+    public void notifyObservers(Juego juego, List<Bloque> bloques) {
         for (GameObserver observer : observers) {
-            observer.onGameUpdate(juego);
+            observer.onGameUpdate(juego, bloques);
         }
     }
+
 }
 
