@@ -48,7 +48,7 @@ void moveObstacle(Obstacle* obstacle) {
 
         case ICE_BLOCK:
             // Always moves down
-            obstacle->y += 1;
+            obstacle->y -= 1;
             break;
     }
 }

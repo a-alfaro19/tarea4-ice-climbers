@@ -125,7 +125,15 @@ void actualizar_juego(Juego* juego, Nivel* mapa) {
     DWORD current_time = GetTickCount();
 
     // Move Obstacles
-    move_obstacles(juego);
+    static DWORD lastObstacleMove = 0;
+    DWORD now = GetTickCount();
+
+    // Mueve los obstáculos cada 300 ms
+    if (now - lastObstacleMove >= 300) {
+        move_obstacles(juego);
+        lastObstacleMove = now;
+    }
+
 
     // Check for an obstacle out of the map
     // eliminar
@@ -147,17 +155,17 @@ void generate_obstacle(Juego* juego, const ObstacleType type) {
             const Dir validDirs[] = {LEFT, RIGHT};
             const Dir randomDir = validDirs[rand() % 2];
             x = randomDir == LEFT ? 0 : 30;
-            y = 0;
+            y = FLOOR_HEIGHT;
             break;
 
         case BIRD:
             x = 0;
-            y = 0;
+            y = FLOOR_HEIGHT;
             break;
 
         case ICE_BLOCK:
             x = rand() % 30;
-            y = 0;
+            y = 19;
             break;
     }
 
