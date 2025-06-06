@@ -2,6 +2,7 @@
 #define SOCKETSERVER_H
 
 #include <winsock2.h>
+#include "clientes.h"
 
 /**
  * Enum to identify the client type

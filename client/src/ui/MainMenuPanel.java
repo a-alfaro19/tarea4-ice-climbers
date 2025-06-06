@@ -95,27 +95,44 @@ public class MainMenuPanel extends JPanel {
         started = true;
         new Thread(() -> {
             try {
+                // Preguntar al usuario a quién desea observar
+                String[] opciones = {"Popo", "Nana"};
+                String seleccionado = (String) JOptionPane.showInputDialog(
+                        this,
+                        "¿A quién desea observar?",
+                        "Seleccionar jugador",
+                        JOptionPane.QUESTION_MESSAGE,
+                        null,
+                        opciones,
+                        opciones[0]
+                );
+
+                if (seleccionado == null) {
+                    started = false;
+                    return;
+                }
+
+                // Comando a enviar al servidor
+                String comando = seleccionado.equalsIgnoreCase("Popo") ? "OBSERVER_POPO" : "OBSERVER_NANA";
+
                 // Crear cliente observador
                 ObserverClient client = (ObserverClient) ClientFactory.createClient("OBSERVER", "localhost", 8080);
 
-                // El servidor responde con a quién se está observando
-                String observado = client.identify(); // "Popo" o "Nana"
+                // Enviar comando y recibir asignación
+                String observado = client.identify(comando); // usa identify(String)
 
-                // Crear ventana asociada al jugador observado
+                // Crear ventana de observación
                 ObserverWindow observerWindow = new ObserverWindow(observado);
                 client.addObserver(observerWindow);
-
-                // Empezar a escuchar actualizaciones
                 client.startListening();
 
-                // Cerrar menú
                 SwingUtilities.invokeLater(() -> mainFrame.dispose());
 
             } catch (IOException e) {
                 started = false;
                 SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(
                         this,
-                        "Error al iniciar como observador:\n" + e.getMessage(),
+                        "El jugador seleccionado no está en partida o ya llegó al máximo de observadores.\n" + e.getMessage(),
                         "Conexión fallida",
                         JOptionPane.ERROR_MESSAGE
                 ));
@@ -155,4 +172,5 @@ public class MainMenuPanel extends JPanel {
             g.drawString(texto, (width - textWidth) / 2, textY);
         }
     }
+
 }

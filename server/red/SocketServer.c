@@ -161,6 +161,7 @@ DWORD WINAPI handle_client(LPVOID param) {
                 client->id = player_clients++;
                 modo_actual = MODO_DOS_JUGADORES;
 
+
                 send_response(clientSocket, "ACCEPTED\n");
                 const char* nombre = "Popo      ";
                 send(clientSocket, nombre, 10, 0);
@@ -190,64 +191,94 @@ DWORD WINAPI handle_client(LPVOID param) {
             printf("Conexión rechazada: no se puede unir a modo 2 jugadores\n");
             return 0;
         }
-    }else if (strcmp(buffer, "OBSERVER") == 0) {
-            // Contar observadores actuales
-            int popo_count = contar_observadores_de(0);
-            int nana_count = contar_observadores_de(1);
-            int observando_a = -1;
+    }  else if (
+        strcmp(buffer, "OBSERVER") == 0 ||
+        strcmp(buffer, "OBSERVER_POPO") == 0 ||
+        strcmp(buffer, "OBSERVER_NANA") == 0
+    ) {
+        int observando_a = -1;
 
-            // Decidir a quién puede observar
-            if (modo_actual == MODO_UNO_JUGADOR) {
+        int popo_count = contar_observadores_de(0);
+        int nana_count = contar_observadores_de(1);
+
+        if (modo_actual == SIN_PARTIDA) {
+            send_response(clientSocket, "REJECTED\n");
+            closesocket(clientSocket);
+            printf("Conexión rechazada: no hay partida activa\n");
+            return 0;
+        }
+
+        if (modo_actual == MODO_UNO_JUGADOR) {
+            if (strcmp(buffer, "OBSERVER_NANA") == 0) {
+                send_response(clientSocket, "REJECTED\n");
+                closesocket(clientSocket);
+                printf("Rechazado: no se puede observar a Nana en modo 1 jugador\n");
+                return 0;
+            }
+            if (popo_count >= 2) {
+                send_response(clientSocket, "REJECTED\n");
+                closesocket(clientSocket);
+                printf("Rechazado: límite de observadores para Popo (modo 1 jugador)\n");
+                return 0;
+            }
+            observando_a = 0;
+
+        } else if (modo_actual == MODO_DOS_JUGADORES) {
+            if (strcmp(buffer, "OBSERVER_POPO") == 0) {
                 if (popo_count >= 2) {
                     send_response(clientSocket, "REJECTED\n");
                     closesocket(clientSocket);
-                    printf("Observadores para Popo llenos (modo 1 jugador)\n");
+                    printf("Rechazado: límite de observadores para Popo\n");
                     return 0;
                 }
-                observando_a = 0; // Solo Popo
-            } else if (modo_actual == MODO_DOS_JUGADORES) {
-                if (popo_count < 2) {
-                    observando_a = 0;
-                } else if (nana_count < 2) {
-                    observando_a = 1;
-                } else {
+                observando_a = 0;
+            } else if (strcmp(buffer, "OBSERVER_NANA") == 0) {
+                if (nana_count >= 2) {
                     send_response(clientSocket, "REJECTED\n");
                     closesocket(clientSocket);
-                    printf("Observadores para Popo y Nana llenos (modo 2 jugadores)\n");
+                    printf("Rechazado: límite de observadores para Nana\n");
                     return 0;
                 }
+                observando_a = 1;
             } else {
                 send_response(clientSocket, "REJECTED\n");
                 closesocket(clientSocket);
-                printf("No hay partida activa para observar\n");
+                printf("Rechazado: debe especificar OBSERVER_POPO o OBSERVER_NANA\n");
                 return 0;
             }
+        }
 
-            // Crear cliente
-            client = &clients[num_clients++];
-            client->socket = clientSocket;
-            client->type = OBSERVER;
-            client->id = observer_clients++;
+        if (!registrar_cliente(clientSocket, 0, -1)) {
+            send_response(clientSocket, "REJECTED\n");
+            closesocket(clientSocket);
+            printf("Error al registrar observador en estructura global\n");
+            return 0;
+        }
 
-            if (!send_response(clientSocket, "ACCEPTED\n")) {
-                closesocket(clientSocket);
-                return 0;
-            }
+        ClienteConectado* lista = obtener_clientes();
+        lista[total_clientes() - 1].observando_a = observando_a;
 
-            // Enviar número indicando a quién observar (little endian)
-            unsigned char bytes[4];
-            bytes[0] = observando_a & 0xFF;
-            bytes[1] = (observando_a >> 8) & 0xFF;
-            bytes[2] = (observando_a >> 16) & 0xFF;
-            bytes[3] = (observando_a >> 24) & 0xFF;
-            send(clientSocket, (const char*)bytes, 4, 0);
+        client = &clients[num_clients++];
+        client->socket = clientSocket;
+        client->type = OBSERVER;
+        client->id = observer_clients++;
 
-            printf("Observer Client accepted (observando a %s)\n", observando_a == 0 ? "Popo" : "Nana");
-        }else {
-        printf("Invalid ID received from client\n");
-        closesocket(clientSocket);
-        return 0;
+        if (!send_response(clientSocket, "ACCEPTED\n")) {
+            closesocket(clientSocket);
+            return 0;
+        }
+
+        unsigned char bytes[4];
+        bytes[0] = observando_a & 0xFF;
+        bytes[1] = (observando_a >> 8) & 0xFF;
+        bytes[2] = (observando_a >> 16) & 0xFF;
+        bytes[3] = (observando_a >> 24) & 0xFF;
+        send(clientSocket, (const char*)bytes, 4, 0);
+
+        printf("Observer Client accepted (observando a %s)\n", observando_a == 0 ? "Popo" : "Nana");
+        printf("Observadores actuales: Popo = %d, Nana = %d\n", contar_observadores_de(0), contar_observadores_de(1));
     }
+
 
     // Enviar estado inicial
     if (enviar_juego(clientSocket, &juego) < 0) return 0;
@@ -286,6 +317,7 @@ DWORD WINAPI handle_client(LPVOID param) {
 
     printf("Client disconnected\n");
     closesocket(clientSocket);
+    remover_cliente(clientSocket);
 
     if (client->type == PLAYER && player_clients > 0) player_clients--;
     if (client->type == OBSERVER && observer_clients > 0) observer_clients--;

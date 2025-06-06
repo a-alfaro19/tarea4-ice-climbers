@@ -17,17 +17,29 @@ public class ObserverClient extends Client {
         super(host, port);
     }
 
+    //Metodo requerido por IClient
     @Override
     public String identify() throws IOException {
-        out.write("OBSERVER\n".getBytes());
+        return identify("OBSERVER"); // por defecto, modo 1 jugador
+    }
+
+    // Metodo extendido para selección Popo/Nana
+    public String identify(String tipoObservador) throws IOException {
+        out.write((tipoObservador + "\n").getBytes());
         out.flush();
 
-        String response = getResponse().trim();
-        if (!"ACCEPTED".equals(response)) {
-            throw new IOException("Observer client not registered: " + response);
+        // Leer respuesta: ACCEPTED o REJECTED
+        StringBuilder response = new StringBuilder();
+        char ch;
+        while ((ch = (char) in.readByte()) != '\n') {
+            response.append(ch);
         }
 
-        // Esperar int de 4 bytes indicando a quién observa (0 = Popo, 1 = Nana)
+        if (!"ACCEPTED".equals(response.toString().trim())) {
+            throw new IOException("\nIntente más tarde o con otro jugador. ");
+        }
+
+        // Leer int LE indicando a quién se observa
         int observandoA = readIntLE(in);
         return (observandoA == 0) ? "Popo" : "Nana";
     }
@@ -64,4 +76,3 @@ public class ObserverClient extends Client {
         return (b4 << 24) | (b3 << 16) | (b2 << 8) | b1;
     }
 }
-

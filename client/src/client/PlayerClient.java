@@ -35,7 +35,7 @@ public class PlayerClient extends Client implements IClient {
         }
 
         if (!"ACCEPTED".equals(response.toString().trim())) {
-            throw new IOException("Jugador: " + response);
+            throw new IOException("");
         }
 
         // Leer nombre exacto de 10 bytes
