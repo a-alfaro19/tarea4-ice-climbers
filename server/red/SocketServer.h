@@ -71,4 +71,6 @@ DWORD WINAPI handle_client(LPVOID param);
  */
 DWORD WINAPI game_loop(LPVOID param);
 
+DWORD WINAPI consoleThread(LPVOID lpParameter);
+
 #endif // SOCKETSERVER_H

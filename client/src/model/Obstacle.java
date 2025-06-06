@@ -19,16 +19,16 @@ public class Obstacle {
     public Obstacle(ObstacleType type, int x, int y) throws IOException {
         // Set image
         String filePath = switch (type) {
-            case YETI -> "yeti.png";
-            case BIRD -> "bird.png";
-            case ICE_BLOCK -> "ice_block.png";
+            case YETI -> "src/ui/figuras/yeti.png";
+            case BIRD -> "src/ui/figuras/aveA.png";
+            case ICE_BLOCK -> "src/ui/figuras/hielo.png";
         };
 
-//        try {
-//            image = ImageIO.read(new File(filePath));
-//        } catch (IOException e) {
-//            System.err.println("Error loading Obstacle Image: " + e.getMessage());
-//        }
+        try {
+            image = ImageIO.read(new File(filePath));
+        } catch (IOException e) {
+            System.err.println("Error loading Obstacle Image: " + e.getMessage());
+        }
 
         this.x = x;
         this.y = y;

@@ -161,6 +161,7 @@ public class GameWindow extends JFrame {
     }
     public void updateGame(Juego juego) {
         gamePanel.setJugadores(juego.jugadores);
+        gamePanel.setObstacles(juego.obstacles);
         gamePanel.setNivelActual(juego.nivelActual);
         gamePanel.repaint();
     }

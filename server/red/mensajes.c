@@ -30,12 +30,12 @@ int enviar_juego(SOCKET socket, Juego* juego) {
 
     // Send Obstacles
     for (int i = 0; i < size; i++) {
-        Obstacle obstacle = obstacles[i];
+        Obstacle* obstacle = &obstacles[i];
 
-        int typeInt = obstacle.type;
+        int typeInt = obstacle->type;
         if (send(socket, &typeInt, 4, 0) != 4) return -1;
-        if (send(socket, &obstacle.x, 4, 0) != 4) return -1;
-        if (send(socket, &obstacle.y, 4, 0) != 4) return -1;
+        if (send(socket, &obstacle->x, 4, 0) != 4) return -1;
+        if (send(socket, &obstacle->y, 4, 0) != 4) return -1;
     }
 
     // Enviar variables del juego

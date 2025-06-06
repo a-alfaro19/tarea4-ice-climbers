@@ -1,5 +1,6 @@
 #include "Obstacle.h"
 #include <stdlib.h>
+#include <string.h>
 
 
 Obstacle* createObstacle(const ObstacleType type, const int x, const int y) {
@@ -51,3 +52,11 @@ void moveObstacle(Obstacle* obstacle) {
             break;
     }
 }
+
+ObstacleType parse_obstacle_type(char* typeStr) {
+    if (strcmp(typeStr, "yeti") == 0) return YETI;
+    if (strcmp(typeStr, "bird") == 0) return BIRD;
+    if (strcmp(typeStr, "ice_block") == 0) return ICE_BLOCK;
+    return YETI;
+}
+

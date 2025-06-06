@@ -6,6 +6,8 @@
 #include <math.h>
 #include <time.h>
 
+#include "../red/SocketServer.h"
+
 void inicializar_juego(Juego* juego) {
     juego->nivel_actual = 0;
     juego->en_fase_bonus = 0;
@@ -95,7 +97,7 @@ void actualizar_juego(Juego* juego, Nivel* mapa) {
             j->vy = 0;
             j->en_el_aire = 0;
 
-            printf("%s cayó al vacío. Reaparece en nivel %d, x=%d\n", j->nombre, nivel_rescate, j->x);
+            // printf("%s cayó al vacío. Reaparece en nivel %d, x=%d\n", j->nombre, nivel_rescate, j->x);
         }
     }
 
@@ -115,29 +117,42 @@ void actualizar_juego(Juego* juego, Nivel* mapa) {
             for (int i = 0; i < 2; i++) {
                 juego->jugadores[i].vidas++;
             }
-            printf("¡Fase BONUS iniciada! +1 vida\n");
+            // printf("¡Fase BONUS iniciada! +1 vida\n");
         }
     }
+
+    static DWORD last_generated_time = 0;
+    DWORD current_time = GetTickCount();
+
+    // Move Obstacles
+    move_obstacles(juego);
+
+    // Check for an obstacle out of the map
+    // eliminar
+
+    // Check for an obstacle hit a player
+    //  lose live
+
+    // Check for a player hit an obstacle
+    // delete
 }
 
-void generate_random_obstacle(Juego* juego) {
-    const ObstacleType obstacle_types[] = {YETI, BIRD, ICE_BLOCK};
-    const ObstacleType randomType = obstacle_types[rand() % 3];
-
+void generate_obstacle(Juego* juego, const ObstacleType type) {
     int x = 0;
     int y = 0;
+
     // Set Origin
-    switch (randomType) {
+    switch (type) {
         case YETI:
             const Dir validDirs[] = {LEFT, RIGHT};
             const Dir randomDir = validDirs[rand() % 2];
             x = randomDir == LEFT ? 0 : 30;
-            y = juego->nivel_actual;
+            y = 0;
             break;
 
         case BIRD:
             x = 0;
-            y = juego->nivel_actual;
+            y = 0;
             break;
 
         case ICE_BLOCK:
@@ -146,17 +161,16 @@ void generate_random_obstacle(Juego* juego) {
             break;
     }
 
-    const Obstacle* obstacle = createObstacle(randomType, x, y);
+    const Obstacle* obstacle = createObstacle(type, x, y);
     add_obstacle(&juego->obstacles, obstacle);
 }
 
-void move_obstacles(Juego* juego) {
+void move_obstacles(const Juego* juego) {
     const int size = juego->obstacles.size;
     const ObstacleList* obstacles = &juego->obstacles;
 
     for (int i = 0; i < size; i++) {
-        Obstacle current = obstacles->obstacles[i];
-        moveObstacle(&current);
+        moveObstacle(&obstacles->obstacles[i]);
     }
 }
 

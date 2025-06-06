@@ -4,6 +4,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <windows.h>
+
 #include "../juego/nivel.h"
 #include "../juego/bloque.h"
 #include "../juego/mapa.h"
@@ -28,13 +29,13 @@ int initialize_winsock() {
     static WSADATA wsaData;
 
     if (!initialized) {
-        printf("Initialising Winsock...\n");
+        // printf("Initialising Winsock...\n");
         if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
             printf("WSAStartup failed: %d\n", WSAGetLastError());
             return 0;
         }
         initialized = 1;
-        printf("Winsock initialized correctly\n");
+        // printf("Winsock initialized correctly\n");
     }
     return 1;
 }
@@ -105,7 +106,11 @@ DWORD WINAPI game_loop(LPVOID param) {
 
         for (int i = 0; i < num_clients; i++) {
             if (clients[i].type == PLAYER || clients[i].type == OBSERVER) {
-                if (enviar_juego(clients[i].socket, &juego) < 0) continue;
+
+                if (enviar_juego(clients[i].socket, &juego) < 0) {
+
+                    continue;
+                }
                 PaqueteBloques paquete = obtener_bloques_visibles();
                 enviar_bloques(clients[i].socket, &paquete);
             }
@@ -117,6 +122,29 @@ DWORD WINAPI game_loop(LPVOID param) {
     return 0;
 }
 
+DWORD WINAPI consoleThread(LPVOID lpParameter) {
+    Juego* game = lpParameter;
+    char command[1024];
+
+    while (1) {
+        printf(">> ");
+        fflush(stdout);
+
+        if (fgets(command, sizeof(command), stdin) == NULL) continue;
+
+        // Remove line jmp
+        command[strcspn(command, "\n")] = 0;
+
+        char typeStr[32];
+
+        if (sscanf(command, "%s", typeStr) == 1) {
+            const ObstacleType type = parse_obstacle_type(typeStr);
+            generate_obstacle(game, type);
+        }
+
+    }
+}
+
 DWORD WINAPI handle_client(LPVOID param) {
     const SOCKET clientSocket = *(SOCKET*)param;
     free(param);
@@ -124,6 +152,7 @@ DWORD WINAPI handle_client(LPVOID param) {
     char buffer[BUFFER_SIZE];
     ClientInfo *client = NULL;
 
+    // Identify
     if (!receive_request(clientSocket, buffer, sizeof(buffer) - 1)) {
         printf("Error receiving ID from client\n");
         closesocket(clientSocket);
@@ -149,7 +178,7 @@ DWORD WINAPI handle_client(LPVOID param) {
                 return 0;
             }
 
-            printf("Player Client accepted\n");
+            // printf("Player Client accepted\n");
 
         } else {
             send_response(clientSocket, "REJECTED\n");
@@ -169,7 +198,7 @@ DWORD WINAPI handle_client(LPVOID param) {
                 return 0;
             }
 
-            printf("Observer Client accepted\n");
+            // printf("Observer Client accepted\n");
 
         } else {
             send_response(clientSocket, "REJECTED\n");
@@ -189,7 +218,7 @@ DWORD WINAPI handle_client(LPVOID param) {
     if (enviar_bloques(clientSocket, &paquete) < 0) return 0;
 
     // Escucha comandos del cliente
-    while (1) { // -> Game loop
+    while (1) {
         if (!receive_request(clientSocket, buffer, sizeof(buffer) - 1)) break;
 
         buffer[strcspn(buffer, "\r\n")] = '\0';
@@ -212,28 +241,10 @@ DWORD WINAPI handle_client(LPVOID param) {
                     golpear(jug, mapa);
                 }
             }
-            printf("Acción recibida: %s\n", buffer);
+            // printf("Acción recibida: %s\n", buffer);
         } else {
             printf("Comando no reconocido: %s\n", buffer);
         }
-
-        // Generate Obstacles
-        if (juego.obstacles.size < 4) {
-            generate_random_obstacle(&juego);
-            printObstacles(&juego);
-        }
-
-        // Move Obstacles
-        move_obstacles(&juego);
-
-        // Check for an obstacle out of the map
-        // delete
-
-        // Check for an obstacle hit a player
-        //  lose live
-
-        // Check for a player hit an obstacle
-        // delete
     }
 
     printf("Client disconnected\n");
@@ -254,6 +265,7 @@ int main(void) {
 
     //  Lanza el loop global del juego
     CreateThread(NULL, 0, game_loop, NULL, 0, NULL);
+    CreateThread(NULL, 0, consoleThread, &juego, 0, NULL);
 
     const SOCKET serverSocket = get_server_socket();
     if (serverSocket == INVALID_SOCKET) return 1;
@@ -262,7 +274,7 @@ int main(void) {
     int clientSize;
 
     while (1) {
-        printf("Waiting for client...\n");
+        // printf("Waiting for client...\n");
         clientSize = sizeof(clientAddr);
         SOCKET *newSocket = malloc(sizeof(SOCKET));
         *newSocket = accept(serverSocket, (struct sockaddr*)&clientAddr, &clientSize);

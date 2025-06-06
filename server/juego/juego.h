@@ -37,9 +37,9 @@ int obtener_nivel_actual_de_jugador(Jugador* j);
  */
 void actualizar_juego(Juego* juego, Nivel* mapa);
 
-void generate_random_obstacle(Juego* juego);
+void generate_obstacle(Juego* juego, ObstacleType type);
 
-void move_obstacles(Juego* juego);
+void move_obstacles(const Juego* juego);
 
 void printObstacles(const Juego* juego);
 

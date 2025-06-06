@@ -25,4 +25,6 @@ Obstacle* createObstacle(ObstacleType type, int x, int y);
 
 void moveObstacle(Obstacle* obstacle);
 
+ObstacleType parse_obstacle_type(char* typeStr);
+
 #endif //OBSTACLE_H

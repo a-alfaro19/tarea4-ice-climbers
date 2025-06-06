@@ -1,6 +1,7 @@
 package ui;
 
 import model.Jugador;
+import model.Obstacle;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -10,6 +11,7 @@ import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -21,6 +23,7 @@ public class GamePanel extends JPanel {
     private int nivelActual = 0;
 
     private Jugador[] jugadores;
+    private ArrayList<Obstacle> obstacles = new ArrayList<>();
     private Tile[][] mapa;
 
     public GamePanel(String miNombre, BufferedWriter output) {
@@ -92,6 +95,8 @@ public class GamePanel extends JPanel {
         this.jugadores = jugadores;
     }
 
+    public void setObstacles(ArrayList<Obstacle> obstacles) { this.obstacles = obstacles; }
+
     public void setBloques(List<Bloque> bloques, int ancho, int alto) {
         this.mapa = convertirBloquesAMatriz(bloques, ancho, alto);
     }
@@ -127,7 +132,7 @@ public class GamePanel extends JPanel {
         final int TILE_WIDTH = PANEL_WIDTH / COLS;
         final int TILE_HEIGHT = PANEL_HEIGHT / VISIBLE_ROWS;
 
-// Dibujar mapa
+        // Dibujar mapa
         for (int i = FIRST_VISIBLE_ROW, visibleRow = 0; i < ROWS && visibleRow < VISIBLE_ROWS; i++, visibleRow++) {
             int nivel = i / filasPorNivel;
             boolean esBonus = nivel >= 9;
@@ -198,6 +203,17 @@ public class GamePanel extends JPanel {
                 }
             }
         }
+
+        // Draw Obstacles
+        if (!obstacles.isEmpty()) {
+            for (Obstacle obstacle : obstacles) {
+                int visibleRow = obstacle.getY() - FIRST_VISIBLE_ROW;
+                int drawX = obstacle.getX() * TILE_WIDTH;
+                int drawY = PANEL_HEIGHT - (visibleRow + 1) * TILE_HEIGHT;
+                g.drawImage(obstacle.getImage(), drawX, drawY, TILE_WIDTH, TILE_HEIGHT, this);
+            }
+        }
+
     }
 
     public static Tile[][] convertirBloquesAMatriz(List<Bloque> bloques, int ancho, int alto) {
