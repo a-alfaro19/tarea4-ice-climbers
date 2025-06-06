@@ -1,4 +1,4 @@
-package ui;
+package model;
 
 public enum TileType {
     EMPTY,

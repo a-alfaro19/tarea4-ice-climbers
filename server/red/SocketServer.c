@@ -4,6 +4,8 @@
 #include <string.h>
 #include <stdlib.h>
 #include <windows.h>
+
+#include "clientes.h"
 #include "../juego/nivel.h"
 #include "../juego/bloque.h"
 #include "../juego/mapa.h"
@@ -188,10 +190,40 @@ DWORD WINAPI handle_client(LPVOID param) {
             printf("Conexión rechazada: no se puede unir a modo 2 jugadores\n");
             return 0;
         }
-    }
+    }else if (strcmp(buffer, "OBSERVER") == 0) {
+            // Contar observadores actuales
+            int popo_count = contar_observadores_de(0);
+            int nana_count = contar_observadores_de(1);
+            int observando_a = -1;
 
-    else if (strcmp(buffer, "OBSERVER") == 0) {
-        if (observer_clients < 2) {
+            // Decidir a quién puede observar
+            if (modo_actual == MODO_UNO_JUGADOR) {
+                if (popo_count >= 2) {
+                    send_response(clientSocket, "REJECTED\n");
+                    closesocket(clientSocket);
+                    printf("Observadores para Popo llenos (modo 1 jugador)\n");
+                    return 0;
+                }
+                observando_a = 0; // Solo Popo
+            } else if (modo_actual == MODO_DOS_JUGADORES) {
+                if (popo_count < 2) {
+                    observando_a = 0;
+                } else if (nana_count < 2) {
+                    observando_a = 1;
+                } else {
+                    send_response(clientSocket, "REJECTED\n");
+                    closesocket(clientSocket);
+                    printf("Observadores para Popo y Nana llenos (modo 2 jugadores)\n");
+                    return 0;
+                }
+            } else {
+                send_response(clientSocket, "REJECTED\n");
+                closesocket(clientSocket);
+                printf("No hay partida activa para observar\n");
+                return 0;
+            }
+
+            // Crear cliente
             client = &clients[num_clients++];
             client->socket = clientSocket;
             client->type = OBSERVER;
@@ -202,15 +234,16 @@ DWORD WINAPI handle_client(LPVOID param) {
                 return 0;
             }
 
-            printf("Observer Client accepted\n");
+            // Enviar número indicando a quién observar (little endian)
+            unsigned char bytes[4];
+            bytes[0] = observando_a & 0xFF;
+            bytes[1] = (observando_a >> 8) & 0xFF;
+            bytes[2] = (observando_a >> 16) & 0xFF;
+            bytes[3] = (observando_a >> 24) & 0xFF;
+            send(clientSocket, (const char*)bytes, 4, 0);
 
-        } else {
-            send_response(clientSocket, "REJECTED\n");
-            closesocket(clientSocket);
-            return 0;
-        }
-
-    } else {
+            printf("Observer Client accepted (observando a %s)\n", observando_a == 0 ? "Popo" : "Nana");
+        }else {
         printf("Invalid ID received from client\n");
         closesocket(clientSocket);
         return 0;

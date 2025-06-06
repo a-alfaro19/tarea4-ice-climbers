@@ -1,4 +1,4 @@
-package ui;
+package model;
 
 import java.io.DataInputStream;
 import java.io.IOException;

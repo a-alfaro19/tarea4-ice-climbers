@@ -1,12 +1,16 @@
 package client;
 
+import observer.GameObserver;
+
 import java.io.IOException;
 
 public interface IClient {
     /**
      * Sends the client.Client Identification to the server.
+     *
+     * @return
      */
-    void identify() throws IOException;
+    String identify() throws IOException;
 
     /**
      * Sends a request to the server.
@@ -19,4 +23,10 @@ public interface IClient {
      * @return String with the server response.
      */
     String getResponse() throws IOException;
+
+    /**
+     * Optional: Adds a game observer (used by ObserverClient only).
+     */
+    default void addObserver(GameObserver observer) {
+    }
 }

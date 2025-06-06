@@ -1,7 +1,7 @@
 package client;
 
 import model.Juego;
-import ui.Bloque;
+import model.Bloque;
 import ui.GameWindow;
 
 import javax.swing.*;
@@ -18,7 +18,7 @@ public class PlayerClient extends Client implements IClient {
     }
 
     @Override
-    public void identify() throws IOException {
+    public String identify() throws IOException {
         if (dosJugadores) {
             out.write("PLAYER2\n".getBytes());
         } else {
@@ -43,6 +43,7 @@ public class PlayerClient extends Client implements IClient {
         in.readFully(nombreBytes);
         this.nombreJugador = new String(nombreBytes).trim();
         System.out.println("Jugador asignado: " + nombreJugador);
+        return null;
     }
 
     @Override
@@ -111,7 +112,7 @@ public class PlayerClient extends Client implements IClient {
         int b2 = in.readUnsignedByte();
         int b3 = in.readUnsignedByte();
         int b4 = in.readUnsignedByte();
-        return (b4 << 24) | (b3 << 16) | (b2 << 8) | b1;
+        return (b4 << 24) |(b3 << 16) | (b2 << 8) | b1;
     }
 }
 

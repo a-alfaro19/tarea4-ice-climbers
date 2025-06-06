@@ -1,7 +1,10 @@
 package ui;
 
 import client.ClientFactory;
+import client.ObserverClient;
 import client.PlayerClient;
+import observer.GameObserver;
+import observer.ObserverWindow;
 
 import javax.swing.*;
 import java.awt.*;
@@ -15,7 +18,6 @@ public class MainMenuPanel extends JPanel {
     private final JFrame mainFrame;
     private boolean started = false;
     private volatile boolean esperandoSegundoJugador = false;
-
 
     public MainMenuPanel(JFrame mainFrame) {
         this.mainFrame = mainFrame;
@@ -89,15 +91,26 @@ public class MainMenuPanel extends JPanel {
             }
         }).start();
     }
-
     private void iniciarObservador() {
         started = true;
         new Thread(() -> {
             try {
-                PlayerClient client = (PlayerClient) ClientFactory.createClient("OBSERVER", "localhost", 8080);
-                client.identify();
+                // Crear cliente observador
+                ObserverClient client = (ObserverClient) ClientFactory.createClient("OBSERVER", "localhost", 8080);
+
+                // El servidor responde con a quién se está observando
+                String observado = client.identify(); // "Popo" o "Nana"
+
+                // Crear ventana asociada al jugador observado
+                ObserverWindow observerWindow = new ObserverWindow(observado);
+                client.addObserver(observerWindow);
+
+                // Empezar a escuchar actualizaciones
                 client.startListening();
+
+                // Cerrar menú
                 SwingUtilities.invokeLater(() -> mainFrame.dispose());
+
             } catch (IOException e) {
                 started = false;
                 SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(
@@ -134,13 +147,12 @@ public class MainMenuPanel extends JPanel {
             g.drawString(text, (width - textWidth) / 2, startY + i * optionHeight);
         }
         if (esperandoSegundoJugador) {
-            g.setColor(new Color(200, 100, 255)); // morado claro
+            g.setColor(new Color(200, 100, 255));
             g.setFont(new Font("Arial", Font.BOLD, 24));
             String texto = "Esperando conexión del segundo jugador...";
             int textWidth = g.getFontMetrics().stringWidth(texto);
             int textY = startY + options.length * optionHeight + 40;
             g.drawString(texto, (width - textWidth) / 2, textY);
         }
-
     }
 }

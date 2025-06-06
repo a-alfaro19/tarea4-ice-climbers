@@ -1,4 +1,4 @@
-package ui;
+package model;
 
 public class Tile {
     public int x, y;

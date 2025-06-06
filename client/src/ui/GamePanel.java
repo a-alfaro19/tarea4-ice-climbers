@@ -1,6 +1,10 @@
 package ui;
 
+import model.Bloque;
 import model.Jugador;
+import model.Tile;
+import model.TileType;
+
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
@@ -21,11 +25,13 @@ public class GamePanel extends JPanel {
     private final boolean dosJugadores;
     private Jugador[] jugadores;
     private Tile[][] mapa;
+    private final boolean esControlable;
 
-    public GamePanel(String miNombre, BufferedWriter output, boolean dosJugadores) {
+    public GamePanel(String miNombre, BufferedWriter output, boolean dosJugadores, boolean esControlable) {
         this.miNombre = miNombre;
         this.output = output;
         this.dosJugadores = dosJugadores;
+        this.esControlable = esControlable;
 
         setBackground(Color.BLACK);
         setFocusable(true);
@@ -38,50 +44,53 @@ public class GamePanel extends JPanel {
             System.err.println("Error cargando imágenes: " + e.getMessage());
         }
 
-        addKeyListener(new KeyAdapter() {
-            @Override
-            public void keyPressed(KeyEvent e) {
-                if (jugadores == null || mapa == null) return;
+        // Solo agregar controles si es un jugador
+        if (esControlable) {
+            addKeyListener(new KeyAdapter() {
+                @Override
+                public void keyPressed(KeyEvent e) {
+                    if (jugadores == null || mapa == null) return;
 
-                try {
-                    for (Jugador j : jugadores) {
-                        if (j != null && j.nombre.equalsIgnoreCase(miNombre) && j.vidas > 0) {
-                            int ancho = mapa[0].length;
-                            int alto = mapa.length;
+                    try {
+                        for (Jugador j : jugadores) {
+                            if (j != null && j.nombre.equalsIgnoreCase(miNombre) && j.vidas > 0) {
+                                int ancho = mapa[0].length;
+                                int alto = mapa.length;
 
-                            switch (e.getKeyCode()) {
-                                case KeyEvent.VK_LEFT -> {
-                                    if (j.x > 0) {
-                                        output.write("MOVER:L\n");
+                                switch (e.getKeyCode()) {
+                                    case KeyEvent.VK_LEFT -> {
+                                        if (j.x > 0) {
+                                            output.write("MOVER:L\n");
+                                            output.flush();
+                                        }
+                                    }
+                                    case KeyEvent.VK_RIGHT -> {
+                                        if (j.x < ancho - 1) {
+                                            output.write("MOVER:R\n");
+                                            output.flush();
+                                        }
+                                    }
+                                    case KeyEvent.VK_UP -> {
+                                        if (j.y < alto - 1) {
+                                            output.write("BRINCAR\n");
+                                            output.flush();
+                                        }
+                                    }
+                                    case KeyEvent.VK_SPACE -> {
+                                        output.write("GOLPEAR\n");
                                         output.flush();
                                     }
                                 }
-                                case KeyEvent.VK_RIGHT -> {
-                                    if (j.x < ancho - 1) {
-                                        output.write("MOVER:R\n");
-                                        output.flush();
-                                    }
-                                }
-                                case KeyEvent.VK_UP -> {
-                                    if (j.y < alto - 1) {
-                                        output.write("BRINCAR\n");
-                                        output.flush();
-                                    }
-                                }
-                                case KeyEvent.VK_SPACE -> {
-                                    output.write("GOLPEAR\n");
-                                    output.flush();
-                                }
+                                break;
                             }
-                            break;
                         }
-                    }
 
-                } catch (IOException ex) {
-                    ex.printStackTrace();
+                    } catch (IOException ex) {
+                        ex.printStackTrace();
+                    }
                 }
-            }
-        });
+            });
+        }
     }
 
     public void setNivelActual(int nivelActual) {
@@ -113,6 +122,7 @@ public class GamePanel extends JPanel {
         final int COLS = mapa[0].length;
         final int filasPorNivel = 6;
         final int VISIBLE_ROWS = 19;
+
         int maxY = 0;
         if (jugadores != null) {
             for (Jugador j : jugadores) {
@@ -121,18 +131,18 @@ public class GamePanel extends JPanel {
                 }
             }
         }
-        final int FIRST_VISIBLE_ROW = Math.max(0, Math.min(maxY - VISIBLE_ROWS / 2, mapa.length - VISIBLE_ROWS));
 
+        final int FIRST_VISIBLE_ROW = Math.max(0, Math.min(maxY - VISIBLE_ROWS / 2, mapa.length - VISIBLE_ROWS));
         final int TILE_WIDTH = PANEL_WIDTH / COLS;
         final int TILE_HEIGHT = PANEL_HEIGHT / VISIBLE_ROWS;
 
+        // Dibujar tiles
         for (int i = FIRST_VISIBLE_ROW, visibleRow = 0; i < ROWS && visibleRow < VISIBLE_ROWS; i++, visibleRow++) {
             int nivel = i / filasPorNivel;
             boolean esBonus = nivel >= 9;
 
             for (int j = 0; j < COLS; j++) {
                 Tile tile = mapa[i][j];
-
                 g.setColor(switch (tile.type) {
                     case NORMAL -> esBonus ? new Color(180, 100, 255) : Color.CYAN;
                     case FIXED_TILE -> esBonus ? new Color(120, 48, 191) : Color.GRAY;
@@ -141,7 +151,6 @@ public class GamePanel extends JPanel {
 
                 int x = j * TILE_WIDTH;
                 int y = PANEL_HEIGHT - (visibleRow + 1) * TILE_HEIGHT;
-
                 g.fillRect(x, y, TILE_WIDTH, TILE_HEIGHT);
                 g.setColor(Color.BLACK);
                 g.drawRect(x, y, TILE_WIDTH, TILE_HEIGHT);
@@ -152,7 +161,6 @@ public class GamePanel extends JPanel {
                 int y = PANEL_HEIGHT - (visibleRow + 1) * TILE_HEIGHT;
                 g.setColor(Color.YELLOW);
                 g.setFont(new Font("Monospaced", Font.BOLD, 12));
-
                 String label = (nivel >= 9) ? "Fase Bonus" : "Nivel " + nivel;
                 g.drawString(label, PANEL_WIDTH - 100, y + TILE_HEIGHT - 4);
             }
@@ -162,7 +170,12 @@ public class GamePanel extends JPanel {
         if (jugadores != null) {
             for (Jugador j : jugadores) {
                 if (j == null || j.vidas <= 0) continue;
-                if (!dosJugadores && j.nombre.equalsIgnoreCase("Nana")) continue;// ocultar Nana
+
+                // Jugador controlable en modo 1 jugador: ocultar Nana
+                if (esControlable && !dosJugadores && j.nombre.equalsIgnoreCase("Nana")) continue;
+
+                // Observador: mostrar solo al jugador observado
+                if (!esControlable && !j.nombre.equalsIgnoreCase(miNombre)) continue;
 
                 int visibleRow = j.y - FIRST_VISIBLE_ROW;
                 if (visibleRow < 0 || visibleRow >= VISIBLE_ROWS) continue;
@@ -185,24 +198,16 @@ public class GamePanel extends JPanel {
 
             for (Jugador j : jugadores) {
                 if (j == null) continue;
-                if (miNombre.equalsIgnoreCase("Popo") && j.nombre.equalsIgnoreCase("Nana")) continue; // ocultar Nana
 
-                String texto = j.nombre + ": " + j.vidas + " vidas";
-                if (j.nombre.equalsIgnoreCase("Popo")) {
-                    g.drawString(texto, 10, 25);
-                } else if (j.nombre.equalsIgnoreCase("Nana")) {
-                    int textWidth = g.getFontMetrics().stringWidth(texto);
-                    g.drawString(texto, getWidth() - textWidth - 10, 25);
+                // JUGADOR controlable
+                if (esControlable) {
+                    // En modo 1 jugador, solo mostrar a Popo
+                    if (!dosJugadores && j.nombre.equalsIgnoreCase("Nana")) continue;
                 }
-            }
-        }// Dibujar vidas
-        if (jugadores != null) {
-            g.setColor(Color.WHITE);
-            g.setFont(new Font("Arial", Font.BOLD, 14));
-
-            for (Jugador j : jugadores) {
-                if (j == null) continue;
-                if (!dosJugadores && j.nombre.equalsIgnoreCase("Nana")) continue;
+                // OBSERVADOR: mostrar solo al jugador observado
+                else {
+                    if (!j.nombre.equalsIgnoreCase(miNombre)) continue;
+                }
 
                 String texto = j.nombre + ": " + j.vidas + " vidas";
                 if (j.nombre.equalsIgnoreCase("Popo")) {
@@ -214,7 +219,9 @@ public class GamePanel extends JPanel {
             }
         }
 
+
     }
+
 
     public static Tile[][] convertirBloquesAMatriz(List<Bloque> bloques, int ancho, int alto) {
         Tile[][] mapa = new Tile[alto][ancho];

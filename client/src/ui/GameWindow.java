@@ -1,4 +1,5 @@
 package ui;
+import model.Bloque;
 import model.Juego;
 
 import javax.swing.*;
@@ -22,7 +23,7 @@ public class GameWindow extends JFrame {
         JPanel mainPanel = new JPanel(new BorderLayout());
 
         // Panel central del juego
-        gamePanel = new GamePanel(nombreJugador, output, dosJugadores);
+        gamePanel = new GamePanel(nombreJugador, output, dosJugadores, true);
         mainPanel.add(gamePanel, BorderLayout.CENTER);
 
         setContentPane(mainPanel);
