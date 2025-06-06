@@ -120,10 +120,6 @@ void actualizar_juego(Juego* juego, Nivel* mapa) {
             // printf("¡Fase BONUS iniciada! +1 vida\n");
         }
     }
-
-    static DWORD last_generated_time = 0;
-    DWORD current_time = GetTickCount();
-
     // Move Obstacles
     static DWORD lastObstacleMove = 0;
     DWORD now = GetTickCount();
@@ -136,7 +132,7 @@ void actualizar_juego(Juego* juego, Nivel* mapa) {
 
 
     // Check for an obstacle out of the map
-    // eliminar
+    removeObstacleOutOfMap(juego);
 
 }
 
@@ -144,18 +140,20 @@ void generate_obstacle(Juego* juego, const ObstacleType type) {
     int x = 0;
     int y = 0;
 
+    int DISTANCE_BETWEEN_FLOORS = 6;
+
     // Set Origin
     switch (type) {
         case YETI:
             const Dir validDirs[] = {LEFT, RIGHT};
             const Dir randomDir = validDirs[rand() % 2];
             x = randomDir == LEFT ? 0 : 30;
-            y = FLOOR_HEIGHT;
+            y = FLOOR_HEIGHT + (rand() % 3) * DISTANCE_BETWEEN_FLOORS;
             break;
 
         case BIRD:
             x = 0;
-            y = FLOOR_HEIGHT;
+            y = FLOOR_HEIGHT + (rand() % 3) * DISTANCE_BETWEEN_FLOORS;;
             break;
 
         case ICE_BLOCK:
@@ -184,7 +182,7 @@ void removeObstacleOutOfMap(Juego* juego) {
         int x = obs.x;
         int y = obs.y;
 
-        if (!(0 < x && x < 30) || !(0 < y && y < TOTAL_ROWS)) {
+        if (!(0 <= x && x <= 30) || !(0 <= y && y <= TOTAL_ROWS)) {
             // delete obstacle
             remove_obstacle(&juego->obstacles, i);
         }

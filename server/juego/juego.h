@@ -43,4 +43,6 @@ void move_obstacles(const Juego* juego);
 
 void printObstacles(const Juego* juego);
 
+void removeObstacleOutOfMap(Juego* juego);
+
 #endif
