@@ -67,7 +67,6 @@ public class ObserverClient extends Client {
                     for (int i = 0; i < cantidad; i++) {
                         bloques.add(Bloque.readFrom(in));
                     }
-
                     observable.notifyObservers(juego, bloques);
                 }
 

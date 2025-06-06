@@ -38,7 +38,7 @@ void inicializar_mapa() {
             }
             // Fase bonus (9 a 15)
             else {
-                int borde = (x <= 2 || x >= 27);
+                 int borde = (x <= 2 || x >= 27);
                 int prob = rand() % 100;
 
                 if (piso == FLOORS_PER_LEVEL - 1) {

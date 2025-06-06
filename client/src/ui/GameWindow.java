@@ -1,7 +1,10 @@
 package ui;
 import model.Bloque;
+import model.Fruta;
 import model.Juego;
 
+import java.util.List;
+import java.util.ArrayList;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -34,6 +37,7 @@ public class GameWindow extends JFrame {
         gamePanel.setJugadores(juego.jugadores);
         gamePanel.setObstacles(juego.obstacles);
         gamePanel.setNivelActual(juego.nivelActual);
+        gamePanel.setFrutas(juego.frutas);
         gamePanel.repaint();
     }
 

@@ -38,6 +38,17 @@ int enviar_juego(SOCKET socket, Juego* juego) {
         if (send(socket, &obstacle->y, 4, 0) != 4) return -1;
     }
 
+    int cantidad = juego->frutas.cantidad;
+    send(socket, &cantidad, 4, 0);
+    for (int i = 0; i < cantidad; i++) {
+        Fruta* f = &juego->frutas.frutas[i];
+        send(socket, &f->x, 4, 0);
+        send(socket, &f->y, 4, 0);
+        send(socket, &f->tipo, 4, 0);
+        send(socket, &f->activa, 4, 0);
+    }
+
+
     // Enviar variables del juego
     if (send(socket, &juego->nivel_actual, 4, 0) != 4) return -1;
     //imprimir_bytes(&juego->nivel_actual, 4, "nivel_actual");

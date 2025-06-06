@@ -8,7 +8,7 @@
 #include <stdio.h>
 #include <math.h>
 #define GRAVEDAD -0.05f           // caída más suave
-#define FUERZA_SALTO 5.5f         // salto más alto
+#define FUERZA_SALTO 2.5f         // salto más alto
 #define VELOCIDAD_TERMINAL -2.5f // caída controlada
 #define PASO_VERTICAL 0.01f        // precisión de movimiento vertical
 

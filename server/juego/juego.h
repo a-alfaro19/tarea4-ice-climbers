@@ -6,10 +6,12 @@
 #include "nivel.h"
 #include "jugador.h"
 #include "ObstacleList.h"
+#include "fruta.h"
 
 typedef struct {
     Jugador jugadores[2];  // Popo y Nana
     ObstacleList obstacles; // Obstacles list
+    ListaFrutas frutas;
     int nivel_actual;      // Índice actual (0 a 31)
     int en_fase_bonus;     // 1 = sí, 0 = no
     int velocidad;         // Para futuras animaciones o lógica

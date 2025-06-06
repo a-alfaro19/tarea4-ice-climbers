@@ -1,10 +1,6 @@
 package ui;
 
-import model.Bloque;
-import model.Jugador;
-import model.Obstacle;
-import model.Tile;
-import model.TileType;
+import model.*;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -23,10 +19,13 @@ public class GamePanel extends JPanel {
     private final BufferedWriter output;
     private BufferedImage popoImg;
     private BufferedImage nanaImg;
+    private BufferedImage[] frutaImgs = new BufferedImage[4];
+
     private int nivelActual = 0;
     private final boolean dosJugadores;
     private Jugador[] jugadores;
     private ArrayList<Obstacle> obstacles = new ArrayList<>();
+    private List<Fruta> frutas = new ArrayList<>();
     private Tile[][] mapa;
     private final boolean esControlable;
 
@@ -39,10 +38,17 @@ public class GamePanel extends JPanel {
         setBackground(Color.BLACK);
         setFocusable(true);
         requestFocusInWindow();
+        SwingUtilities.invokeLater(this::requestFocusInWindow);
 
         try {
             popoImg = ImageIO.read(Objects.requireNonNull(getClass().getResource("/ui/figuras/popo.png")));
             nanaImg = ImageIO.read(Objects.requireNonNull(getClass().getResource("/ui/figuras/nana.png")));
+
+            frutaImgs[0] = ImageIO.read(Objects.requireNonNull(getClass().getResource("/ui/figuras/orange.png")));    // Naranja
+            frutaImgs[1] = ImageIO.read(Objects.requireNonNull(getClass().getResource("/ui/figuras/banana.png")));    // Banano
+            frutaImgs[2] = ImageIO.read(Objects.requireNonNull(getClass().getResource("/ui/figuras/egg_plant.png"))); // Berenjena
+            frutaImgs[3] = ImageIO.read(Objects.requireNonNull(getClass().getResource("/ui/figuras/lettuce.png")));   // Lechuga
+
         } catch (IOException e) {
             System.err.println("Error cargando imágenes: " + e.getMessage());
         }
@@ -103,7 +109,9 @@ public class GamePanel extends JPanel {
     public void setJugadores(Jugador[] jugadores) {
         this.jugadores = jugadores;
     }
-
+    public void setFrutas(List<Fruta> frutas) {
+        this.frutas = frutas;
+    }
     public void setObstacles(ArrayList<Obstacle> obstacles) { this.obstacles = obstacles; }
 
     public void setBloques(List<Bloque> bloques, int ancho, int alto) {
@@ -232,6 +240,23 @@ public class GamePanel extends JPanel {
                 int drawX = obstacle.getX() * TILE_WIDTH;
                 int drawY = PANEL_HEIGHT - (visibleRow + 1) * TILE_HEIGHT;
                 g.drawImage(obstacle.getImage(), drawX, drawY, TILE_WIDTH, TILE_HEIGHT, this);
+            }
+        }
+        // Dibujar frutas
+        if (frutas != null) {
+            for (Fruta fruta : frutas) {
+                if (fruta.activa == 0) continue;
+
+                int visibleRow = fruta.y - FIRST_VISIBLE_ROW;
+                if (visibleRow < 0 || visibleRow >= VISIBLE_ROWS) continue;
+
+                int drawX = fruta.x * TILE_WIDTH;
+                int drawY = PANEL_HEIGHT - (visibleRow + 1) * TILE_HEIGHT;
+
+                if (fruta.tipo >= 0 && fruta.tipo < frutaImgs.length && frutaImgs[fruta.tipo] != null) {
+                    g.drawImage(frutaImgs[fruta.tipo], drawX, drawY, TILE_WIDTH, TILE_HEIGHT, this);
+                }
+
             }
         }
 

@@ -63,6 +63,33 @@ int obtener_nivel_actual_de_jugador(Jugador* j) {
     return base_y / (TOTAL_FLOOR_HEIGHT + ROWS_BETWEEN_FLOORS);
 }
 
+void generar_frutas_bonus(Juego* juego) {
+    static TipoFruta tipos[4] = { NARANJA, BANANO, BERENJENA, LECHUGA };
+    juego->frutas.cantidad = 0;
+
+    int intentos = 0;
+    while (juego->frutas.cantidad < 4 && intentos < 500) {
+        // Elegir nivel entre 9 y 14 (fase bonus)
+        int nivel = 9 + rand() % 6;
+        int y_suelo = nivel * (TOTAL_FLOOR_HEIGHT + ROWS_BETWEEN_FLOORS);
+
+        int x = 3 + rand() % 24;
+
+        // Verificar si hay un bloque sólido en (x, y_suelo)
+        if (hay_bloque_en(x, y_suelo)) {
+            // Verificar que encima esté libre (donde va la fruta)
+            if (!hay_bloque_en(x, y_suelo + 1)) {
+                Fruta* f = &juego->frutas.frutas[juego->frutas.cantidad++];
+                f->x = x;
+                f->y = y_suelo + 1;
+                f->tipo = tipos[juego->frutas.cantidad - 1];
+                f->activa = 1;
+            }
+        }
+
+        intentos++;
+    }
+}
 
 void actualizar_juego(Juego* juego, Nivel* mapa) {
     int niveles_previos = juego->nivel_actual;
@@ -84,11 +111,9 @@ void actualizar_juego(Juego* juego, Nivel* mapa) {
         if (j->y < y_limite - 2) {  // -2 para permitir que baje unos cuadros
             perder_vida(j);
 
-            // Reaparecer en el último nivel alcanzado (más alto de ambos)
             int nivel_rescate = nivel_mas_alto;
             int y_base = nivel_rescate * (TOTAL_FLOOR_HEIGHT + ROWS_BETWEEN_FLOORS);
 
-            // Escoge una nueva posición x (centrado aleatorio entre 5 y 24)
             int nueva_x = 5 + rand() % 20;
 
             j->x = nueva_x;
@@ -96,8 +121,6 @@ void actualizar_juego(Juego* juego, Nivel* mapa) {
             j->y = y_base + 1;
             j->vy = 0;
             j->en_el_aire = 0;
-
-            // printf("%s cayó al vacío. Reaparece en nivel %d, x=%d\n", j->nombre, nivel_rescate, j->x);
         }
     }
 
@@ -117,24 +140,53 @@ void actualizar_juego(Juego* juego, Nivel* mapa) {
             for (int i = 0; i < 2; i++) {
                 juego->jugadores[i].vidas++;
             }
-            // printf("¡Fase BONUS iniciada! +1 vida\n");
+            generar_frutas_bonus(juego);
         }
     }
-    // Move Obstacles
+
+    // Mover obstáculos cada 300 ms
     static DWORD lastObstacleMove = 0;
     DWORD now = GetTickCount();
-
-    // Mueve los obstáculos cada 300 ms
     if (now - lastObstacleMove >= 300) {
         move_obstacles(juego);
         lastObstacleMove = now;
     }
 
-
-    // Check for an obstacle out of the map
+    // Eliminar obstáculos fuera del mapa
     removeObstacleOutOfMap(juego);
 
+    // Verificar colisión con frutas
+    for (int i = 0; i < 2; i++) {
+        Jugador* j = &juego->jugadores[i];
+        for (int f = 0; f < juego->frutas.cantidad; f++) {
+            Fruta* fruta = &juego->frutas.frutas[f];
+            if (fruta->activa && j->x == fruta->x && j->y == fruta->y) {
+                fruta->activa = 0;
+
+                int puntos = 0;
+                switch (fruta->tipo) {
+                    case NARANJA: puntos = 100; break;
+                    case BANANO: puntos = 200; break;
+                    case BERENJENA: puntos = 300; break;
+                    case LECHUGA: puntos = 400; break;
+                }
+
+                sumar_puntaje(j, puntos);
+                printf("%s recogió una fruta tipo %d por %d pts\n", j->nombre, fruta->tipo, puntos);
+            }
+        }
+    }
+    // Eliminar frutas que quedaron flotando tras vaciar niveles
+    for (int f = 0; f < juego->frutas.cantidad; f++) {
+        Fruta* fruta = &juego->frutas.frutas[f];
+        if (fruta->activa && !hay_bloque_en(fruta->x, fruta->y - 1)) {
+            fruta->activa = 0;
+            printf("Fruta %d en (%d,%d) eliminada por falta de bloque de soporte\n", fruta->tipo, fruta->x, fruta->y);
+        }
+    }
+
 }
+
 
 void generate_obstacle(Juego* juego, const ObstacleType type) {
     int x = 0;

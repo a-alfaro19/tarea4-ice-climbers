@@ -3,10 +3,13 @@ package model;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.ArrayList;
 
 public class Juego {
     public Jugador[] jugadores = new Jugador[2];
     public ArrayList<Obstacle> obstacles = new ArrayList<>();
+    public List<Fruta> frutas = new ArrayList<>();
     public Integer nivelActual;
     public Integer enFaseBonus;
     public Integer velocidad;
@@ -24,6 +27,12 @@ public class Juego {
         juego.obstacles.clear();
         for (int i = 0; i < obstaclesSize; i++) {
             juego.obstacles.add(Obstacle.readFrom(in));
+        }
+        // Leer frutas
+        int cantidadFrutas = readIntLE(in);
+        juego.frutas.clear();
+        for (int i = 0; i < cantidadFrutas; i++) {
+            juego.frutas.add(Fruta.readFrom(in));
         }
 
         juego.nivelActual = readIntLE(in);

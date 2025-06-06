@@ -1,5 +1,6 @@
 package client;
 
+import model.Fruta;
 import model.Juego;
 import model.Bloque;
 import ui.GameWindow;
@@ -83,7 +84,6 @@ public class PlayerClient extends Client implements IClient {
                                 bloques.add(Bloque.readFrom(in));
                             }
                             window.updateBloques(bloques);
-
                         }
                     } catch (IOException e) {
                         System.err.println("Conexión perdida con el servidor: " + e.getMessage());
