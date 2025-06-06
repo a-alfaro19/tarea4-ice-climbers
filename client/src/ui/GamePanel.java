@@ -244,36 +244,46 @@ public class GamePanel extends JPanel {
             return;
         }
 
-        Jugador popo = null;
-        Jugador nana = null;
+        Jugador popo = obtenerJugadorPorNombre("Popo");
+        Jugador nana = obtenerJugadorPorNombre("Nana");
 
-        for (Jugador j : jugadores) {
-            if (j == null) continue;
-
-            System.out.println("→ Jugador: " + j.nombre + " | Vidas: " + j.vidas);
-
-            if (j.nombre.equalsIgnoreCase("Popo")) {
-                popo = j;
-            } else if (j.nombre.equalsIgnoreCase("Nana")) {
-                nana = j;
-            }
+        if (esPartidaUnJugador()) {
+            verificarJugadorUnicoMuerto(popo);
         }
 
-        if (!dosJugadores) {
-            // Solo Popo está jugando
-            if (popo != null && popo.vidas == 0 && !gameOver) {
-                terminarJuego("🎮 Solo Popo está jugando y ha perdido todas sus vidas.");
-            }
-        } else {
-            // Juegan Popo y Nana
-            if (popo != null && nana != null && popo.vidas == 0 && nana.vidas == 0 && !gameOver) {
-                terminarJuego("🎮 Popo y Nana han perdido todas sus vidas.");
-            }
+        if (esPartidaDosJugadores()) {
+            verificarAmbosJugadoresMuertos(popo, nana);
         }
     }
 
+    private boolean esPartidaUnJugador() {
+        return !dosJugadores;
+    }
 
+    public boolean esPartidaDosJugadores() {
+        return dosJugadores;
+    }
 
+    private Jugador obtenerJugadorPorNombre(String nombre) {
+        for (Jugador j : jugadores) {
+            if (j != null && j.nombre.equalsIgnoreCase(nombre)) {
+                return j;
+            }
+        }
+        return null;
+    }
+
+    private void verificarJugadorUnicoMuerto(Jugador jugador) {
+        if (jugador != null && jugador.vidas == 0 && !gameOver) {
+            terminarJuego("🎮 Solo " + jugador.nombre + " está jugando y ha perdido todas sus vidas.");
+        }
+    }
+
+    private void verificarAmbosJugadoresMuertos(Jugador j1, Jugador j2) {
+        if (j1 != null && j2 != null && j1.vidas == 0 && j2.vidas == 0 && !gameOver) {
+            terminarJuego("🎮 " + j1.nombre + " y " + j2.nombre + " han perdido todas sus vidas.");
+        }
+    }
 
     private void terminarJuego(String mensaje) {
         gameOver = true;
@@ -294,7 +304,7 @@ public class GamePanel extends JPanel {
         SwingUtilities.invokeLater(() -> {
             if (gameWindow != null) {
             }
-                GameOverWindow gameOverWindow = new GameOverWindow();
+                GameOverWindow gameOverWindow = new GameOverWindow(dosJugadores);
                 gameOverWindow.setVisible(true);  // Abre nueva ventana
 
         });
