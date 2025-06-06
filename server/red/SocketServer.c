@@ -326,8 +326,17 @@ DWORD WINAPI handle_client(LPVOID param) {
     if (player_clients == 0) {
         modo_actual = SIN_PARTIDA;
         printf("Modo de juego reiniciado a SIN_PARTIDA\n");
+
+        // Reiniciar juego y mapa
+        inicializar_mapa();
+        inicializar_juego(&juego);
+
+        observer_clients = 0;
+        num_clients = 0;
+
         return 0;
     }
+
 }
 
 int main(void) {
