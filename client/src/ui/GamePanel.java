@@ -22,7 +22,6 @@ public class GamePanel extends JPanel {
     private Jugador[] jugadores;
     private Tile[][] mapa;
     private boolean gameOver = false;
-
     private GameWindow gameWindow;
 
     public GamePanel(String miNombre, BufferedWriter output, boolean dosJugadores) {
@@ -236,6 +235,7 @@ public class GamePanel extends JPanel {
 
         return mapa;
     }
+
     public void verificarSiTodosMuertos() {
         System.out.println("→ Entrando a verificarSiTodosMuertos");
 
@@ -244,47 +244,59 @@ public class GamePanel extends JPanel {
             return;
         }
 
-        int jugadoresActivos = 0;
-        boolean todosMuertos = true;
+        Jugador popo = null;
+        Jugador nana = null;
 
         for (Jugador j : jugadores) {
-            if (j == null || !j.activo) continue;
+            if (j == null) continue;
 
-            jugadoresActivos++;
             System.out.println("→ Jugador: " + j.nombre + " | Vidas: " + j.vidas);
 
-            if (j.vidas != null && j.vidas > 0) {
-                todosMuertos = false;
-                break;
+            if (j.nombre.equalsIgnoreCase("Popo")) {
+                popo = j;
+            } else if (j.nombre.equalsIgnoreCase("Nana")) {
+                nana = j;
             }
         }
 
-        if (jugadoresActivos == 0) {
-            System.out.println("⚠️ No hay jugadores activos en la partida");
-            return;
-        }
-
-        if (todosMuertos && !gameOver) {
-            gameOver = true;
-            System.out.println("✅ Todos los jugadores activos han muerto. Fin del juego.");
-
-            if (output != null) {
-                try {
-                    output.write("GAME_OVER\n");
-                    output.flush();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            } else {
-                System.out.println("⚠️ Output es null");
+        if (!dosJugadores) {
+            // Solo Popo está jugando
+            if (popo != null && popo.vidas == 0 && !gameOver) {
+                terminarJuego("🎮 Solo Popo está jugando y ha perdido todas sus vidas.");
             }
-
-            if (gameWindow != null) {
-                gameWindow.mostrarGameOverWindow();
-            } else {
-                System.out.println("⚠️ GameWindow es null");
+        } else {
+            // Juegan Popo y Nana
+            if (popo != null && nana != null && popo.vidas == 0 && nana.vidas == 0 && !gameOver) {
+                terminarJuego("🎮 Popo y Nana han perdido todas sus vidas.");
             }
         }
     }
-}
+
+
+
+
+    private void terminarJuego(String mensaje) {
+        gameOver = true;
+        System.out.println("✅ Fin del juego: " + mensaje);
+
+        if (output != null) {
+            try {
+                output.write("GAME_OVER\n");
+                output.flush();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        } else {
+            System.out.println("⚠️ Output es null");
+        }
+
+        // Cerrar ventana actual y mostrar nueva sin verificaciones
+        SwingUtilities.invokeLater(() -> {
+            if (gameWindow != null) {
+            }
+                GameOverWindow gameOverWindow = new GameOverWindow();
+                gameOverWindow.setVisible(true);  // Abre nueva ventana
+
+        });
+    }}
 

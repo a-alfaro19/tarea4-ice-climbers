@@ -19,7 +19,7 @@ add_executable(server
         juego/jugador.h
         juego/acciones.c
         juego/acciones.h
-        
+
 )
 
 

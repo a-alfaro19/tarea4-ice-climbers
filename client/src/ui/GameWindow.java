@@ -1,6 +1,7 @@
 package ui;
-import model.Juego;
 
+import client.PlayerClient;
+import model.Juego;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -12,6 +13,9 @@ public class GameWindow extends JFrame {
     private String nombreJugador = "";
     private final GamePanel gamePanel;
     private GameOverWindow gameOverPanel;
+
+    private PlayerClient playerClient;
+    private static GameWindow instancia;
 
 
     public GameWindow(String nombreJugador, BufferedWriter output, boolean dosJugadores) {
@@ -31,15 +35,6 @@ public class GameWindow extends JFrame {
         setVisible(true);
     }
 
-    public void mostrarGameOverWindow() {
-        this.dispose(); // Cierra esta ventana (GameWindow)
-
-        SwingUtilities.invokeLater(() -> {
-            GameOverWindow gameOverWindow = new GameOverWindow();
-            gameOverWindow.setVisible(true);  // Abre nueva ventana
-        });
-    }
-
     public void updateGame(Juego juego) {
         gamePanel.setJugadores(juego.jugadores);
         gamePanel.setNivelActual(juego.nivelActual);
@@ -52,6 +47,22 @@ public class GameWindow extends JFrame {
         gamePanel.repaint();
     }
 
+    public void getWindow(){
+        // Guardamos la instancia actual
+        instancia = playerClient.getWindow();
+    }
+
+    // ➕ MÉTODO PARA CERRAR LA VENTANA
+    public void cerrarVentana() {
+        if (instancia == null){
+            getWindow();
+            cerrarVentana();
+        }
+        if (instancia != null) {
+            instancia.dispose(); // Cierra la ventana
+            instancia = null;
+        }
+    }
 
 
     // Clase para mostrar imagen y texto en horizontal

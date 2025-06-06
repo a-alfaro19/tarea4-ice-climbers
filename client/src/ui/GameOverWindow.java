@@ -118,4 +118,4 @@ public class GameOverWindow extends JFrame {
 
         add(leftPanel); // Agregar panel al JFrame
     }
-}
+}}
