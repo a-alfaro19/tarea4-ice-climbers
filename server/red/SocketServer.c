@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <windows.h>
 
+#include "clientes.h"
 #include "../juego/nivel.h"
 #include "../juego/bloque.h"
 #include "../juego/mapa.h"
@@ -23,6 +24,7 @@ static int num_clients = 0;
 static int player_clients = 0;
 static int observer_clients = 0;
 static Juego juego;
+static ModoJuego modo_actual = SIN_PARTIDA;
 
 int initialize_winsock() {
     static int initialized = 0;
@@ -106,11 +108,7 @@ DWORD WINAPI game_loop(LPVOID param) {
 
         for (int i = 0; i < num_clients; i++) {
             if (clients[i].type == PLAYER || clients[i].type == OBSERVER) {
-
-                if (enviar_juego(clients[i].socket, &juego) < 0) {
-
-                    continue;
-                }
+                if (enviar_juego(clients[i].socket, &juego) < 0) continue;
                 PaqueteBloques paquete = obtener_bloques_visibles();
                 enviar_bloques(clients[i].socket, &paquete);
             }
@@ -152,65 +150,158 @@ DWORD WINAPI handle_client(LPVOID param) {
     char buffer[BUFFER_SIZE];
     ClientInfo *client = NULL;
 
-    // Identify
     if (!receive_request(clientSocket, buffer, sizeof(buffer) - 1)) {
         printf("Error receiving ID from client\n");
         closesocket(clientSocket);
         return 0;
     }
-
-    if (strcmp(buffer, "PLAYER") == 0) {
-        if (player_clients < 2) {
+    buffer[strcspn(buffer, "\r\n")] = '\0';
+    if (strcmp(buffer, "PLAYER1") == 0) {
+        if (modo_actual == SIN_PARTIDA) {
             client = &clients[num_clients++];
             client->socket = clientSocket;
             client->type = PLAYER;
             client->id = player_clients++;
+            modo_actual = MODO_UNO_JUGADOR;
 
-            if (!send_response(clientSocket, "ACCEPTED\n")) {
-                closesocket(clientSocket);
-                return 0;
-            }
-
-            const char* nombre = (client->id == 0) ? "Popo      " : "Nana      ";
-            if (send(clientSocket, nombre, 10, 0) != 10) {
-                printf("Error sending player name\n");
-                closesocket(clientSocket);
-                return 0;
-            }
-
-            // printf("Player Client accepted\n");
+            send_response(clientSocket, "ACCEPTED\n");
+            const char* nombre = "Popo      ";
+            send(clientSocket, nombre, 10, 0);
+            printf("Jugador Popo conectado (modo 1 jugador)\n");
 
         } else {
             send_response(clientSocket, "REJECTED\n");
             closesocket(clientSocket);
+            printf("Conexión rechazada: ya hay una partida activa\n");
             return 0;
         }
 
-    } else if (strcmp(buffer, "OBSERVER") == 0) {
-        if (observer_clients < 2) {
-            client = &clients[num_clients++];
-            client->socket = clientSocket;
-            client->type = OBSERVER;
-            client->id = observer_clients++;
+        } else if (strcmp(buffer, "PLAYER2") == 0) {
+            if (modo_actual == SIN_PARTIDA) {
+                client = &clients[num_clients++];
+                client->socket = clientSocket;
+                client->type = PLAYER;
+                client->id = player_clients++;
+                modo_actual = MODO_DOS_JUGADORES;
 
-            if (!send_response(clientSocket, "ACCEPTED\n")) {
-                closesocket(clientSocket);
-                return 0;
-            }
 
-            // printf("Observer Client accepted\n");
+                send_response(clientSocket, "ACCEPTED\n");
+                const char* nombre = "Popo      ";
+                send(clientSocket, nombre, 10, 0);
+                printf("Jugador Popo conectado (modo 2 jugadores)\n");
 
+            } else if (modo_actual == MODO_DOS_JUGADORES && player_clients == 1) {
+                client = &clients[num_clients++];
+                client->socket = clientSocket;
+                client->type = PLAYER;
+                client->id = player_clients++;
+
+                send_response(clientSocket, "ACCEPTED\n");
+                const char* nombre = "Nana      ";
+                send(clientSocket, nombre, 10, 0);
+                printf("Jugador Nana conectado (modo 2 jugadores)\n");
+
+                // Avisar a Popo que puede iniciar
+                for (int i = 0; i < num_clients; i++) {
+                    if (clients[i].type == PLAYER && clients[i].id == 0) {
+                        send_response(clients[i].socket, "START\n");
+                        break;
+                    }
+                }
         } else {
             send_response(clientSocket, "REJECTED\n");
+            closesocket(clientSocket);
+            printf("Conexión rechazada: no se puede unir a modo 2 jugadores\n");
+            return 0;
+        }
+    }  else if (
+        strcmp(buffer, "OBSERVER") == 0 ||
+        strcmp(buffer, "OBSERVER_POPO") == 0 ||
+        strcmp(buffer, "OBSERVER_NANA") == 0
+    ) {
+        int observando_a = -1;
+
+        int popo_count = contar_observadores_de(0);
+        int nana_count = contar_observadores_de(1);
+
+        if (modo_actual == SIN_PARTIDA) {
+            send_response(clientSocket, "REJECTED\n");
+            closesocket(clientSocket);
+            printf("Conexión rechazada: no hay partida activa\n");
+            return 0;
+        }
+
+        if (modo_actual == MODO_UNO_JUGADOR) {
+            if (strcmp(buffer, "OBSERVER_NANA") == 0) {
+                send_response(clientSocket, "REJECTED\n");
+                closesocket(clientSocket);
+                printf("Rechazado: no se puede observar a Nana en modo 1 jugador\n");
+                return 0;
+            }
+            if (popo_count >= 2) {
+                send_response(clientSocket, "REJECTED\n");
+                closesocket(clientSocket);
+                printf("Rechazado: límite de observadores para Popo (modo 1 jugador)\n");
+                return 0;
+            }
+            observando_a = 0;
+
+        } else if (modo_actual == MODO_DOS_JUGADORES) {
+            if (strcmp(buffer, "OBSERVER_POPO") == 0) {
+                if (popo_count >= 2) {
+                    send_response(clientSocket, "REJECTED\n");
+                    closesocket(clientSocket);
+                    printf("Rechazado: límite de observadores para Popo\n");
+                    return 0;
+                }
+                observando_a = 0;
+            } else if (strcmp(buffer, "OBSERVER_NANA") == 0) {
+                if (nana_count >= 2) {
+                    send_response(clientSocket, "REJECTED\n");
+                    closesocket(clientSocket);
+                    printf("Rechazado: límite de observadores para Nana\n");
+                    return 0;
+                }
+                observando_a = 1;
+            } else {
+                send_response(clientSocket, "REJECTED\n");
+                closesocket(clientSocket);
+                printf("Rechazado: debe especificar OBSERVER_POPO o OBSERVER_NANA\n");
+                return 0;
+            }
+        }
+
+        if (!registrar_cliente(clientSocket, 0, -1)) {
+            send_response(clientSocket, "REJECTED\n");
+            closesocket(clientSocket);
+            printf("Error al registrar observador en estructura global\n");
+            return 0;
+        }
+
+        ClienteConectado* lista = obtener_clientes();
+        lista[total_clientes() - 1].observando_a = observando_a;
+
+        client = &clients[num_clients++];
+        client->socket = clientSocket;
+        client->type = OBSERVER;
+        client->id = observer_clients++;
+
+        if (!send_response(clientSocket, "ACCEPTED\n")) {
             closesocket(clientSocket);
             return 0;
         }
 
-    } else {
-        printf("Invalid ID received from client\n");
-        closesocket(clientSocket);
-        return 0;
+        unsigned char bytes[4];
+        bytes[0] = observando_a & 0xFF;
+        bytes[1] = (observando_a >> 8) & 0xFF;
+        bytes[2] = (observando_a >> 16) & 0xFF;
+        bytes[3] = (observando_a >> 24) & 0xFF;
+        send(clientSocket, (const char*)bytes, 4, 0);
+
+        printf("Observer Client accepted (observando a %s)\n", observando_a == 0 ? "Popo" : "Nana");
+        printf("Observadores actuales: Popo = %d, Nana = %d\n", contar_observadores_de(0), contar_observadores_de(1));
     }
+
 
     // Enviar estado inicial
     if (enviar_juego(clientSocket, &juego) < 0) return 0;
@@ -241,7 +332,7 @@ DWORD WINAPI handle_client(LPVOID param) {
                     golpear(jug, mapa);
                 }
             }
-            // printf("Acción recibida: %s\n", buffer);
+            printf("Acción recibida: %s\n", buffer);
         } else {
             printf("Comando no reconocido: %s\n", buffer);
         }
@@ -249,12 +340,17 @@ DWORD WINAPI handle_client(LPVOID param) {
 
     printf("Client disconnected\n");
     closesocket(clientSocket);
+    remover_cliente(clientSocket);
 
     if (client->type == PLAYER && player_clients > 0) player_clients--;
     if (client->type == OBSERVER && observer_clients > 0) observer_clients--;
     if (num_clients > 0) num_clients--;
 
-    return 0;
+    if (player_clients == 0) {
+        modo_actual = SIN_PARTIDA;
+        printf("Modo de juego reiniciado a SIN_PARTIDA\n");
+        return 0;
+    }
 }
 
 int main(void) {
@@ -274,7 +370,7 @@ int main(void) {
     int clientSize;
 
     while (1) {
-        // printf("Waiting for client...\n");
+        printf("Waiting for client...\n");
         clientSize = sizeof(clientAddr);
         SOCKET *newSocket = malloc(sizeof(SOCKET));
         *newSocket = accept(serverSocket, (struct sockaddr*)&clientAddr, &clientSize);

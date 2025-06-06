@@ -1,7 +1,7 @@
 package client;
 
 import model.Juego;
-import ui.Bloque;
+import model.Bloque;
 import ui.GameWindow;
 
 import javax.swing.*;
@@ -11,14 +11,20 @@ import java.util.List;
 
 public class PlayerClient extends Client implements IClient {
     private String nombreJugador;
+    private boolean dosJugadores = false;
 
     public PlayerClient(String host, int port) throws IOException {
         super(host, port);
     }
 
     @Override
-    public void identify() throws IOException {
-        out.write("PLAYER".getBytes());
+    public String identify() throws IOException {
+        if (dosJugadores) {
+            out.write("PLAYER2\n".getBytes());
+        } else {
+            out.write("PLAYER1\n".getBytes());
+        }
+
         out.flush();
 
         // Leer respuesta tipo "ACCEPTED\n"
@@ -29,7 +35,7 @@ public class PlayerClient extends Client implements IClient {
         }
 
         if (!"ACCEPTED".equals(response.toString().trim())) {
-            throw new IOException("Jugador rechazado: " + response);
+            throw new IOException("");
         }
 
         // Leer nombre exacto de 10 bytes
@@ -37,6 +43,7 @@ public class PlayerClient extends Client implements IClient {
         in.readFully(nombreBytes);
         this.nombreJugador = new String(nombreBytes).trim();
         System.out.println("Jugador asignado: " + nombreJugador);
+        return null;
     }
 
     @Override
@@ -58,8 +65,7 @@ public class PlayerClient extends Client implements IClient {
 
             SwingUtilities.invokeLater(() -> {
                 System.out.println("Creando ventana para " + nombreJugador);
-                GameWindow window = new GameWindow(nombreJugador, output);
-
+                GameWindow window = new GameWindow(nombreJugador, output, this.dosJugadores);
 
                 new Thread(() -> {
                     try {
@@ -89,13 +95,24 @@ public class PlayerClient extends Client implements IClient {
             System.err.println("Error iniciando la ventana del juego: " + e.getMessage());
         }
     }
+    public String getNombreJugador() {
+        return nombreJugador;
+    }
+
+    public void setDosJugadores(boolean valor) {
+        this.dosJugadores = valor;
+    }
+
+    public boolean isDosJugadores() {
+        return dosJugadores;
+    }
 
     private int readIntLE(DataInputStream in) throws IOException {
         int b1 = in.readUnsignedByte();
         int b2 = in.readUnsignedByte();
         int b3 = in.readUnsignedByte();
         int b4 = in.readUnsignedByte();
-        return (b4 << 24) | (b3 << 16) | (b2 << 8) | b1;
+        return (b4 << 24) |(b3 << 16) | (b2 << 8) | b1;
     }
 }
 

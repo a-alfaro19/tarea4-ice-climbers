@@ -2,6 +2,7 @@
 #define SOCKETSERVER_H
 
 #include <winsock2.h>
+#include "clientes.h"
 
 /**
  * Enum to identify the client type
@@ -19,6 +20,14 @@ typedef struct {
     int id;
     ClientType type;
 } ClientInfo;
+
+
+typedef enum {
+    SIN_PARTIDA,
+    MODO_UNO_JUGADOR,
+    MODO_DOS_JUGADORES
+} ModoJuego;
+
 
 /**
  * @brief Initialize Winsock and sets its initialized state as true.

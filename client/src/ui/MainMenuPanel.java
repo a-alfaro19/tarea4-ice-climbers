@@ -1,7 +1,10 @@
 package ui;
 
 import client.ClientFactory;
+import client.ObserverClient;
 import client.PlayerClient;
+import observer.GameObserver;
+import observer.ObserverWindow;
 
 import javax.swing.*;
 import java.awt.*;
@@ -10,10 +13,11 @@ import java.awt.event.KeyEvent;
 import java.io.IOException;
 
 public class MainMenuPanel extends JPanel {
-    private final String[] options = {"JUGAR", "OBSERVAR", "SALIR"};
+    private final String[] options = {"JUGAR POPO", "2 JUGADORES", "OBSERVAR", "SALIR"};
     private int selection = 0;
     private final JFrame mainFrame;
     private boolean started = false;
+    private volatile boolean esperandoSegundoJugador = false;
 
     public MainMenuPanel(JFrame mainFrame) {
         this.mainFrame = mainFrame;
@@ -42,53 +46,99 @@ public class MainMenuPanel extends JPanel {
 
     private void executeOption() {
         if (started) return;
-
         String selected = options[selection];
+
         switch (selected) {
-            case "JUGAR" -> {
-                started = true;
-                new Thread(() -> {
-                    try {
-                        PlayerClient client = (PlayerClient) ClientFactory.createClient("PLAYER", "localhost", 8080);
-                        client.identify();
-                        client.startListening();
-                        SwingUtilities.invokeLater(() -> mainFrame.dispose()); // Cierra el menú
-                    } catch (IOException e) {
-                        started = false;
-                        SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(
-                                this,
-                                "Error al iniciar el cliente jugador:\n" + e.getMessage(),
-                                "Conexión fallida",
-                                JOptionPane.ERROR_MESSAGE
-                        ));
-                    }
-                }).start();
-            }
-
-            case "OBSERVAR" -> {
-                started = true;
-                new Thread(() -> {
-                    try {
-                        PlayerClient client = (PlayerClient) ClientFactory.createClient("OBSERVER", "localhost", 8080);
-                        client.identify();
-                        client.startListening();
-                        SwingUtilities.invokeLater(() -> mainFrame.dispose()); // Cierra el menú
-                    } catch (IOException e) {
-                        started = false;
-                        SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(
-                                this,
-                                "Error al iniciar como observador:\n" + e.getMessage(),
-                                "Conexión fallida",
-                                JOptionPane.ERROR_MESSAGE
-                        ));
-                    }
-                }).start();
-            }
-
+            case "JUGAR POPO" -> iniciarClienteJugador(false);
+            case "2 JUGADORES" -> iniciarClienteJugador(true);
+            case "OBSERVAR" -> iniciarObservador();
             case "SALIR" -> System.exit(0);
         }
     }
 
+    private void iniciarClienteJugador(boolean esperarSegundoJugador) {
+        started = true;
+        new Thread(() -> {
+            try {
+                PlayerClient client = (PlayerClient) ClientFactory.createClient("PLAYER", "localhost", 8080);
+                client.setDosJugadores(esperarSegundoJugador);
+                client.identify();
+
+                if (esperarSegundoJugador && client.getNombreJugador().equalsIgnoreCase("Popo")) {
+                    esperandoSegundoJugador = true;
+                    repaint();
+
+                    while (true) {
+                        String respuesta = client.getResponse();
+                        if (respuesta.trim().equals("START")) break;
+                    }
+
+                    esperandoSegundoJugador = false;
+                    repaint();
+                }
+
+                client.startListening();
+                SwingUtilities.invokeLater(() -> mainFrame.dispose());
+
+            } catch (IOException e) {
+                started = false;
+                SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(
+                        this,
+                        "Ya hay una partida activa, intente conectarse como Observador.\n" + e.getMessage(),
+                        "Conexión fallida",
+                        JOptionPane.ERROR_MESSAGE
+                ));
+            }
+        }).start();
+    }
+    private void iniciarObservador() {
+        started = true;
+        new Thread(() -> {
+            try {
+                // Preguntar al usuario a quién desea observar
+                String[] opciones = {"Popo", "Nana"};
+                String seleccionado = (String) JOptionPane.showInputDialog(
+                        this,
+                        "¿A quién desea observar?",
+                        "Seleccionar jugador",
+                        JOptionPane.QUESTION_MESSAGE,
+                        null,
+                        opciones,
+                        opciones[0]
+                );
+
+                if (seleccionado == null) {
+                    started = false;
+                    return;
+                }
+
+                // Comando a enviar al servidor
+                String comando = seleccionado.equalsIgnoreCase("Popo") ? "OBSERVER_POPO" : "OBSERVER_NANA";
+
+                // Crear cliente observador
+                ObserverClient client = (ObserverClient) ClientFactory.createClient("OBSERVER", "localhost", 8080);
+
+                // Enviar comando y recibir asignación
+                String observado = client.identify(comando); // usa identify(String)
+
+                // Crear ventana de observación
+                ObserverWindow observerWindow = new ObserverWindow(observado);
+                client.addObserver(observerWindow);
+                client.startListening();
+
+                SwingUtilities.invokeLater(() -> mainFrame.dispose());
+
+            } catch (IOException e) {
+                started = false;
+                SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(
+                        this,
+                        "El jugador seleccionado no está en partida o ya llegó al máximo de observadores.\n" + e.getMessage(),
+                        "Conexión fallida",
+                        JOptionPane.ERROR_MESSAGE
+                ));
+            }
+        }).start();
+    }
 
     @Override
     protected void paintComponent(Graphics g) {
@@ -113,6 +163,14 @@ public class MainMenuPanel extends JPanel {
             int textWidth = g.getFontMetrics().stringWidth(text);
             g.drawString(text, (width - textWidth) / 2, startY + i * optionHeight);
         }
+        if (esperandoSegundoJugador) {
+            g.setColor(new Color(200, 100, 255));
+            g.setFont(new Font("Arial", Font.BOLD, 24));
+            String texto = "Esperando conexión del segundo jugador...";
+            int textWidth = g.getFontMetrics().stringWidth(texto);
+            int textY = startY + options.length * optionHeight + 40;
+            g.drawString(texto, (width - textWidth) / 2, textY);
+        }
     }
-}
 
+}

@@ -49,13 +49,14 @@ int total_clientes() {
 void remover_cliente(SOCKET socket) {
     for (int i = 0; i < num_clientes; i++) {
         if (clientes[i].socket == socket) {
-            // Reemplazar con el último cliente de la lista
+            printf("Eliminando cliente socket %d (observando_a = %d)\n", socket, clientes[i].observando_a); // DEBUG
             clientes[i] = clientes[num_clientes - 1];
             num_clientes--;
             break;
         }
     }
 }
+
 int contar_observadores_de(int id_jugador) {
     int count = 0;
     for (int i = 0; i < num_clientes; i++) {
