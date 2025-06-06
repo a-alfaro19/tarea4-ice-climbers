@@ -237,7 +237,6 @@ public class GamePanel extends JPanel {
     }
 
     public void verificarSiTodosMuertos() {
-        System.out.println("→ Entrando a verificarSiTodosMuertos");
 
         if (jugadores == null || jugadores.length == 0) {
             System.out.println("→ Lista de jugadores vacía o nula");
