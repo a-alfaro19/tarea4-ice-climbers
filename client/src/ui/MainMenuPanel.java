@@ -122,7 +122,7 @@ public class MainMenuPanel extends JPanel {
                 String observado = client.identify(comando); // usa identify(String)
 
                 // Crear ventana de observación
-                ObserverWindow observerWindow = new ObserverWindow(observado);
+                ObserverWindow observerWindow = new ObserverWindow(observado, client.isDosJugadores());
                 client.addObserver(observerWindow);
                 client.startListening();
 
