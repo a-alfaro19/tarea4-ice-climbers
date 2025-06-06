@@ -53,15 +53,15 @@ public class ObserverClient extends Client {
             try {
                 while (true) {
                     Juego juego = Juego.readFrom(in);
-
                     int cantidad = readIntLE(in);
                     List<Bloque> bloques = new ArrayList<>();
                     for (int i = 0; i < cantidad; i++) {
                         bloques.add(Bloque.readFrom(in));
                     }
 
-                    observable.notifyObservers(juego);  // Notifica a todos los observadores
+                    observable.notifyObservers(juego, bloques); // ← actualizar este método
                 }
+
             } catch (IOException e) {
                 System.err.println("Conexión perdida (observador): " + e.getMessage());
             }

@@ -1,10 +1,13 @@
 package observer;
 
+import model.Bloque;
 import model.Juego;
 import ui.GamePanel;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.List;
+
 public class ObserverWindow extends JFrame implements GameObserver {
     private final GamePanel panel;
     private final String observado; // "Popo" o "Nana"
@@ -13,7 +16,7 @@ public class ObserverWindow extends JFrame implements GameObserver {
         this.observado = observado;
         setTitle("Observador de " + observado);
         setSize(1250, 660);
-        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
         // GamePanel se configura con nombre observado y modo solo visual
@@ -23,12 +26,12 @@ public class ObserverWindow extends JFrame implements GameObserver {
     }
 
     @Override
-    public void onGameUpdate(Juego juego) {
+    public void onGameUpdate(Juego juego, List<Bloque> bloques) {
         SwingUtilities.invokeLater(() -> {
             panel.setJugadores(juego.jugadores);
             panel.setNivelActual(juego.nivelActual);
+            panel.setBloques(bloques, 30, 91); // Asegúrate de usar el tamaño real del mapa
             panel.repaint();
         });
     }
-
 }
