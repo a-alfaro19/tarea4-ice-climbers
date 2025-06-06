@@ -21,3 +21,15 @@ void add_obstacle(ObstacleList* obs_list, const Obstacle* obstacle) {
     obs_list->obstacles[size] = *obstacle;
     obs_list->size++;
 }
+
+void remove_obstacle(ObstacleList* obs_list, const int index) {
+    const int size = obs_list->size;
+    if (index < 0 || index >= size) return;
+
+    for (int i = index; i < size; i++) {
+        obs_list->obstacles[i] = obs_list->obstacles[i + 1];
+    }
+
+    obs_list->size--;
+    // obs_list->obstacles = realloc(obs_list->obstacles, obs_list->size * sizeof(Obstacle));
+}

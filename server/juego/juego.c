@@ -138,11 +138,6 @@ void actualizar_juego(Juego* juego, Nivel* mapa) {
     // Check for an obstacle out of the map
     // eliminar
 
-    // Check for an obstacle hit a player
-    //  lose live
-
-    // Check for a player hit an obstacle
-    // delete
 }
 
 void generate_obstacle(Juego* juego, const ObstacleType type) {
@@ -179,6 +174,20 @@ void move_obstacles(const Juego* juego) {
 
     for (int i = 0; i < size; i++) {
         moveObstacle(&obstacles->obstacles[i]);
+    }
+}
+
+void removeObstacleOutOfMap(Juego* juego) {
+    int size = juego->obstacles.size;
+    for (int i = 0; i < size; i++) {
+        Obstacle obs = juego->obstacles.obstacles[i];
+        int x = obs.x;
+        int y = obs.y;
+
+        if (!(0 < x && x < 30) || !(0 < y && y < TOTAL_ROWS)) {
+            // delete obstacle
+            remove_obstacle(&juego->obstacles, i);
+        }
     }
 }
 
