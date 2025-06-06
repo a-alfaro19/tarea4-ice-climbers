@@ -3,8 +3,9 @@
 #include "mapa.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include <math.h>
 #include <time.h>
+#include <math.h>
+
 
 #include "../red/SocketServer.h"
 
@@ -92,8 +93,6 @@ void generar_frutas_bonus(Juego* juego) {
 }
 
 void actualizar_juego(Juego* juego, Nivel* mapa) {
-    int niveles_previos = juego->nivel_actual;
-
     for (int i = 0; i < 2; i++) {
         actualizar_fisica(&juego->jugadores[i]);
     }
@@ -108,12 +107,10 @@ void actualizar_juego(Juego* juego, Nivel* mapa) {
         Jugador* j = &juego->jugadores[i];
         int y_limite = juego->nivel_actual * (TOTAL_FLOOR_HEIGHT + ROWS_BETWEEN_FLOORS);
 
-        if (j->y < y_limite - 2) {  // -2 para permitir que baje unos cuadros
+        if (j->y < y_limite - 2) {
             perder_vida(j);
-
             int nivel_rescate = nivel_mas_alto;
             int y_base = nivel_rescate * (TOTAL_FLOOR_HEIGHT + ROWS_BETWEEN_FLOORS);
-
             int nueva_x = 5 + rand() % 20;
 
             j->x = nueva_x;
@@ -124,32 +121,44 @@ void actualizar_juego(Juego* juego, Nivel* mapa) {
         }
     }
 
+    // Obtener tiempo actual
+    unsigned long ahora = clock() * 1000 / CLOCKS_PER_SEC;
+
     // Si subieron a un nuevo nivel
     if (nivel_mas_alto > juego->nivel_actual) {
-        for (int nivel = 0; nivel < nivel_mas_alto; nivel++) {
-            int y_base = nivel * (TOTAL_FLOOR_HEIGHT + ROWS_BETWEEN_FLOORS);
-            for (int offset = -1; offset <= ROWS_BETWEEN_FLOORS; offset++) {
-                vaciar_nivel(y_base + offset);
-            }
+        if (juego->tiempo_subida == 0) {
+            juego->tiempo_subida = ahora;  // primer tick registrado
         }
 
-        juego->nivel_actual = nivel_mas_alto;
-
-        if (!juego->en_fase_bonus && juego->nivel_actual >= 9) {
-            juego->en_fase_bonus = 1;
-            for (int i = 0; i < 2; i++) {
-                juego->jugadores[i].vidas++;
+        // Si ya pasaron 2 segundos, ahora sí se eliminan los niveles previos
+        if (ahora - juego->tiempo_subida >= 2000) {
+            for (int nivel = 0; nivel < nivel_mas_alto; nivel++) {
+                int y_base = nivel * (TOTAL_FLOOR_HEIGHT + ROWS_BETWEEN_FLOORS);
+                for (int offset = -1; offset <= ROWS_BETWEEN_FLOORS; offset++) {
+                    vaciar_nivel(y_base + offset);
+                }
             }
-            generar_frutas_bonus(juego);
+
+            juego->nivel_actual = nivel_mas_alto;
+            juego->tiempo_subida = 0;
+
+            if (!juego->en_fase_bonus && juego->nivel_actual >= 9) {
+                juego->en_fase_bonus = 1;
+                for (int i = 0; i < 2; i++) {
+                    juego->jugadores[i].vidas++;
+                }
+                generar_frutas_bonus(juego);
+            }
         }
+    } else {
+        juego->tiempo_subida = 0;  // reiniciar si no subió
     }
 
     // Mover obstáculos cada 300 ms
-    static DWORD lastObstacleMove = 0;
-    DWORD now = GetTickCount();
-    if (now - lastObstacleMove >= 300) {
+    static unsigned long lastObstacleMove = 0;
+    if (ahora - lastObstacleMove >= 300) {
         move_obstacles(juego);
-        lastObstacleMove = now;
+        lastObstacleMove = ahora;
     }
 
     // Eliminar obstáculos fuera del mapa
@@ -176,7 +185,8 @@ void actualizar_juego(Juego* juego, Nivel* mapa) {
             }
         }
     }
-    // Eliminar frutas que quedaron flotando tras vaciar niveles
+
+    // Eliminar frutas flotantes
     for (int f = 0; f < juego->frutas.cantidad; f++) {
         Fruta* fruta = &juego->frutas.frutas[f];
         if (fruta->activa && !hay_bloque_en(fruta->x, fruta->y - 1)) {
@@ -184,8 +194,8 @@ void actualizar_juego(Juego* juego, Nivel* mapa) {
             printf("Fruta %d en (%d,%d) eliminada por falta de bloque de soporte\n", fruta->tipo, fruta->x, fruta->y);
         }
     }
-
 }
+
 
 
 void generate_obstacle(Juego* juego, const ObstacleType type) {

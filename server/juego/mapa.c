@@ -38,38 +38,31 @@ void inicializar_mapa() {
             }
             // Fase bonus (9 a 15)
             else {
-                 int borde = (x <= 2 || x >= 27);
+                if (piso == FLOORS_PER_LEVEL - 1) {
+                    // último piso: completamente vacío (no agregar nada)
+                    continue;
+                }
+
+                int borde = (x <= 2 || x >= 27);
                 int prob = rand() % 100;
 
-                if (piso == FLOORS_PER_LEVEL - 1) {
-                    agregar_bloque_a_nivel(nivel_piso, crear_bloque(x, y_piso, 0));  // último piso: solo vacíos
-                } else if (borde || prob < 10) {
+                if (borde || prob < 20) {
                     agregar_bloque_a_nivel(nivel_piso, crear_bloque(x, y_piso, 2));  // indestructible
-                } else if (prob < 60) {
+                } else if (prob < 85) {
                     agregar_bloque_a_nivel(nivel_piso, crear_bloque(x, y_piso, 1));  // destructible
                 }
 
-
-                // ocasional bloque extra en el prepiso
-                if (nivel_prepiso && rand() % 100 < 10) {
-                    agregar_bloque_a_nivel(nivel_prepiso, crear_bloque(x, y_prepiso, 2));
+                // Escalones en el prepiso
+                if (nivel_prepiso && rand() % 100 < 30) {
+                    int tipo = (rand() % 2 == 0) ? 1 : 2;
+                    agregar_bloque_a_nivel(nivel_prepiso, crear_bloque(x, y_prepiso, tipo));
                 }
 
-                // Para el último piso, agregar espacio vacío encima
-                if (piso == FLOORS_PER_LEVEL - 1 && nivel_postpiso) {
+                // Vacío encima del último piso
+                if (piso == FLOORS_PER_LEVEL - 2 && nivel_postpiso) {
                     agregar_bloque_a_nivel(nivel_postpiso, crear_bloque(x, y_postpiso, 0));
                 }
             }
-        }
-    }
-
-    // Agregar filas vacías arriba del último nivel para visualización
-    int y_final = (FLOORS_PER_LEVEL - 1) * (TOTAL_FLOOR_HEIGHT + ROWS_BETWEEN_FLOORS);
-    for (int offset = 1; offset <= ROWS_BETWEEN_FLOORS; offset++) {
-        int y_vacio = y_final + offset;
-        Nivel* nivel_vacio = obtener_o_crear_nivel(&mapa, y_vacio);
-        for (int x = 0; x < 30; x++) {
-            agregar_bloque_a_nivel(nivel_vacio, crear_bloque(x, y_vacio, 0)); // vacío
         }
     }
 }

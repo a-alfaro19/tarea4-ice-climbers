@@ -15,6 +15,7 @@ typedef struct {
     int nivel_actual;      // Índice actual (0 a 31)
     int en_fase_bonus;     // 1 = sí, 0 = no
     int velocidad;         // Para futuras animaciones o lógica
+    unsigned long tiempo_subida;
 } Juego;
 
 /**
