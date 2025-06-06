@@ -38,11 +38,12 @@ public class GameWindow extends JFrame {
         gamePanel.setObstacles(juego.obstacles);
         gamePanel.setNivelActual(juego.nivelActual);
         gamePanel.setFrutas(juego.frutas);
+        gamePanel.setPterodactilo(juego.pterodactilo);
         gamePanel.repaint();
     }
 
     public void updateBloques(java.util.List<Bloque> bloques) {
-        gamePanel.setBloques(bloques, 30, 91);
+        gamePanel.setBloques(bloques, 30, 89);
         gamePanel.repaint();
     }
 

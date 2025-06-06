@@ -59,6 +59,12 @@ int enviar_juego(SOCKET socket, Juego* juego) {
     if (send(socket, &juego->velocidad, 4, 0) != 4) return -1;
     //imprimir_bytes(&juego->velocidad, 4, "velocidad");
 
+    // Enviar pterodáctilo
+    if (send(socket, &juego->ptero.activo, 4, 0) != 4) return -1;
+    if (send(socket, &juego->ptero.x, 4, 0) != 4) return -1;
+    if (send(socket, &juego->ptero.y, 4, 0) != 4) return -1;
+    if (send(socket, &juego->ptero.direccion, 4, 0) != 4) return -1;
+
     return 0;
 }
 

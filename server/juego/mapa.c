@@ -38,15 +38,10 @@ void inicializar_mapa() {
             }
             // Fase bonus (9 a 15)
             else {
-                if (piso == FLOORS_PER_LEVEL - 1) {
-                    // Último piso completamente vacío (sin bloques)
-                    continue;
-                }
-
                 int borde = (x <= 2 || x >= 27);
                 int prob = rand() % 100;
 
-                // Solo bloques indestructibles o huecos
+                // Bloques indestructibles o huecos
                 if (borde || prob < 80) {
                     agregar_bloque_a_nivel(nivel_piso, crear_bloque(x, y_piso, 2));  // indestructible
                 }
@@ -56,25 +51,11 @@ void inicializar_mapa() {
                 if (nivel_prepiso && rand() % 100 < 30) {
                     agregar_bloque_a_nivel(nivel_prepiso, crear_bloque(x, y_prepiso, 2));
                 }
-
-                // Vacío encima del penúltimo piso
-                if (piso == FLOORS_PER_LEVEL - 2 && nivel_postpiso) {
-                    agregar_bloque_a_nivel(nivel_postpiso, crear_bloque(x, y_postpiso, 0));
-                }
             }
         }
     }
-
-    // Agregar filas vacías arriba del último nivel para visualización
-    int y_final = (FLOORS_PER_LEVEL - 1) * (TOTAL_FLOOR_HEIGHT + ROWS_BETWEEN_FLOORS);
-    for (int offset = 1; offset <= ROWS_BETWEEN_FLOORS; offset++) {
-        int y_vacio = y_final + offset;
-        Nivel* nivel_vacio = obtener_o_crear_nivel(&mapa, y_vacio);
-        for (int x = 0; x < 30; x++) {
-            agregar_bloque_a_nivel(nivel_vacio, crear_bloque(x, y_vacio, 0)); // vacío
-        }
-    }
 }
+
 
 
 PaqueteBloques obtener_bloques_visibles() {

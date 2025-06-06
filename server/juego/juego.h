@@ -9,12 +9,21 @@
 #include "fruta.h"
 
 typedef struct {
+    int activo;
+    int x;
+    int y;
+    int direccion;
+} Pterodactilo;
+
+
+typedef struct {
     Jugador jugadores[2];  // Popo y Nana
     ObstacleList obstacles; // Obstacles list
     ListaFrutas frutas;
     int nivel_actual;      // Índice actual (0 a 31)
     int en_fase_bonus;     // 1 = sí, 0 = no
     int velocidad;         // Para futuras animaciones o lógica
+    Pterodactilo ptero;
     unsigned long tiempo_subida;
 } Juego;
 
@@ -48,4 +57,5 @@ void printObstacles(const Juego* juego);
 
 void removeObstacleOutOfMap(Juego* juego);
 
+void activar_pterodactilo(Juego* juego);
 #endif

@@ -37,6 +37,12 @@ void inicializar_juego(Juego* juego) {
     nana->vidas = 3;
     nana->puntaje = 0;
     nana->direccion = 'L';
+
+    juego->ptero.activo = 0;
+    juego->ptero.x = 0;
+    juego->ptero.y = 0;
+    juego->ptero.direccion = 1;
+
 }
 
 void reiniciar_juego(Juego* juego) {
@@ -92,6 +98,15 @@ void generar_frutas_bonus(Juego* juego) {
     }
 }
 
+void activar_pterodactilo(Juego* juego) {
+    juego->ptero.activo = 1;
+    juego->ptero.x = 7;
+    juego->ptero.direccion = 1;
+    juego->ptero.y = 88;
+    printf("Pterodáctilo ACTIVADO en (%d, %d)\n", juego->ptero.x, juego->ptero.y);
+}
+
+
 void actualizar_juego(Juego* juego, Nivel* mapa) {
     for (int i = 0; i < 2; i++) {
         actualizar_fisica(&juego->jugadores[i]);
@@ -130,7 +145,6 @@ void actualizar_juego(Juego* juego, Nivel* mapa) {
             juego->tiempo_subida = ahora;  // primer tick registrado
         }
 
-        // Si ya pasaron 2 segundos, ahora sí se eliminan los niveles previos
         if (ahora - juego->tiempo_subida >= 2000) {
             for (int nivel = 0; nivel < nivel_mas_alto; nivel++) {
                 int y_base = nivel * (TOTAL_FLOOR_HEIGHT + ROWS_BETWEEN_FLOORS);
@@ -148,17 +162,26 @@ void actualizar_juego(Juego* juego, Nivel* mapa) {
                     juego->jugadores[i].vidas++;
                 }
                 generar_frutas_bonus(juego);
+                activar_pterodactilo(juego);
             }
         }
     } else {
-        juego->tiempo_subida = 0;  // reiniciar si no subió
+        juego->tiempo_subida = 0;
     }
 
     // Mover obstáculos cada 300 ms
     static unsigned long lastObstacleMove = 0;
-    if (ahora - lastObstacleMove >= 300) {
+    unsigned long now = clock() * 1000 / CLOCKS_PER_SEC;
+    if (now - lastObstacleMove >= 300) {
         move_obstacles(juego);
-        lastObstacleMove = ahora;
+        lastObstacleMove = now;
+
+        // Mover pterodáctilo también aquí
+        if (juego->ptero.activo) {
+            juego->ptero.x += juego->ptero.direccion;
+            if (juego->ptero.x <= 0) juego->ptero.direccion = 1;
+            if (juego->ptero.x >= 29) juego->ptero.direccion = -1;
+        }
     }
 
     // Eliminar obstáculos fuera del mapa
@@ -171,7 +194,6 @@ void actualizar_juego(Juego* juego, Nivel* mapa) {
             Fruta* fruta = &juego->frutas.frutas[f];
             if (fruta->activa && j->x == fruta->x && j->y == fruta->y) {
                 fruta->activa = 0;
-
                 int puntos = 0;
                 switch (fruta->tipo) {
                     case NARANJA: puntos = 100; break;
@@ -179,19 +201,30 @@ void actualizar_juego(Juego* juego, Nivel* mapa) {
                     case BERENJENA: puntos = 300; break;
                     case LECHUGA: puntos = 400; break;
                 }
-
                 sumar_puntaje(j, puntos);
                 printf("%s recogió una fruta tipo %d por %d pts\n", j->nombre, fruta->tipo, puntos);
             }
         }
     }
 
-    // Eliminar frutas flotantes
+    // Eliminar frutas que quedaron flotando
     for (int f = 0; f < juego->frutas.cantidad; f++) {
         Fruta* fruta = &juego->frutas.frutas[f];
         if (fruta->activa && !hay_bloque_en(fruta->x, fruta->y - 1)) {
             fruta->activa = 0;
             printf("Fruta %d en (%d,%d) eliminada por falta de bloque de soporte\n", fruta->tipo, fruta->x, fruta->y);
+        }
+    }
+
+    // Verificar colisión con pterodáctilo
+    if (juego->ptero.activo) {
+        for (int i = 0; i < 2; i++) {
+            Jugador* j = &juego->jugadores[i];
+            if (j->vidas > 0 && j->x == juego->ptero.x && j->y == juego->ptero.y) {
+                j->puntaje += 1000;
+                juego->ptero.activo = 0;
+                printf("%s atrapó al pterodáctilo y ganó 1000 pts\n", j->nombre);
+            }
         }
     }
 }

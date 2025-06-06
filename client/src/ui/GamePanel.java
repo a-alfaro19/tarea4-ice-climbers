@@ -26,6 +26,8 @@ public class GamePanel extends JPanel {
     private Jugador[] jugadores;
     private ArrayList<Obstacle> obstacles = new ArrayList<>();
     private List<Fruta> frutas = new ArrayList<>();
+    private Pterodactilo pterodactilo;
+    private BufferedImage pteroImg;
     private Tile[][] mapa;
     private final boolean esControlable;
 
@@ -48,6 +50,8 @@ public class GamePanel extends JPanel {
             frutaImgs[1] = ImageIO.read(Objects.requireNonNull(getClass().getResource("/ui/figuras/banana.png")));    // Banano
             frutaImgs[2] = ImageIO.read(Objects.requireNonNull(getClass().getResource("/ui/figuras/egg_plant.png"))); // Berenjena
             frutaImgs[3] = ImageIO.read(Objects.requireNonNull(getClass().getResource("/ui/figuras/lettuce.png")));   // Lechuga
+
+            pteroImg = ImageIO.read(Objects.requireNonNull(getClass().getResource("/ui/figuras/pterodactilo.png")));
 
         } catch (IOException e) {
             System.err.println("Error cargando imágenes: " + e.getMessage());
@@ -117,6 +121,10 @@ public class GamePanel extends JPanel {
     public void setBloques(List<Bloque> bloques, int ancho, int alto) {
         this.mapa = convertirBloquesAMatriz(bloques, ancho, alto);
     }
+    public void setPterodactilo(Pterodactilo pterodactilo) {
+        this.pterodactilo = pterodactilo;
+    }
+
 
     public void updateGame(Jugador[] jugadores, List<Bloque> bloques, int ancho, int alto) {
         setJugadores(jugadores);
@@ -259,7 +267,25 @@ public class GamePanel extends JPanel {
 
             }
         }
+        // Dibujar pterodáctilo
+        if (pterodactilo != null && pterodactilo.activo == 1 && pteroImg != null) {
+            int visibleRow = pterodactilo.y - FIRST_VISIBLE_ROW;
+            if (visibleRow >= 0 && visibleRow < VISIBLE_ROWS) {
+                int drawX = pterodactilo.x * TILE_WIDTH;
+                int drawY = PANEL_HEIGHT - (visibleRow + 1) * TILE_HEIGHT;
 
+                Graphics2D g2d = (Graphics2D) g.create();
+                if (pterodactilo.direccion == -1) {
+                    // Dibujar volteado horizontalmente
+                    g2d.translate(drawX + TILE_WIDTH, drawY);
+                    g2d.scale(-1, 1);
+                    g2d.drawImage(pteroImg, 0, 0, TILE_WIDTH, TILE_HEIGHT, this);
+                } else {
+                    g2d.drawImage(pteroImg, drawX, drawY, TILE_WIDTH, TILE_HEIGHT, this);
+                }
+                g2d.dispose();
+            }
+        }
     }
 
 

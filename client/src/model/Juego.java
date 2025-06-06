@@ -13,6 +13,8 @@ public class Juego {
     public Integer nivelActual;
     public Integer enFaseBonus;
     public Integer velocidad;
+    public Pterodactilo pterodactilo;
+
 
     public static Juego readFrom(DataInputStream in) throws IOException {
         Juego juego = new Juego();
@@ -38,11 +40,11 @@ public class Juego {
         juego.nivelActual = readIntLE(in);
         juego.enFaseBonus = readIntLE(in);
         juego.velocidad = readIntLE(in);
-
+        juego.pterodactilo = Pterodactilo.readFrom(in);
         return juego;
     }
 
-    private static int readIntLE(DataInputStream in) throws IOException {
+    static int readIntLE(DataInputStream in) throws IOException {
         int b1 = in.readUnsignedByte();
         int b2 = in.readUnsignedByte();
         int b3 = in.readUnsignedByte();
