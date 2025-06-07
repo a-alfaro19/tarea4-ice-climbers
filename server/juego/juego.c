@@ -6,6 +6,8 @@
 #include <time.h>
 #include <math.h>
 #include "../red/SocketServer.h"
+extern ModoJuego modo_actual;
+
 /**
  * Inicializa el juego colocando a Popo y Nana en sus posiciones iniciales.
  * También reinicia valores como vidas, puntaje, velocidad y estado del pterodáctilo.
@@ -15,13 +17,9 @@ void inicializar_juego(Juego* juego) {
     juego->en_fase_bonus = 0;
     juego->velocidad = 1;
 
+    // Popo siempre se inicializa
     Jugador* popo = &juego->jugadores[0];
-    Jugador* nana = &juego->jugadores[1];
-
     snprintf(popo->nombre, sizeof(popo->nombre), "Popo");
-    snprintf(nana->nombre, sizeof(nana->nombre), "Nana");
-
-    // Popo
     popo->x = 9;
     popo->y = 1;
     popo->y_real = (float)popo->y;
@@ -31,23 +29,30 @@ void inicializar_juego(Juego* juego) {
     popo->puntaje = 0;
     popo->direccion = 'R';
 
-    // Nana
-    nana->x = 12;
-    nana->y = 1;
-    nana->y_real = (float)nana->y;
-    nana->vy = 0.0f;
-    nana->en_el_aire = 0;
-    nana->vidas = 3;
-    nana->puntaje = 0;
-    nana->direccion = 'L';
+    // Solo inicializar Nana si es modo 2 jugadores
+    if (modo_actual == MODO_DOS_JUGADORES) {
+        Jugador* nana = &juego->jugadores[1];
+        snprintf(nana->nombre, sizeof(nana->nombre), "Nana");
+        nana->x = 12;
+        nana->y = 1;
+        nana->y_real = (float)nana->y;
+        nana->vy = 0.0f;
+        nana->en_el_aire = 0;
+        nana->vidas = 3;
+        nana->puntaje = 0;
+        nana->direccion = 'L';
+        printf("Inicializada Nana: vidas=%d, pos=(%d,%d)\n", nana->vidas, nana->x, nana->y);    } else {
+        // Limpiar datos de Nana en modo 1 jugador
+        memset(&juego->jugadores[1], 0, sizeof(Jugador));
+    }
 
     // Pterodáctilo inactivo
     juego->ptero.activo = 0;
     juego->ptero.x = 0;
     juego->ptero.y = 0;
     juego->ptero.direccion = 1;
-
 }
+
 /**
  * Reinicia el juego tras una partida terminada o una vida perdida,
  * aumentando la velocidad general como forma de progresión.
@@ -133,18 +138,27 @@ void activar_pterodactilo(Juego* juego) {
  * - Gestiona colisiones con frutas y enemigos.
  */
 void actualizar_juego(Juego* juego, Nivel* mapa) {
-    for (int i = 0; i < 2; i++) {
+    int limite_jugadores = (modo_actual == MODO_DOS_JUGADORES) ? 2 : 1;
+
+    // Aplicar física
+    for (int i = 0; i < limite_jugadores; i++) {
         Jugador* j = &juego->jugadores[i];
         if (j->vidas > 0) {
             actualizar_fisica(j);
         }
     }
 
-    int nivel_popo = obtener_nivel_actual_de_jugador(&juego->jugadores[0]);
-    int nivel_nana = obtener_nivel_actual_de_jugador(&juego->jugadores[1]);
-    int nivel_mas_alto = (nivel_popo > nivel_nana) ? nivel_popo : nivel_nana;
+    // Calcular niveles
+    int nivel_mas_alto = 0;
+    for (int i = 0; i < limite_jugadores; i++) {
+        int nivel_jugador = obtener_nivel_actual_de_jugador(&juego->jugadores[i]);
+        if (nivel_jugador > nivel_mas_alto) {
+            nivel_mas_alto = nivel_jugador;
+        }
+    }
 
-    for (int i = 0; i < 2; i++) {
+    // Verificar caídas
+    for (int i = 0; i < limite_jugadores; i++) {
         Jugador* j = &juego->jugadores[i];
         if (j->vidas <= 0) continue;
 
@@ -160,8 +174,8 @@ void actualizar_juego(Juego* juego, Nivel* mapa) {
         }
     }
 
+    // Nivel ascendido
     unsigned long ahora = clock() * 1000 / CLOCKS_PER_SEC;
-
     if (nivel_mas_alto > juego->nivel_actual) {
         if (juego->tiempo_subida == 0) {
             juego->tiempo_subida = ahora;
@@ -195,7 +209,7 @@ void actualizar_juego(Juego* juego, Nivel* mapa) {
 
             if (!juego->en_fase_bonus && juego->nivel_actual >= 9) {
                 juego->en_fase_bonus = 1;
-                for (int i = 0; i < 2; i++) {
+                for (int i = 0; i < limite_jugadores; i++) {
                     juego->jugadores[i].vidas++;
                 }
                 generar_frutas_bonus(juego);
@@ -206,6 +220,7 @@ void actualizar_juego(Juego* juego, Nivel* mapa) {
         juego->tiempo_subida = 0;
     }
 
+    // Mover obstáculos
     static unsigned long lastObstacleMove = 0;
     unsigned long now = clock() * 1000 / CLOCKS_PER_SEC;
     if (now - lastObstacleMove >= 300) {
@@ -221,7 +236,8 @@ void actualizar_juego(Juego* juego, Nivel* mapa) {
 
     removeObstacleOutOfMap(juego);
 
-    for (int i = 0; i < 2; i++) {
+    // Recolectar frutas
+    for (int i = 0; i < limite_jugadores; i++) {
         Jugador* j = &juego->jugadores[i];
         if (j->vidas <= 0) continue;
 
@@ -242,6 +258,7 @@ void actualizar_juego(Juego* juego, Nivel* mapa) {
         }
     }
 
+    // Frutas flotantes
     for (int f = 0; f < juego->frutas.cantidad; f++) {
         Fruta* fruta = &juego->frutas.frutas[f];
         if (fruta->activa && !hay_bloque_en(fruta->x, fruta->y - 1)) {
@@ -250,8 +267,9 @@ void actualizar_juego(Juego* juego, Nivel* mapa) {
         }
     }
 
+    // Colisión con pterodáctilo
     if (juego->ptero.activo) {
-        for (int i = 0; i < 2; i++) {
+        for (int i = 0; i < limite_jugadores; i++) {
             Jugador* j = &juego->jugadores[i];
             if (j->vidas > 0 && j->x == juego->ptero.x && j->y == juego->ptero.y) {
                 j->puntaje += 1000;
@@ -261,10 +279,10 @@ void actualizar_juego(Juego* juego, Nivel* mapa) {
         }
     }
 
+    // Colisión con obstáculos
     for (int i = 0; i < juego->obstacles.size; i++) {
         Obstacle* o = &juego->obstacles.obstacles[i];
-
-        for (int j = 0; j < 2; j++) {
+        for (int j = 0; j < limite_jugadores; j++) {
             Jugador* jugador = &juego->jugadores[j];
             if (jugador->vidas <= 0) continue;
 
@@ -300,18 +318,39 @@ void generate_obstacle(Juego* juego, const ObstacleType type) {
     int x = 0;
     int y = 0;
 
-    // Nivel aleatorio entre 0 y 8
-    int nivel_random = rand() % 9;
-    int y_base = nivel_random * (TOTAL_FLOOR_HEIGHT + ROWS_BETWEEN_FLOORS);
+    const Dir validDirs[] = {LEFT, RIGHT};
+    const Dir randomDir = validDirs[rand() % 2];
+    int direccion = randomDir == LEFT ? -1 : 1;
 
-    switch (type) {
-        case YETI: {
-            const Dir validDirs[] = {LEFT, RIGHT};
-            const Dir randomDir = validDirs[rand() % 2];
-            x = (randomDir == LEFT) ? 0 : 30;
-            y = y_base + 1;
+    // Buscar un nivel válido donde aún haya bloques
+    int intentos = 0;
+    int nivel_valido = -1;
+    while (intentos < 100) {
+        int nivel_candidato = rand() % 9; // niveles 0 a 8
+        int y_base = nivel_candidato * (TOTAL_FLOOR_HEIGHT + ROWS_BETWEEN_FLOORS);
+
+        // Verificar si el nivel tiene al menos un bloque
+        if (hay_bloque_en(15, y_base)) {
+            nivel_valido = nivel_candidato;
             break;
         }
+
+        intentos++;
+    }
+
+    if (nivel_valido == -1) {
+        // No hay niveles válidos donde crear obstáculos
+        return;
+    }
+
+    int y_base = nivel_valido * (TOTAL_FLOOR_HEIGHT + ROWS_BETWEEN_FLOORS);
+
+    switch (type) {
+        case YETI:
+            x = (direccion == -1) ? 30 : 0;
+            y = y_base + 1;
+            break;
+
         case BIRD:
             x = 0;
             y = y_base + 1;
@@ -326,6 +365,7 @@ void generate_obstacle(Juego* juego, const ObstacleType type) {
     const Obstacle* obstacle = createObstacle(type, x, y);
     add_obstacle(&juego->obstacles, obstacle);
 }
+
 
 /**
  * Mueve todos los obstáculos activos en el juego, usando su comportamiento específico.

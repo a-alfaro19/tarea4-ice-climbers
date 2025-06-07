@@ -21,7 +21,7 @@ static int num_clients = 0;                   // Total de clientes activos
 static int player_clients = 0;                // Número de jugadores conectados
 static int observer_clients = 0;              // Número de observadores conectados
 static Juego juego;                           // Estado global del juego
-static ModoJuego modo_actual = SIN_PARTIDA;   // Estado actual del modo de juego
+ModoJuego modo_actual = SIN_PARTIDA;   // Estado actual del modo de juego
 
 /**
  * Inicializa Winsock solo una vez. Requerido para usar sockets en Windows.
@@ -233,6 +233,7 @@ DWORD WINAPI handle_client(LPVOID param) {
                 send(clientSocket, nombre, 10, 0);
                 printf("Jugador Nana conectado (modo 2 jugadores)\n");
 
+                inicializar_juego(&juego);
                 // Avisar a Popo que puede iniciar
                 for (int i = 0; i < num_clients; i++) {
                     if (clients[i].type == PLAYER && clients[i].id == 0) {
@@ -375,7 +376,7 @@ DWORD WINAPI handle_client(LPVOID param) {
             printf("Comando no reconocido: %s\n", buffer);
         }
     }
-    // Paso 7: Manejar desconexión del cliente
+    // Manejar desconexión del cliente
     printf("Client disconnected\n");
     closesocket(clientSocket);
     remover_cliente(clientSocket);
