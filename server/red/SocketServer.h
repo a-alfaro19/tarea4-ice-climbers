@@ -1,85 +1,94 @@
 #ifndef SOCKETSERVER_H
 #define SOCKETSERVER_H
-
 #include <winsock2.h>
 #include "clientes.h"
 
 /**
- * Enum to identify the client type
+ * Tipo de cliente conectado.
  */
 typedef enum {
-    PLAYER,
-    OBSERVER
+    PLAYER, // Cliente juagdor (popo o nana)
+    OBSERVER // Cliente observador
 } ClientType;
 
 /**
- * Structure to store the client information
+ * Información de un cliente conectado a través del servidor.
  */
 typedef struct {
-    SOCKET socket;
-    int id;
-    ClientType type;
+    SOCKET socket; // Socket del cliente
+    int id; // ID del jugador u observador
+    ClientType type; // tipo de cliente (player u observer)
 } ClientInfo;
 
-
+/**
+ * Estado actual del modo de juego.
+ */
 typedef enum {
-    SIN_PARTIDA,
-    MODO_UNO_JUGADOR,
-    MODO_DOS_JUGADORES
+    SIN_PARTIDA, // No hay partida activa
+    MODO_UNO_JUGADOR, // Solo Popo está jugando
+    MODO_DOS_JUGADORES // Popo y Nana están activos
 } ModoJuego;
 
 
 /**
- * @brief Initialize Winsock and sets its initialized state as true.
- * @return 1 if Winsock was initialized successfully, 0 otherwise.
+ * Inicializa la librería Winsock. Solo se ejecuta una vez.
+ *
+ * @return 1 si se inicializó correctamente, 0 si hubo error.
  */
 int initialize_winsock();
 
 /**
- * @brief Initializes and returns a singleton server socket.
- * @return A valid SOCKET if successful, or INVALID_SOCKET on error.
+ * Retorna el socket principal del servidor, escuchando por nuevas conexiones.
+ * Se asegura de que solo se cree una instancia (patrón Singleton).
+ *
+ * @return Socket válido o INVALID_SOCKET si hubo error.
  */
 SOCKET get_server_socket();
 
 /**
- * @brief Closes the server socket and cleans up the Winsock environment.
+ * Cierra el socket del servidor y limpia el entorno de Winsock.
  */
 void close_server();
 
 /**
- * @brief Receives a request from the client through the socket
- * @param socket The client socket from which to receive the request
- * @param buffer Buffer where the received message will be stored
- * @param buffer_size Maximum size of the buffer
- * @return 1 if reception was successful, 0 if there was an error
+ * Recibe una solicitud (texto) del cliente conectado.
+ *
+ * @param socket Socket del cliente.
+ * @param buffer Buffer donde se almacena el mensaje recibido.
+ * @param buffer_size Tamaño máximo del buffer.
+ * @return 1 si se recibió correctamente, 0 si hubo error o desconexión.
  */
 int receive_request(SOCKET socket, char *buffer, int buffer_size);
 
 /**
- * @brief Sends a response to the client through the socket.
- * @param socket The client socket to which the response will be sent
- * @param response Character string containing the response to be sent
- * @return 1 if sending was successful, 0 if there was an error
+ * Envía una cadena de respuesta al cliente.
+ *
+ * @param socket Socket del cliente.
+ * @param response Texto a enviar.
+ * @return 1 si se envió correctamente, 0 si hubo error.
  */
 int send_response(SOCKET socket, const char *response);
 
 /**
- * @brief Handles communication with a connected client in a separate thread.
- * This function runs in a new thread for each connecting client.
- * It processes client identification (PLAYER/OBSERVER) and maintains
- * communication until the client disconnects.
+ * Función principal que maneja cada cliente conectado en un hilo separado.
+ * Procesa identificación, acciones y desconexión.
  *
- * @param param Pointer to the client socket (must be freed within the function)
- * @return 0 when the client connection ends
+ * @param param Puntero al socket del cliente.
+ * @return 0 cuando el cliente se desconecta.
  */
 DWORD WINAPI handle_client(LPVOID param);
 
 /**
- * @brief Loop de juego que actualiza y envía el estado a todos los clientes conectados.
- * Este loop se ejecuta constantemente en segundo plano, independientemente de las acciones del jugador.
+ * Loop del juego que actualiza constantemente el estado y lo envía a los clientes.
+ * Corre en un hilo independiente (20 FPS).
  */
 DWORD WINAPI game_loop(LPVOID param);
-
+/**
+ * Hilo adicional que permite al usuario ingresar comandos desde consola para generar obstáculos.
+ *
+ * @param lpParameter Puntero al juego (Juego*).
+ * @return 0 cuando el hilo termina.
+ */
 DWORD WINAPI consoleThread(LPVOID lpParameter);
 
 #endif // SOCKETSERVER_H

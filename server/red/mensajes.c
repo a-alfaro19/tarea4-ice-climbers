@@ -5,6 +5,14 @@
 #include "mensajes.h"
 #include <string.h>
 
+/**
+ * Envía al cliente toda la información del estado actual del juego:
+ * - Datos de los 2 jugadores (nombre, posición, puntaje, etc.)
+ * - Obstáculos activos
+ * - Frutas activas
+ * - Estado general del juego (nivel, fase bonus, velocidad)
+ * - Estado del pterodáctilo
+ */
 int enviar_juego(SOCKET socket, Juego* juego) {
     for (int i = 0; i < 2; i++) {
         Jugador* j = &juego->jugadores[i];
@@ -22,13 +30,13 @@ int enviar_juego(SOCKET socket, Juego* juego) {
         if (send(socket, &relleno, 1, 0) != 1) return -1;
     }
 
-    // Send Obstacles size
+    // Enviar cantidad de obstáculos
     const Obstacle* obstacles = juego->obstacles.obstacles;
     const int size = juego->obstacles.size;
 
     if (send(socket, &size, 4, 0) != 4) return -1;
 
-    // Send Obstacles
+    // Enviar cada obstáculo
     for (int i = 0; i < size; i++) {
         Obstacle* obstacle = &obstacles[i];
 
@@ -37,7 +45,7 @@ int enviar_juego(SOCKET socket, Juego* juego) {
         if (send(socket, &obstacle->x, 4, 0) != 4) return -1;
         if (send(socket, &obstacle->y, 4, 0) != 4) return -1;
     }
-
+    // Enviar frutas activas
     int cantidad = juego->frutas.cantidad;
     send(socket, &cantidad, 4, 0);
     for (int i = 0; i < cantidad; i++) {
@@ -51,13 +59,8 @@ int enviar_juego(SOCKET socket, Juego* juego) {
 
     // Enviar variables del juego
     if (send(socket, &juego->nivel_actual, 4, 0) != 4) return -1;
-    //imprimir_bytes(&juego->nivel_actual, 4, "nivel_actual");
-
     if (send(socket, &juego->en_fase_bonus, 4, 0) != 4) return -1;
-    //imprimir_bytes(&juego->en_fase_bonus, 4, "en_fase_bonus");
-
     if (send(socket, &juego->velocidad, 4, 0) != 4) return -1;
-    //imprimir_bytes(&juego->velocidad, 4, "velocidad");
 
     // Enviar pterodáctilo
     if (send(socket, &juego->ptero.activo, 4, 0) != 4) return -1;
@@ -67,7 +70,10 @@ int enviar_juego(SOCKET socket, Juego* juego) {
 
     return 0;
 }
-
+/**
+ * Envía al cliente los bloques activos visibles del mapa.
+ * Primero se envía la cantidad, luego los bloques en formato plano.
+ */
 int enviar_bloques(SOCKET socket, const PaqueteBloques* paquete) {
     int cantidad = paquete->cantidad;
     if (send(socket, (const char*)&cantidad, sizeof(int), 0) != sizeof(int)) {
@@ -92,7 +98,9 @@ int enviar_bloques(SOCKET socket, const PaqueteBloques* paquete) {
 
     return enviados;
 }
-
+/**
+ * Recibe una cadena de texto desde el cliente con una acción (por ejemplo, "MOVER:L").
+ */
 int recibir_accion(SOCKET socket_cliente, char* buffer, int tamanio) {
     int recibidos = recv(socket_cliente, buffer, tamanio, 0);
     if (recibidos == SOCKET_ERROR) {
@@ -103,14 +111,5 @@ int recibir_accion(SOCKET socket_cliente, char* buffer, int tamanio) {
     return recibidos;
 }
 
-/*
-void imprimir_bytes(const void* data, size_t size, const char* etiqueta) {
-    const unsigned char* bytes = (const unsigned char*)data;
-    printf("[%s] %zu bytes: ", etiqueta, size);
-    for (size_t i = 0; i < size; i++) {
-        printf("%02X ", bytes[i]);
-    }
-    printf("\n");
-}
-*/
+
 

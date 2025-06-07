@@ -4,7 +4,6 @@
 #include <string.h>
 #include <stdlib.h>
 #include <windows.h>
-
 #include "clientes.h"
 #include "../juego/nivel.h"
 #include "../juego/bloque.h"
@@ -13,19 +12,21 @@
 #include "../juego/jugador.h"
 #include "mensajes.h"
 #include "../juego/acciones.h"
+#include "../juego/constantes.h"
 #pragma comment(lib, "ws2_32.lib")
 
-#define PORT 8080
-#define BUFFER_SIZE 1024
-#define MAX_CLIENTS 6
+// Estructuras globales
+static ClientInfo clients[MAX_CLIENTS];       // Lista de clientes conectados
+static int num_clients = 0;                   // Total de clientes activos
+static int player_clients = 0;                // Número de jugadores conectados
+static int observer_clients = 0;              // Número de observadores conectados
+static Juego juego;                           // Estado global del juego
+static ModoJuego modo_actual = SIN_PARTIDA;   // Estado actual del modo de juego
 
-static ClientInfo clients[MAX_CLIENTS];
-static int num_clients = 0;
-static int player_clients = 0;
-static int observer_clients = 0;
-static Juego juego;
-static ModoJuego modo_actual = SIN_PARTIDA;
-
+/**
+ * Inicializa Winsock solo una vez. Requerido para usar sockets en Windows.
+ * @return 1 si se inicializó correctamente, 0 si falló.
+ */
 int initialize_winsock() {
     static int initialized = 0;
     static WSADATA wsaData;
@@ -41,7 +42,11 @@ int initialize_winsock() {
     }
     return 1;
 }
-
+/**
+ * Crea y retorna el socket del servidor (Singleton).
+ * Configura la dirección, puerto, y empieza a escuchar.
+ * @return SOCKET válido o INVALID_SOCKET en caso de error.
+ */
 SOCKET get_server_socket() {
     static SOCKET serverSocket = INVALID_SOCKET;
 
@@ -75,7 +80,9 @@ SOCKET get_server_socket() {
     printf("Server socket created and listening on port %d\n", PORT);
     return serverSocket;
 }
-
+/**
+ * Cierra el socket del servidor y limpia Winsock.
+ */
 void close_server() {
     const SOCKET serverSocket = get_server_socket();
     if (serverSocket != INVALID_SOCKET) {
@@ -84,7 +91,13 @@ void close_server() {
         printf("Server closed\n");
     }
 }
-
+/**
+ * Recibe una cadena de texto desde un socket de cliente.
+ * @param socket Socket del cliente.
+ * @param buffer Buffer donde se almacenará el mensaje recibido.
+ * @param buffer_size Tamaño máximo del buffer.
+ * @return 1 si se recibió correctamente, 0 si hubo error.
+ */
 int receive_request(const SOCKET socket, char *buffer, const int buffer_size) {
     const int bytes_received = recv(socket, buffer, buffer_size, 0);
     if (bytes_received <= 0) {
@@ -93,13 +106,21 @@ int receive_request(const SOCKET socket, char *buffer, const int buffer_size) {
     buffer[bytes_received] = '\0';
     return 1;
 }
-
+/**
+ * Envía una respuesta de texto al cliente.
+ * @param socket Socket del cliente.
+ * @param response Cadena a enviar.
+ * @return 1 si se envió correctamente, 0 si hubo error.
+ */
 int send_response(const SOCKET socket, const char *response) {
     const int bytes_sent = send(socket, response, (int)strlen(response), 0);
     return (bytes_sent > 0);
 }
 
-// Game loop global
+/**
+ * Loop global del juego. Se ejecuta en un hilo separado.
+ * Actualiza el estado del juego y lo envía a todos los clientes cada 50 ms.
+ */
 DWORD WINAPI game_loop(LPVOID param) {
     (void)param;
 
@@ -119,7 +140,10 @@ DWORD WINAPI game_loop(LPVOID param) {
 
     return 0;
 }
-
+/**
+ * Hilo auxiliar para el servidor. Permite ingresar comandos desde consola
+ * para generar obstáculos durante la ejecución del juego.
+ */
 DWORD WINAPI consoleThread(LPVOID lpParameter) {
     Juego* game = lpParameter;
     char command[1024];
@@ -142,19 +166,27 @@ DWORD WINAPI consoleThread(LPVOID lpParameter) {
 
     }
 }
-
+/**
+ * Hilo que maneja la conexión con un cliente específico.
+ * Identifica si es jugador u observador, verifica disponibilidad,
+ * procesa comandos recibidos y maneja la desconexión.
+ *
+ * @param param Puntero al socket del cliente (debe liberarse internamente).
+ * @return 0 al finalizar la conexión.
+ */
 DWORD WINAPI handle_client(LPVOID param) {
     const SOCKET clientSocket = *(SOCKET*)param;
     free(param);
 
     char buffer[BUFFER_SIZE];
     ClientInfo *client = NULL;
-
+    // Paso 1: Recibir tipo de cliente (PLAYER1, PLAYER2, OBSERVER)
     if (!receive_request(clientSocket, buffer, sizeof(buffer) - 1)) {
         printf("Error receiving ID from client\n");
         closesocket(clientSocket);
         return 0;
     }
+    //  Procesar conexión de PLAYER1
     buffer[strcspn(buffer, "\r\n")] = '\0';
     if (strcmp(buffer, "PLAYER1") == 0) {
         if (modo_actual == SIN_PARTIDA) {
@@ -175,7 +207,7 @@ DWORD WINAPI handle_client(LPVOID param) {
             printf("Conexión rechazada: ya hay una partida activa\n");
             return 0;
         }
-
+        // Procesar conexión de PLAYER2
         } else if (strcmp(buffer, "PLAYER2") == 0) {
             if (modo_actual == SIN_PARTIDA) {
                 client = &clients[num_clients++];
@@ -214,7 +246,9 @@ DWORD WINAPI handle_client(LPVOID param) {
             printf("Conexión rechazada: no se puede unir a modo 2 jugadores\n");
             return 0;
         }
-    }  else if (
+    }
+    // Procesar conexión de OBSERVER
+    else if (
         strcmp(buffer, "OBSERVER") == 0 ||
         strcmp(buffer, "OBSERVER_POPO") == 0 ||
         strcmp(buffer, "OBSERVER_NANA") == 0
@@ -290,7 +324,7 @@ DWORD WINAPI handle_client(LPVOID param) {
             closesocket(clientSocket);
             return 0;
         }
-
+        // Enviar ID del jugador observado
         unsigned char bytes[4];
         bytes[0] = observando_a & 0xFF;
         bytes[1] = (observando_a >> 8) & 0xFF;
@@ -301,18 +335,18 @@ DWORD WINAPI handle_client(LPVOID param) {
         // Envia byte indicando si el juego es de 2 jugadores
         unsigned char modo_byte = (modo_actual == MODO_DOS_JUGADORES) ? 1 : 0;
         send(clientSocket, (const char*)&modo_byte, 1, 0);
-        
+
         printf("Observer Client accepted (observando a %s)\n", observando_a == 0 ? "Popo" : "Nana");
         printf("Observadores actuales: Popo = %d, Nana = %d\n", contar_observadores_de(0), contar_observadores_de(1));
     }
 
 
-    // Enviar estado inicial
+    // Enviar estado inicial del juego al cliente
     if (enviar_juego(clientSocket, &juego) < 0) return 0;
     PaqueteBloques paquete = obtener_bloques_visibles();
     if (enviar_bloques(clientSocket, &paquete) < 0) return 0;
 
-    // Escucha comandos del cliente
+    // Escuchar comandos del cliente durante la partida
     while (1) {
         if (!receive_request(clientSocket, buffer, sizeof(buffer) - 1)) break;
 
@@ -341,7 +375,7 @@ DWORD WINAPI handle_client(LPVOID param) {
             printf("Comando no reconocido: %s\n", buffer);
         }
     }
-
+    // Paso 7: Manejar desconexión del cliente
     printf("Client disconnected\n");
     closesocket(clientSocket);
     remover_cliente(clientSocket);
@@ -350,6 +384,7 @@ DWORD WINAPI handle_client(LPVOID param) {
     if (client->type == OBSERVER && observer_clients > 0) observer_clients--;
     if (num_clients > 0) num_clients--;
 
+    // Si ya no hay jugadores activos, reiniciar el juego
     if (player_clients == 0) {
         modo_actual = SIN_PARTIDA;
         printf("Modo de juego reiniciado a SIN_PARTIDA\n");
@@ -400,3 +435,4 @@ int main(void) {
     close_server();
     return 0;
 }
+

@@ -24,6 +24,7 @@ add_executable(server
         juego/ObstacleList.c
         juego/ObstacleList.h
         juego/Fruta.h
+        juego/constantes.h
 )
 
 

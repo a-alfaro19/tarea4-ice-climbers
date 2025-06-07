@@ -1,13 +1,15 @@
 #include <stdlib.h>
 #include "mapa.h"
-
 #include <stdio.h>
-
-Nivel* mapa = NULL;
-
-#include <stdlib.h>
 #include <time.h>
-#include "mapa.h"
+
+
+Nivel* mapa = NULL; // Variable global del mapa
+
+/**
+ * Inicializa el mapa con niveles escalonados y bloques generados aleatoriamente.
+ * Alterna entre niveles normales y niveles de bonus, llenando con bloques indestructibles o destructibles.
+ */
 void inicializar_mapa() {
     mapa = NULL;
 
@@ -56,8 +58,10 @@ void inicializar_mapa() {
     }
 }
 
-
-
+/**
+ * Recolecta todos los bloques activos del mapa en un solo paquete,
+ * para ser enviado al cliente.
+ */
 PaqueteBloques obtener_bloques_visibles() {
     PaqueteBloques paquete = {0};
     Nivel* actual = mapa;
@@ -77,12 +81,17 @@ PaqueteBloques obtener_bloques_visibles() {
 
     return paquete;
 }
-
+/**
+ * Libera la memoria del mapa y todos los bloques contenidos en él.
+ */
 void destruir_mapa() {
     destruir_niveles(mapa);
     mapa = NULL;
 }
-
+/**
+ * Imprime todos los bloques ubicados en las filas más altas del mapa (y ≥ 180).
+ * Útil para depuración visual del mapa.
+ */
 void debug_imprimir_bloques_altos() {
     Nivel* actual = mapa;
     while (actual) {
@@ -96,7 +105,13 @@ void debug_imprimir_bloques_altos() {
         actual = actual->siguiente;
     }
 }
-
+/**
+ * Verifica si hay un bloque sólido (tipo ≠ 0) y activo en una posición dada.
+ *
+ * @param x Columna del mapa.
+ * @param y Fila del mapa.
+ * @return 1 si existe un bloque sólido activo, 0 en caso contrario.
+ */
 int hay_bloque_en(int x, int y) {
     Nivel* actual = mapa;
     while (actual) {

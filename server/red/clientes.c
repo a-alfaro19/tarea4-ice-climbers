@@ -1,15 +1,19 @@
 #include "clientes.h"
 
 #include <stdio.h>
-#define MAX_CLIENTES 6
 
-static ClienteConectado clientes[MAX_CLIENTES];
+// Estructuras internas
+static ClienteConectado clientes[MAX_CLIENTS]; // Estructuras internas
 static int num_clientes = 0;
 static int player_clients = 0;
 static int observer_clients = 0;
 
+/**
+ * Registra un nuevo cliente, validando si hay espacio disponible.
+ * En el caso de observadores, también valida que no haya más de 2 por jugador.
+ */
 int registrar_cliente(SOCKET socket, int es_jugador, int id_jugador) {
-    if (num_clientes >= MAX_CLIENTES) return 0;
+    if (num_clientes >= MAX_CLIENTS) return 0;
 
     ClienteConectado nuevo;
     nuevo.socket = socket;
@@ -32,20 +36,28 @@ int registrar_cliente(SOCKET socket, int es_jugador, int id_jugador) {
     clientes[num_clientes++] = nuevo;
     return 1;
 }
-
+/**
+ * Retorna el número total de jugadores conectados.
+ */
 int get_player_clients() {
     return player_clients;
 }
-
+/**
+ * Retorna el número total de observadores conectados.
+ */
 int get_observer_clients() {
     return observer_clients;
 }
-
+/**
+ * Retorna el número total de clientes conectados (jugadores + observadores).
+ */
 int total_clientes() {
     return num_clientes;
 }
-
-
+/**
+ * Elimina un cliente de la lista según su socket.
+ * Reorganiza el arreglo de clientes para mantenerlo compacto.
+ */
 void remover_cliente(SOCKET socket) {
     for (int i = 0; i < num_clientes; i++) {
         if (clientes[i].socket == socket) {
@@ -56,7 +68,9 @@ void remover_cliente(SOCKET socket) {
         }
     }
 }
-
+/**
+ * Cuenta cuántos observadores están viendo al jugador con ID dado.
+ */
 int contar_observadores_de(int id_jugador) {
     int count = 0;
     for (int i = 0; i < num_clientes; i++) {
@@ -65,7 +79,9 @@ int contar_observadores_de(int id_jugador) {
     }
     return count;
 }
-
+/**
+ * Retorna un puntero al arreglo global de clientes conectados.
+ */
 ClienteConectado* obtener_clientes() {
     return clientes;
 }

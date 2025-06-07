@@ -2,22 +2,25 @@
 #include <stdlib.h>
 #include <string.h>
 
-
+/**
+ * Crea un nuevo obstáculo con posición y tipo especificado.
+ * Asigna la dirección inicial basada en su tipo y posición.
+ */
 Obstacle* createObstacle(const ObstacleType type, const int x, const int y) {
     Obstacle* obstacle = malloc(sizeof(Obstacle));
 
-    // Set Dir
+    // Asignar dirección inicial según tipo
     switch (type) {
         case YETI:
-            obstacle->dir = x == 0 ? RIGHT : LEFT;
+            obstacle->dir = x == 0 ? RIGHT : LEFT;  // sale por izquierda o derecha
             break;
 
         case BIRD:
-            obstacle->dir = RIGHT;
+            obstacle->dir = RIGHT; // aves siempre vuelan hacia la derecha
             break;
 
         case ICE_BLOCK:
-            obstacle->dir = DOWN;
+            obstacle->dir = DOWN; // hielo cae en línea recta
             break;
     }
 
@@ -27,22 +30,27 @@ Obstacle* createObstacle(const ObstacleType type, const int x, const int y) {
 
     return obstacle;
 }
-
+/**
+ * Actualiza la posición del obstáculo de acuerdo a su tipo y comportamiento:
+ * - YETI: camina en línea horizontal.
+ * - BIRD: vuela hacia la derecha con cambio vertical aleatorio (sube o baja).
+ * - ICE_BLOCK: cae hacia abajo.
+ */
 void moveObstacle(Obstacle* obstacle) {
     switch (obstacle->type) {
         case YETI:
-            // Always moves horizontally
+            // Siempre se mueve horizontal
             obstacle->x += obstacle->dir == RIGHT ? 1 : -1;
             break;
 
         case BIRD:
-            // Set new Y
+            // Movimiento vertical aleatorio (sube o baja)
             const Dir validDirs[] = {UP, DOWN};
             const int dirArraySize = sizeof(validDirs) / sizeof(Dir);
             const Dir randomDir = validDirs[rand() % dirArraySize];
             obstacle->y += randomDir == UP ? -1 : 1;
 
-            // Set new X
+
             obstacle->x += 1;
             break;
 
@@ -52,7 +60,9 @@ void moveObstacle(Obstacle* obstacle) {
             break;
     }
 }
-
+/**
+ * Convierte una cadena como "yeti", "bird", o "ice_block" en su equivalente enum.
+ */
 ObstacleType parse_obstacle_type(char* typeStr) {
     if (strcmp(typeStr, "yeti") == 0) return YETI;
     if (strcmp(typeStr, "bird") == 0) return BIRD;

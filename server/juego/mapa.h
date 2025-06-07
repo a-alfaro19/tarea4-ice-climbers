@@ -2,28 +2,42 @@
 #define MAPA_H
 
 #include "nivel.h"
-
-#define MAX_BLOQUES 3000  // máximo a enviar
-#define FLOORS_PER_LEVEL 16
-#define FLOOR_HEIGHT 1
-#define PRE_FLOOR_HEIGHT 1
-#define ROWS_BETWEEN_FLOORS 4
-#define TOTAL_FLOOR_HEIGHT (FLOOR_HEIGHT + PRE_FLOOR_HEIGHT)
-#define TOTAL_ROWS_FOR_FLOORS  ((FLOORS_PER_LEVEL - 1) * TOTAL_FLOOR_HEIGHT)
-#define TOTAL_ROWS_BETWEEN_FLOORS ((FLOORS_PER_LEVEL - 1) * ROWS_BETWEEN_FLOORS)
-#define TOTAL_ROWS (1 + TOTAL_ROWS_FOR_FLOORS + TOTAL_ROWS_BETWEEN_FLOORS)
-
+#include "constantes.h"
+/**
+ * Estructura para enviar bloques planos al cliente.
+ */
 typedef struct {
     int cantidad;
     Bloque bloques[MAX_BLOQUES];
 } PaqueteBloques;
-
+/**
+ * Variable global que representa el mapa del juego (lista enlazada de niveles).
+ */
 extern Nivel* mapa;
-
+/**
+ * Inicializa la estructura del mapa con bloques distribuidos por nivel.
+ */
 void inicializar_mapa();
+/**
+ * Retorna los bloques visibles actuales del mapa en forma de paquete plano.
+ */
 PaqueteBloques obtener_bloques_visibles();  // Solo primeros 4 niveles
+/**
+ * Libera la memoria del mapa y lo reinicia.
+ */
 void destruir_mapa();
+/**
+ * Imprime en consola todos los bloques ubicados en la parte superior del mapa.
+ * Útil para depuración.
+ */
 void debug_imprimir_bloques_altos();
-// Revisa si hay un bloque activo (no vacío) en una posición
+
+/**
+ * Verifica si hay un bloque sólido y activo en una posición específica.
+ *
+ * @param x Columna del mapa.
+ * @param y Fila del mapa.
+ * @return 1 si hay bloque, 0 si no.
+ */
 int hay_bloque_en(int x, int y);
 #endif

@@ -5,10 +5,11 @@
 #include <stdlib.h>
 #include <time.h>
 #include <math.h>
-
-
 #include "../red/SocketServer.h"
-
+/**
+ * Inicializa el juego colocando a Popo y Nana en sus posiciones iniciales.
+ * También reinicia valores como vidas, puntaje, velocidad y estado del pterodáctilo.
+ */
 void inicializar_juego(Juego* juego) {
     juego->nivel_actual = 0;
     juego->en_fase_bonus = 0;
@@ -20,6 +21,7 @@ void inicializar_juego(Juego* juego) {
     snprintf(popo->nombre, sizeof(popo->nombre), "Popo");
     snprintf(nana->nombre, sizeof(nana->nombre), "Nana");
 
+    // Popo
     popo->x = 9;
     popo->y = 1;
     popo->y_real = (float)popo->y;
@@ -29,6 +31,7 @@ void inicializar_juego(Juego* juego) {
     popo->puntaje = 0;
     popo->direccion = 'R';
 
+    // Nana
     nana->x = 12;
     nana->y = 1;
     nana->y_real = (float)nana->y;
@@ -38,25 +41,36 @@ void inicializar_juego(Juego* juego) {
     nana->puntaje = 0;
     nana->direccion = 'L';
 
+    // Pterodáctilo inactivo
     juego->ptero.activo = 0;
     juego->ptero.x = 0;
     juego->ptero.y = 0;
     juego->ptero.direccion = 1;
 
 }
-
+/**
+ * Reinicia el juego tras una partida terminada o una vida perdida,
+ * aumentando la velocidad general como forma de progresión.
+ */
 void reiniciar_juego(Juego* juego) {
     juego->nivel_actual = 0;
     juego->en_fase_bonus = 0;
     juego->velocidad++;
 }
-
+/**
+ * Imprime el estado general del juego en consola (debug).
+ */
 void imprimir_estado_juego(Juego* juego) {
     printf("Nivel: %d | Velocidad: %d | Bonus: %d\n",
            juego->nivel_actual, juego->velocidad, juego->en_fase_bonus);
 }
+/**
+ * Determina en qué nivel está un jugador con base en su posición vertical.
+ * Usa bloques cercanos o la posición real como referencia.
+ */
 int obtener_nivel_actual_de_jugador(Jugador* j) {
     int mejor_y = -1;
+    // Buscar bloque más cercano debajo
     for (int offset = 0; offset <= 2; offset++) {
         int y_check = j->y - offset;
         if (y_check >= 0 && hay_bloque_en(j->x, y_check)) {
@@ -69,7 +83,10 @@ int obtener_nivel_actual_de_jugador(Jugador* j) {
     int base_y = (mejor_y >= 0) ? mejor_y : (int)(j->y_real + 0.5f);
     return base_y / (TOTAL_FLOOR_HEIGHT + ROWS_BETWEEN_FLOORS);
 }
-
+/**
+ * Genera hasta 4 frutas aleatorias en pisos altos durante la fase bonus.
+ * Solo aparecen si hay un bloque de soporte debajo y espacio libre arriba.
+ */
 void generar_frutas_bonus(Juego* juego) {
     static TipoFruta tipos[4] = { NARANJA, BANANO, BERENJENA, LECHUGA };
     juego->frutas.cantidad = 0;
@@ -97,7 +114,9 @@ void generar_frutas_bonus(Juego* juego) {
         intentos++;
     }
 }
-
+/**
+ * Activa el pterodáctilo, que vuela horizontalmente por la parte superior del escenario.
+ */
 void activar_pterodactilo(Juego* juego) {
     juego->ptero.activo = 1;
     juego->ptero.x = 7;
@@ -106,7 +125,13 @@ void activar_pterodactilo(Juego* juego) {
     printf("Pterodáctilo ACTIVADO en (%d, %d)\n", juego->ptero.x, juego->ptero.y);
 }
 
-
+/**
+ * Actualiza la lógica del juego en cada tick:
+ * - Aplica física a los jugadores.
+ * - Verifica transición de nivel.
+ * - Mueve obstáculos y pterodáctilo.
+ * - Gestiona colisiones con frutas y enemigos.
+ */
 void actualizar_juego(Juego* juego, Nivel* mapa) {
     for (int i = 0; i < 2; i++) {
         actualizar_fisica(&juego->jugadores[i]);
@@ -229,7 +254,13 @@ void actualizar_juego(Juego* juego, Nivel* mapa) {
     }
 }
 
-
+/**
+ * Genera un nuevo obstáculo del tipo especificado (YETI, BIRD, ICE_BLOCK) y lo posiciona
+ * en el mapa según la lógica del tipo. Luego lo agrega a la lista de obstáculos del juego.
+ *
+ * @param juego Puntero al estado del juego.
+ * @param type Tipo de obstáculo a crear.
+ */
 
 void generate_obstacle(Juego* juego, const ObstacleType type) {
     int x = 0;
@@ -237,30 +268,35 @@ void generate_obstacle(Juego* juego, const ObstacleType type) {
 
     int DISTANCE_BETWEEN_FLOORS = 6;
 
-    // Set Origin
+    // Definir posición inicial dependiendo del tipo de obstáculo
     switch (type) {
         case YETI:
+            // Yeti puede salir por la izquierda o derecha en pisos aleatorios
             const Dir validDirs[] = {LEFT, RIGHT};
             const Dir randomDir = validDirs[rand() % 2];
             x = randomDir == LEFT ? 0 : 30;
             y = FLOOR_HEIGHT + (rand() % 3) * DISTANCE_BETWEEN_FLOORS;
             break;
-
+            // Aves siempre aparecen por la izquierda y en pisos medios
         case BIRD:
             x = 0;
             y = FLOOR_HEIGHT + (rand() % 3) * DISTANCE_BETWEEN_FLOORS;;
             break;
-
+            // Hielos caen desde una posición superior aleatoria
         case ICE_BLOCK:
             x = rand() % 30;
             y = 19;
             break;
     }
-
+    // Crear y agregar obstáculo a la lista
     const Obstacle* obstacle = createObstacle(type, x, y);
     add_obstacle(&juego->obstacles, obstacle);
 }
-
+/**
+ * Mueve todos los obstáculos activos en el juego, usando su comportamiento específico.
+ *
+ * @param juego Puntero constante al estado del juego.
+ */
 void move_obstacles(const Juego* juego) {
     const int size = juego->obstacles.size;
     const ObstacleList* obstacles = &juego->obstacles;
@@ -269,7 +305,12 @@ void move_obstacles(const Juego* juego) {
         moveObstacle(&obstacles->obstacles[i]);
     }
 }
-
+/**
+ * Elimina obstáculos que han salido fuera de los límites del mapa,
+ * ya sea horizontal o verticalmente.
+ *
+ * @param juego Puntero al juego que contiene la lista de obstáculos.
+ */
 void removeObstacleOutOfMap(Juego* juego) {
     int size = juego->obstacles.size;
     for (int i = 0; i < size; i++) {
@@ -283,7 +324,12 @@ void removeObstacleOutOfMap(Juego* juego) {
         }
     }
 }
-
+/**
+ * Imprime por consola todos los obstáculos activos del juego.
+ * Útil para depuración y pruebas.
+ *
+ * @param juego Puntero al estado del juego.
+ */
 void printObstacles(const Juego* juego) {
     const ObstacleList* obstacles = &juego->obstacles;
     const int size = obstacles->size;

@@ -1,23 +1,22 @@
 #include "acciones.h"
-#include "mapa.h"
-#include <stdio.h>
-#include <math.h>
-
+#include "../juego/nivel.h"
+#include "../juego/bloque.h"
+#include "jugador.h"
+#include "constantes.h" // Constantes físicas del juego
 #include "acciones.h"
 #include "mapa.h"
 #include <stdio.h>
 #include <math.h>
-#define GRAVEDAD -0.05f           // caída más suave
-#define FUERZA_SALTO 2.5f         // salto más alto
-#define VELOCIDAD_TERMINAL -2.5f // caída controlada
-#define PASO_VERTICAL 0.01f        // precisión de movimiento vertical
 
+
+/**
+ * Aplica gravedad y movimiento vertical al jugador,
+ * verificando colisiones con bloques y suelo.
+ */
 void actualizar_fisica(Jugador* j) {
-    //  Punto 1: Verificación de si debería empezar a caer
+    // Verifica si debería empezar a caer (no hay bloque debajo y no está en el aire)
     int y_abajo = j->y - 1;
     int bloque_abajo = hay_bloque_en(j->x, y_abajo);
-    //printf("[CHECK CAIDA] y_real=%.2f  y=%d  y_abajo=%d  bloque_abajo=%d  en_el_aire=%d\n",
-           //j->y_real, j->y, y_abajo, bloque_abajo, j->en_el_aire);
 
     if (!j->en_el_aire && !bloque_abajo) {
         j->en_el_aire = 1;
@@ -34,25 +33,25 @@ void actualizar_fisica(Jugador* j) {
     float y_objetivo = j->y_real + j->vy;
     float paso = (j->vy > 0) ? PASO_VERTICAL : -PASO_VERTICAL;
 
+    // Movimiento vertical progresivo, paso a paso
     while ((paso > 0 && j->y_real < y_objetivo) || (paso < 0 && j->y_real > y_objetivo)) {
         j->y_real += paso;
         int y_int = (int)(j->y_real + 0.5f);
-
+        // Límite del mapa
         if (y_int < 0 || y_int >= TOTAL_ROWS) {
             j->y_real = (y_int < 0) ? 0 : TOTAL_ROWS - 1;
             j->y = (int)(j->y_real + 0.5f);
             j->vy = 0;
             j->en_el_aire = 0;
-            //printf("Fuera del mapa, ajustado a y=%d\n", j->y);
             return;
         }
-
+        // Colisión con un bloque
         if (hay_bloque_en(j->x, y_int)) {
             int bloque_arriba = hay_bloque_en(j->x, y_int + 1);
-            //printf("[COLISION] en y_int=%d, vy=%.2f, bloque_arriba=%d\n", y_int, j->vy, bloque_arriba);
 
-            if (j->vy < 0) {
+            if (j->vy < 0) {// Cayendo
                 if (!bloque_arriba) {
+                    // Aterriza
                     j->y_real = (float)(y_int + 1);
                     j->vy = 0;
                     j->en_el_aire = 0;
@@ -69,19 +68,20 @@ void actualizar_fisica(Jugador* j) {
             break;
         }
     }
-
+    // Actualizar valor entero de y para la lógica del juego
     j->y = (int)(j->y_real + 0.5f);
-    //printf("[ACTUALIZADO] y_real=%.2f  y=%d  en_el_aire=%d  vy=%.2f\n\n",j->y_real, j->y, j->en_el_aire, j->vy);
 }
 
 
-
+/**
+ * Permite al jugador iniciar un salto si está en el suelo.
+ */
 void brincar_jugador(Jugador* j) {
     printf("Intentando brincar... en_el_aire=%d, bloque_abajo=%d\n",
            j->en_el_aire, hay_bloque_en(j->x, j->y - 1));
 
     if (!j->en_el_aire && hay_bloque_en(j->x, j->y - 1)) {
-        j->vy = 5.5f;
+        j->vy = FUERZA_SALTO; // Velocidad inicial del salto
         j->en_el_aire = 1;
         printf("%s inició salto con vy=%.2f\n", j->nombre, j->vy);
     } else {
@@ -89,12 +89,14 @@ void brincar_jugador(Jugador* j) {
     }
 }
 
-
-
+/**
+ * Mueve lateralmente al jugador si el camino está libre.
+ * 'dir' debe ser 'L' o 'R' (izquierda o derecha).
+ */
 void mover_jugador(Jugador* j, char dir) {
     int dx = (dir == 'L') ? -1 : 1;
     int nuevo_x = j->x + dx;
-
+    // Validar límites y colisión
     if (nuevo_x >= 0 && nuevo_x < 30 && !hay_bloque_en(nuevo_x, j->y)) {
         j->x = nuevo_x;
         j->direccion = dir;
@@ -103,14 +105,17 @@ void mover_jugador(Jugador* j, char dir) {
 }
 
 
-
+/**
+ * Permite destruir un bloque destructible justo encima del jugador.
+ */
 void golpear(Jugador* j, Nivel* _) {
     Nivel* actual = mapa;
     while (actual) {
         Bloque* b = actual->bloques;
         while (b) {
+            // Busca bloque destructible justo arriba
             if (b->x == j->x && b->y == j->y + 1 && b->activo && b->tipo == 1) {
-                b->activo = 0;
+                b->activo = 0; // Destruir bloque
                 printf("%s destruyó bloque en (%d, %d)\n", j->nombre, b->x, b->y);
                 return;
             }
