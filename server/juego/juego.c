@@ -272,9 +272,9 @@ void actualizar_juego(Juego* juego, Nivel* mapa) {
         for (int i = 0; i < limite_jugadores; i++) {
             Jugador* j = &juego->jugadores[i];
             if (j->vidas > 0 && j->x == juego->ptero.x && j->y == juego->ptero.y) {
-                j->puntaje += 1000;
+                j->puntaje += 0;
                 juego->ptero.activo = 0;
-                printf("%s atrapó al pterodáctilo y ganó 1000 pts\n", j->nombre);
+                printf("%s atrapó al pterodáctilo\n", j->nombre);
             }
         }
     }

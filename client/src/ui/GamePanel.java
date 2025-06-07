@@ -369,16 +369,19 @@ public class GamePanel extends JPanel {
                 e.printStackTrace();
             }
         } else {
-            System.out.println(" Output es null");
+            System.out.println("Output es null");
         }
 
-        // Cerrar ventana actual y mostrar nueva sin verificaciones
         SwingUtilities.invokeLater(() -> {
-            if (gameWindow != null) {
+            JFrame frame = (JFrame) SwingUtilities.getWindowAncestor(this);
+            if (frame != null) {
+                frame.getContentPane().removeAll();
+                frame.setContentPane(new GameOverPanel(jugadores, frutas, obstacles, pterodactilo, dosJugadores, output));
+                frame.revalidate();
+                frame.repaint();
             }
-            GameOverWindow gameOverWindow = new GameOverWindow(dosJugadores);
-            gameOverWindow.setVisible(true);  // Abre nueva ventana
-
         });
-    }}
+    }
+
+}
 

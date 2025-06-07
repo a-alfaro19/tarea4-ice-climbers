@@ -91,7 +91,14 @@ public class ObserverWindow extends JFrame implements GameObserver {
 
     private void mostrarFinDeJuego(Juego juego) {
         getContentPane().removeAll();
-        JPanel panelGameOver = new GameOverPanel(juego.jugadores, juego.frutas, juego.obstacles, juego.pterodactilo, dosJugadores);
+        JPanel panelGameOver = new GameOverPanel(
+                juego.jugadores,
+                juego.frutas,
+                juego.obstacles,
+                juego.pterodactilo,
+                dosJugadores,
+                null // output es null para observadores
+        );
         add(panelGameOver);
         revalidate();
         repaint();

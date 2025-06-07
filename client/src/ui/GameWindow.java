@@ -17,7 +17,6 @@ public class GameWindow extends JFrame {
     private String nombreJugador = "";
     private final GamePanel gamePanel;
 
-    private GameOverWindow gameOverPanel;
 
     private PlayerClient playerClient;
     private static GameWindow instancia;

@@ -120,13 +120,6 @@ void mover_jugador(Jugador* j, char dir, Juego* juego) {
 }
 
 /**
- * Permite destruir un obstáculo justo encima del jugador.
- * Otorga puntaje según el tipo de obstáculo:
- * - ICE_BLOCK = 10 pts
- * - BIRD = 800 pts
- * - YETI = 400 pts
- */
-/**
  * Permite destruir un bloque destructible justo encima del jugador,
  * o un obstáculo adyacente (arriba, izquierda, derecha o en su misma posición).
  * Otorga puntaje según el tipo de objeto destruido:
@@ -148,8 +141,6 @@ void golpear(Jugador* j, Juego* juego) {
         while (b) {
             if (b->x == j->x && b->y == j->y + 1 && b->activo && b->tipo == 1) {
                 b->activo = 0;
-                puntos += 10;
-                printf("%s destruyó un bloque destructible en (%d, %d) [+10 pts]\n", j->nombre, b->x, b->y);
             }
             b = b->siguiente;
         }
