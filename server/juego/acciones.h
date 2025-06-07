@@ -1,5 +1,6 @@
 #ifndef ACCIONES_H
 #define ACCIONES_H
+#include "juego.h"
 #include "jugador.h"
 #include "../juego/nivel.h"
 
@@ -18,7 +19,7 @@ void actualizar_fisica(Jugador* j);
  * @param j Puntero al jugador que se va a mover.
  * @param dir Dirección de movimiento: 'L' para izquierda, 'R' para derecha.
  */
-void mover_jugador(Jugador* j, char dir);
+void mover_jugador(Jugador* j, char dir, Juego* juego);
 
 /**
  * Inicia un salto si el jugador está en el suelo (no en el aire)
@@ -34,6 +35,6 @@ void brincar_jugador(Jugador* j);
  * @param j Puntero al jugador que realiza la acción de golpear.
  * @param nivel No se utiliza (puede usarse para refactorización futura).
  */
-void golpear(Jugador* j, Nivel* nivel);
+void golpear(Jugador* j, Juego* juego);
 
 #endif

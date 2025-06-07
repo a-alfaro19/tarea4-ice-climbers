@@ -134,26 +134,25 @@ void activar_pterodactilo(Juego* juego) {
  */
 void actualizar_juego(Juego* juego, Nivel* mapa) {
     for (int i = 0; i < 2; i++) {
-        actualizar_fisica(&juego->jugadores[i]);
+        Jugador* j = &juego->jugadores[i];
+        if (j->vidas > 0) {
+            actualizar_fisica(j);
+        }
     }
 
-    // Calcular nivel actual de cada jugador
     int nivel_popo = obtener_nivel_actual_de_jugador(&juego->jugadores[0]);
     int nivel_nana = obtener_nivel_actual_de_jugador(&juego->jugadores[1]);
     int nivel_mas_alto = (nivel_popo > nivel_nana) ? nivel_popo : nivel_nana;
 
-    // Detectar caída individual con margen visual
     for (int i = 0; i < 2; i++) {
         Jugador* j = &juego->jugadores[i];
-        int y_limite = juego->nivel_actual * (TOTAL_FLOOR_HEIGHT + ROWS_BETWEEN_FLOORS);
+        if (j->vidas <= 0) continue;
 
+        int y_limite = juego->nivel_actual * (TOTAL_FLOOR_HEIGHT + ROWS_BETWEEN_FLOORS);
         if (j->y < y_limite - 2) {
             perder_vida(j);
-            int nivel_rescate = nivel_mas_alto;
-            int y_base = nivel_rescate * (TOTAL_FLOOR_HEIGHT + ROWS_BETWEEN_FLOORS);
-            int nueva_x = 5 + rand() % 20;
-
-            j->x = nueva_x;
+            int y_base = nivel_mas_alto * (TOTAL_FLOOR_HEIGHT + ROWS_BETWEEN_FLOORS);
+            j->x = 5 + rand() % 20;
             j->y_real = (float)(y_base + 1);
             j->y = y_base + 1;
             j->vy = 0;
@@ -161,13 +160,11 @@ void actualizar_juego(Juego* juego, Nivel* mapa) {
         }
     }
 
-    // Obtener tiempo actual
     unsigned long ahora = clock() * 1000 / CLOCKS_PER_SEC;
 
-    // Si subieron a un nuevo nivel
     if (nivel_mas_alto > juego->nivel_actual) {
         if (juego->tiempo_subida == 0) {
-            juego->tiempo_subida = ahora;  // primer tick registrado
+            juego->tiempo_subida = ahora;
         }
 
         if (ahora - juego->tiempo_subida >= 2000) {
@@ -175,6 +172,21 @@ void actualizar_juego(Juego* juego, Nivel* mapa) {
                 int y_base = nivel * (TOTAL_FLOOR_HEIGHT + ROWS_BETWEEN_FLOORS);
                 for (int offset = -1; offset <= ROWS_BETWEEN_FLOORS; offset++) {
                     vaciar_nivel(y_base + offset);
+                }
+            }
+
+            // Eliminar obstáculos que estaban en los niveles eliminados
+            for (int i = 0; i < juego->obstacles.size; i++) {
+                Obstacle* o = &juego->obstacles.obstacles[i];
+                for (int nivel = 0; nivel < nivel_mas_alto; nivel++) {
+                    int y_base = nivel * (TOTAL_FLOOR_HEIGHT + ROWS_BETWEEN_FLOORS);
+                    for (int offset = -1; offset <= ROWS_BETWEEN_FLOORS; offset++) {
+                        if (o->y == y_base + offset) {
+                            remove_obstacle(&juego->obstacles, i);
+                            i--;
+                            break;
+                        }
+                    }
                 }
             }
 
@@ -194,14 +206,12 @@ void actualizar_juego(Juego* juego, Nivel* mapa) {
         juego->tiempo_subida = 0;
     }
 
-    // Mover obstáculos cada 300 ms
     static unsigned long lastObstacleMove = 0;
     unsigned long now = clock() * 1000 / CLOCKS_PER_SEC;
     if (now - lastObstacleMove >= 300) {
         move_obstacles(juego);
         lastObstacleMove = now;
 
-        // Mover pterodáctilo también aquí
         if (juego->ptero.activo) {
             juego->ptero.x += juego->ptero.direccion;
             if (juego->ptero.x <= 0) juego->ptero.direccion = 1;
@@ -209,12 +219,12 @@ void actualizar_juego(Juego* juego, Nivel* mapa) {
         }
     }
 
-    // Eliminar obstáculos fuera del mapa
     removeObstacleOutOfMap(juego);
 
-    // Verificar colisión con frutas
     for (int i = 0; i < 2; i++) {
         Jugador* j = &juego->jugadores[i];
+        if (j->vidas <= 0) continue;
+
         for (int f = 0; f < juego->frutas.cantidad; f++) {
             Fruta* fruta = &juego->frutas.frutas[f];
             if (fruta->activa && j->x == fruta->x && j->y == fruta->y) {
@@ -232,16 +242,14 @@ void actualizar_juego(Juego* juego, Nivel* mapa) {
         }
     }
 
-    // Eliminar frutas que quedaron flotando
     for (int f = 0; f < juego->frutas.cantidad; f++) {
         Fruta* fruta = &juego->frutas.frutas[f];
         if (fruta->activa && !hay_bloque_en(fruta->x, fruta->y - 1)) {
             fruta->activa = 0;
-            printf("Fruta %d en (%d,%d) eliminada por falta de bloque de soporte\n", fruta->tipo, fruta->x, fruta->y);
+            printf("Fruta %d en (%d,%d) eliminada por falta de soporte\n", fruta->tipo, fruta->x, fruta->y);
         }
     }
 
-    // Verificar colisión con pterodáctilo
     if (juego->ptero.activo) {
         for (int i = 0; i < 2; i++) {
             Jugador* j = &juego->jugadores[i];
@@ -249,6 +257,32 @@ void actualizar_juego(Juego* juego, Nivel* mapa) {
                 j->puntaje += 1000;
                 juego->ptero.activo = 0;
                 printf("%s atrapó al pterodáctilo y ganó 1000 pts\n", j->nombre);
+            }
+        }
+    }
+
+    for (int i = 0; i < juego->obstacles.size; i++) {
+        Obstacle* o = &juego->obstacles.obstacles[i];
+
+        for (int j = 0; j < 2; j++) {
+            Jugador* jugador = &juego->jugadores[j];
+            if (jugador->vidas <= 0) continue;
+
+            if (jugador->x == o->x && jugador->y == o->y) {
+                perder_vida(jugador);
+                int y_base = obtener_nivel_actual_de_jugador(jugador) * (TOTAL_FLOOR_HEIGHT + ROWS_BETWEEN_FLOORS);
+                jugador->x = 5 + rand() % 20;
+                jugador->y = y_base + 1;
+                jugador->y_real = (float)(jugador->y);
+                jugador->vy = 0;
+                jugador->en_el_aire = 0;
+
+                printf("%s fue golpeado por obstáculo tipo %d en (%d,%d)\n",
+                       jugador->nombre, o->type, o->x, o->y);
+
+                remove_obstacle(&juego->obstacles, i);
+                i--;
+                break;
             }
         }
     }
@@ -266,32 +300,33 @@ void generate_obstacle(Juego* juego, const ObstacleType type) {
     int x = 0;
     int y = 0;
 
-    int DISTANCE_BETWEEN_FLOORS = 6;
+    // Nivel aleatorio entre 0 y 8
+    int nivel_random = rand() % 9;
+    int y_base = nivel_random * (TOTAL_FLOOR_HEIGHT + ROWS_BETWEEN_FLOORS);
 
-    // Definir posición inicial dependiendo del tipo de obstáculo
     switch (type) {
-        case YETI:
-            // Yeti puede salir por la izquierda o derecha en pisos aleatorios
+        case YETI: {
             const Dir validDirs[] = {LEFT, RIGHT};
             const Dir randomDir = validDirs[rand() % 2];
-            x = randomDir == LEFT ? 0 : 30;
-            y = FLOOR_HEIGHT + (rand() % 3) * DISTANCE_BETWEEN_FLOORS;
+            x = (randomDir == LEFT) ? 0 : 30;
+            y = y_base + 1;
             break;
-            // Aves siempre aparecen por la izquierda y en pisos medios
+        }
         case BIRD:
             x = 0;
-            y = FLOOR_HEIGHT + (rand() % 3) * DISTANCE_BETWEEN_FLOORS;;
+            y = y_base + 1;
             break;
-            // Hielos caen desde una posición superior aleatoria
+
         case ICE_BLOCK:
             x = rand() % 30;
             y = 19;
             break;
     }
-    // Crear y agregar obstáculo a la lista
+
     const Obstacle* obstacle = createObstacle(type, x, y);
     add_obstacle(&juego->obstacles, obstacle);
 }
+
 /**
  * Mueve todos los obstáculos activos en el juego, usando su comportamiento específico.
  *

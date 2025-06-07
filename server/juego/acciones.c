@@ -8,6 +8,9 @@
 #include <stdio.h>
 #include <math.h>
 
+#include "juego.h"
+#include "Obstacle.h"
+
 
 /**
  * Aplica gravedad y movimiento vertical al jugador,
@@ -92,36 +95,93 @@ void brincar_jugador(Jugador* j) {
 /**
  * Mueve lateralmente al jugador si el camino está libre.
  * 'dir' debe ser 'L' o 'R' (izquierda o derecha).
+ * También evita colisiones con obstáculos.
  */
-void mover_jugador(Jugador* j, char dir) {
+void mover_jugador(Jugador* j, char dir, Juego* juego) {
     int dx = (dir == 'L') ? -1 : 1;
     int nuevo_x = j->x + dx;
-    // Validar límites y colisión
+
     if (nuevo_x >= 0 && nuevo_x < 30 && !hay_bloque_en(nuevo_x, j->y)) {
+        // Verificar colisión con obstáculos
+        int colision_obstaculo = 0;
+        for (int i = 0; i < juego->obstacles.size; i++) {
+            Obstacle* o = &juego->obstacles.obstacles[i];
+            if (o->x == nuevo_x && o->y == j->y) {
+                colision_obstaculo = 1;
+                break;
+            }
+        }
+        if (colision_obstaculo) return;  // No se mueve si hay obstáculo
+
         j->x = nuevo_x;
         j->direccion = dir;
         printf("%s se movió a x=%d\n", j->nombre, j->x);
     }
 }
 
-
 /**
- * Permite destruir un bloque destructible justo encima del jugador.
+ * Permite destruir un obstáculo justo encima del jugador.
+ * Otorga puntaje según el tipo de obstáculo:
+ * - ICE_BLOCK = 10 pts
+ * - BIRD = 800 pts
+ * - YETI = 400 pts
  */
-void golpear(Jugador* j, Nivel* _) {
+/**
+ * Permite destruir un bloque destructible justo encima del jugador,
+ * o un obstáculo adyacente (arriba, izquierda, derecha o en su misma posición).
+ * Otorga puntaje según el tipo de objeto destruido:
+ * - Bloque destructible: 10 pts
+ * - ICE_BLOCK: 10 pts
+ * - BIRD: 800 pts
+ * - YETI: 400 pts
+ */
+void golpear(Jugador* j, Juego* juego) {
+    printf("%s intentó golpear desde (%d, %d)\n", j->nombre, j->x, j->y);
+
+    int puntos = 0;
+    int obstaculo_destruido = 0;
+
+    // Buscar bloque destructible justo encima
     Nivel* actual = mapa;
     while (actual) {
         Bloque* b = actual->bloques;
         while (b) {
-            // Busca bloque destructible justo arriba
             if (b->x == j->x && b->y == j->y + 1 && b->activo && b->tipo == 1) {
-                b->activo = 0; // Destruir bloque
-                printf("%s destruyó bloque en (%d, %d)\n", j->nombre, b->x, b->y);
-                return;
+                b->activo = 0;
+                puntos += 10;
+                printf("%s destruyó un bloque destructible en (%d, %d) [+10 pts]\n", j->nombre, b->x, b->y);
             }
             b = b->siguiente;
         }
         actual = actual->siguiente;
     }
-    printf("%s golpeó pero no había bloque destructible\n", j->nombre);
+
+    // Buscar obstáculo adyacente (arriba, izquierda, derecha o en misma posición)
+    for (int i = 0; i < juego->obstacles.size; i++) {
+        Obstacle* o = &juego->obstacles.obstacles[i];
+        int dx = abs(o->x - j->x);
+        int dy = abs(o->y - j->y);
+
+        if ((dx == 1 && dy == 0) || (dx == 0 && dy == 1) || (dx == 0 && dy == 0)) {
+            // Obstáculo está en una celda alcanzable por golpe
+            switch (o->type) {
+                case ICE_BLOCK: puntos += 10; break;
+                case BIRD:      puntos += 800; break;
+                case YETI:      puntos += 400; break;
+            }
+            printf("%s destruyó obstáculo tipo %d en (%d, %d)\n", j->nombre, o->type, o->x, o->y);
+            remove_obstacle(&juego->obstacles, i);
+            obstaculo_destruido = 1;
+            break;
+        }
+    }
+
+    if (puntos > 0) {
+        sumar_puntaje(j, puntos);
+    }
+
+    if (puntos == 0 && !obstaculo_destruido) {
+        printf("%s golpeó pero no había bloque u obstáculo en la zona\n", j->nombre);
+    }
 }
+

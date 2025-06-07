@@ -363,11 +363,11 @@ DWORD WINAPI handle_client(LPVOID param) {
             if (client->type == PLAYER) {
                 Jugador* jug = &juego.jugadores[client->id];
                 if (strncmp(buffer, "MOVER:", 6) == 0) {
-                    mover_jugador(jug, buffer[6]);
+                    mover_jugador(jug, buffer[6], &juego);
                 } else if (strcmp(buffer, "BRINCAR") == 0) {
                     brincar_jugador(jug);
                 } else if (strcmp(buffer, "GOLPEAR") == 0) {
-                    golpear(jug, mapa);
+                    golpear(jug, &juego);
                 }
             }
             printf("Acción recibida: %s\n", buffer);
