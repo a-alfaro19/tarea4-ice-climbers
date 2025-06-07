@@ -1,4 +1,5 @@
 package ui;
+import client.PlayerClient;
 import model.Bloque;
 import model.Fruta;
 import model.Juego;
@@ -15,6 +16,11 @@ import java.io.IOException;
 public class GameWindow extends JFrame {
     private String nombreJugador = "";
     private final GamePanel gamePanel;
+
+    private GameOverWindow gameOverPanel;
+
+    private PlayerClient playerClient;
+    private static GameWindow instancia;
 
     public GameWindow(String nombreJugador, BufferedWriter output, boolean dosJugadores) {
         this.nombreJugador = nombreJugador;
@@ -39,12 +45,29 @@ public class GameWindow extends JFrame {
         gamePanel.setNivelActual(juego.nivelActual);
         gamePanel.setFrutas(juego.frutas);
         gamePanel.setPterodactilo(juego.pterodactilo);
+        gamePanel.verificarSiTodosMuertos();
         gamePanel.repaint();
     }
 
     public void updateBloques(java.util.List<Bloque> bloques) {
         gamePanel.setBloques(bloques, 30, 89);
         gamePanel.repaint();
+    }
+
+    public void getWindow(){
+        // Guardamos la instancia actual
+        instancia = playerClient.getWindow();
+    }
+
+    public void cerrarVentana() {
+        if (instancia == null){
+            getWindow();
+            cerrarVentana();
+        }
+        if (instancia != null) {
+            instancia.dispose(); // Cierra la ventana
+            instancia = null;
+        }
     }
 
 
