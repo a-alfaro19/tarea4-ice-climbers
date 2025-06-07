@@ -60,7 +60,7 @@ public class MainMenuPanel extends JPanel {
         started = true;
         new Thread(() -> {
             try {
-                PlayerClient client = (PlayerClient) ClientFactory.createClient("PLAYER", "localhost", 8080);
+                PlayerClient client = (PlayerClient) ClientFactory.createClient("PLAYER", "192.168.0.109", 8080);
                 client.setDosJugadores(esperarSegundoJugador);
                 client.identify();
 
@@ -116,7 +116,7 @@ public class MainMenuPanel extends JPanel {
                 String comando = seleccionado.equalsIgnoreCase("Popo") ? "OBSERVER_POPO" : "OBSERVER_NANA";
 
                 // Crear cliente observador
-                ObserverClient client = (ObserverClient) ClientFactory.createClient("OBSERVER", "localhost", 8080);
+                ObserverClient client = (ObserverClient) ClientFactory.createClient("OBSERVER", "192.168.0.109", 8080);
 
                 // Enviar comando y recibir asignación
                 String observado = client.identify(comando); // usa identify(String)
