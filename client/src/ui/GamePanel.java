@@ -312,7 +312,7 @@ public class GamePanel extends JPanel {
     public void verificarSiTodosMuertos() {
 
         if (jugadores == null || jugadores.length == 0) {
-            System.out.println("→ Lista de jugadores vacía o nula");
+            System.out.println("Lista de jugadores vacía o nula");
             return;
         }
 
@@ -347,19 +347,19 @@ public class GamePanel extends JPanel {
 
     private void verificarJugadorUnicoMuerto(Jugador jugador) {
         if (jugador != null && jugador.vidas == 0 && !gameOver) {
-            terminarJuego("🎮 Solo " + jugador.nombre + " está jugando y ha perdido todas sus vidas.");
+            terminarJuego("Solo " + jugador.nombre + " está jugando y ha perdido todas sus vidas.");
         }
     }
 
     private void verificarAmbosJugadoresMuertos(Jugador j1, Jugador j2) {
         if (j1 != null && j2 != null && j1.vidas == 0 && j2.vidas == 0 && !gameOver) {
-            terminarJuego("🎮 " + j1.nombre + " y " + j2.nombre + " han perdido todas sus vidas.");
+            terminarJuego(" " + j1.nombre + " y " + j2.nombre + " han perdido todas sus vidas.");
         }
     }
 
     private void terminarJuego(String mensaje) {
         gameOver = true;
-        System.out.println("✅ Fin del juego: " + mensaje);
+        System.out.println("Fin del juego: " + mensaje);
 
         if (output != null) {
             try {
@@ -369,7 +369,7 @@ public class GamePanel extends JPanel {
                 e.printStackTrace();
             }
         } else {
-            System.out.println("⚠️ Output es null");
+            System.out.println(" Output es null");
         }
 
         // Cerrar ventana actual y mostrar nueva sin verificaciones
