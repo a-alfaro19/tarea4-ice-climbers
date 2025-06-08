@@ -14,6 +14,7 @@ public class Juego {
     public Integer enFaseBonus;
     public Integer velocidad;
     public Pterodactilo pterodactilo;
+    public Integer atrapo_ptero;
 
 
     public static Juego readFrom(DataInputStream in) throws IOException {
@@ -41,6 +42,7 @@ public class Juego {
         juego.enFaseBonus = readIntLE(in);
         juego.velocidad = readIntLE(in);
         juego.pterodactilo = Pterodactilo.readFrom(in);
+        juego.atrapo_ptero = readIntLE(in);
         return juego;
     }
 

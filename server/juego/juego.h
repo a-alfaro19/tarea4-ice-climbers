@@ -27,6 +27,7 @@ typedef struct {
     int en_fase_bonus;         // 1 si está en fase bonus, 0 si no
     int velocidad;             // Velocidad del juego (aumenta en cada bonus)
     Pterodactilo ptero;        // Estado del pterodáctilo
+    int atrapo_ptero; // 1 si colisionó con el pterodáctilo, 0 si no
     unsigned long tiempo_subida; // Tiempo desde que se alcanzó nuevo nivel (para transición)
 } Juego;
 /**

@@ -41,8 +41,6 @@ void inicializar_juego(Juego* juego) {
         nana->vidas = 3;
         nana->puntaje = 0;
         nana->direccion = 'L';
-        printf("Inicializada Nana: vidas=%d, pos=(%d,%d)\n", nana->vidas, nana->x, nana->y);    } else {
-        // Limpiar datos de Nana en modo 1 jugador
         memset(&juego->jugadores[1], 0, sizeof(Jugador));
     }
 
@@ -60,6 +58,8 @@ void inicializar_juego(Juego* juego) {
     popo->puntos_hielo = 0;
     popo->puntos_ave = 0;
     popo->puntos_yeti = 0;
+
+    juego->atrapo_ptero = 0;
 
 }
 
@@ -175,14 +175,20 @@ void actualizar_juego(Juego* juego, Nivel* mapa) {
         int y_limite = juego->nivel_actual * (TOTAL_FLOOR_HEIGHT + ROWS_BETWEEN_FLOORS);
         if (j->y < y_limite - 2) {
             perder_vida(j);
-            int y_base = nivel_mas_alto * (TOTAL_FLOOR_HEIGHT + ROWS_BETWEEN_FLOORS);
+
+            int nivel_jugador = obtener_nivel_actual_de_jugador(j);
+            if (nivel_jugador < 0) nivel_jugador = juego->nivel_actual;
+
+            int y_base = nivel_jugador * (TOTAL_FLOOR_HEIGHT + ROWS_BETWEEN_FLOORS);
             j->x = 5 + rand() % 20;
             j->y_real = (float)(y_base + 1);
             j->y = y_base + 1;
             j->vy = 0;
             j->en_el_aire = 0;
+
         }
     }
+
 
     // Nivel ascendido
     unsigned long ahora = clock() * 1000 / CLOCKS_PER_SEC;
@@ -261,7 +267,6 @@ void actualizar_juego(Juego* juego, Nivel* mapa) {
                     case BERENJENA: j->puntos_berenjena++; sumar_puntaje(j, 300); break;
                     case LECHUGA: j->puntos_lechuga++; sumar_puntaje(j, 400); break;
                 }
-                printf("%s recogió una fruta tipo %d\n", j->nombre, fruta->tipo);
             }
 
         }
@@ -272,7 +277,6 @@ void actualizar_juego(Juego* juego, Nivel* mapa) {
         Fruta* fruta = &juego->frutas.frutas[f];
         if (fruta->activa && !hay_bloque_en(fruta->x, fruta->y - 1)) {
             fruta->activa = 0;
-            printf("Fruta %d en (%d,%d) eliminada por falta de soporte\n", fruta->tipo, fruta->x, fruta->y);
         }
     }
 
@@ -283,7 +287,7 @@ void actualizar_juego(Juego* juego, Nivel* mapa) {
             if (j->vidas > 0 && j->x == juego->ptero.x && j->y == juego->ptero.y) {
                 j->puntaje += 0;
                 juego->ptero.activo = 0;
-                printf("%s atrapó al pterodáctilo\n", j->nombre);
+                juego->atrapo_ptero = 1;
             }
         }
     }
@@ -303,9 +307,6 @@ void actualizar_juego(Juego* juego, Nivel* mapa) {
                 jugador->y_real = (float)(jugador->y);
                 jugador->vy = 0;
                 jugador->en_el_aire = 0;
-
-                printf("%s fue golpeado por obstáculo tipo %d en (%d,%d)\n",
-                       jugador->nombre, o->type, o->x, o->y);
 
                 remove_obstacle(&juego->obstacles, i);
                 i--;
@@ -418,9 +419,8 @@ void printObstacles(const Juego* juego) {
     const ObstacleList* obstacles = &juego->obstacles;
     const int size = obstacles->size;
 
-    printf("Game contains %d obstacles\n", size);
     for (int i = 0; i < size; i++) {
         const Obstacle current = obstacles->obstacles[i];
-        printf("Type: %d, Pos: (%d, %d), Dir: %d\n", current.type, current.x, current.y, current.dir);
+
     }
 }

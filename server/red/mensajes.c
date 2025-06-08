@@ -77,6 +77,8 @@ int enviar_juego(SOCKET socket, Juego* juego) {
     if (send(socket, &juego->ptero.y, 4, 0) != 4) return -1;
     if (send(socket, &juego->ptero.direccion, 4, 0) != 4) return -1;
 
+    if (send(socket, &juego->atrapo_ptero, 4, 0) != 4) return -1;
+
     return 0;
 }
 /**

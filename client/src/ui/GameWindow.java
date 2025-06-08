@@ -44,7 +44,9 @@ public class GameWindow extends JFrame {
         gamePanel.setNivelActual(juego.nivelActual);
         gamePanel.setFrutas(juego.frutas);
         gamePanel.setPterodactilo(juego.pterodactilo);
+        gamePanel.setAtrapoPtero(juego.atrapo_ptero);
         gamePanel.verificarSiTodosMuertos();
+        gamePanel.verificarAtrapoPtero();
         gamePanel.repaint();
     }
 

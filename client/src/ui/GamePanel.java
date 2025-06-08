@@ -30,6 +30,7 @@ public class GamePanel extends JPanel {
     private BufferedImage pteroImg;
     private Tile[][] mapa;
     private final boolean esControlable;
+    private int atrapo_ptero = 0;
 
     private boolean gameOver = false;
     private GameWindow gameWindow;
@@ -127,7 +128,9 @@ public class GamePanel extends JPanel {
     public void setPterodactilo(Pterodactilo pterodactilo) {
         this.pterodactilo = pterodactilo;
     }
-
+    public void setAtrapoPtero(int valor) {
+        this.atrapo_ptero = valor;
+    }
 
     public void updateGame(Jugador[] jugadores, List<Bloque> bloques, int ancho, int alto) {
         setJugadores(jugadores);
@@ -325,6 +328,12 @@ public class GamePanel extends JPanel {
 
         if (esPartidaDosJugadores()) {
             verificarAmbosJugadoresMuertos(popo, nana);
+        }
+    }
+
+    public void verificarAtrapoPtero() {
+        if (!gameOver && atrapo_ptero == 1) {
+            terminarJuego("¡Un jugador atrapó al pterodáctilo!");
         }
     }
 
