@@ -11,6 +11,15 @@ public class Jugador {
     public Character direccion;
     public boolean activo = false;
 
+    // CAMPOS: cantidades de objetos recolectados o destruidos
+    public Integer puntos_hielo;
+    public Integer puntos_ave;
+    public Integer puntos_yeti;
+    public Integer puntos_naranja;
+    public Integer puntos_banano;
+    public Integer puntos_berenjena;
+    public Integer puntos_lechuga;
+
     public static Jugador readFrom(DataInputStream in) throws IOException {
         Jugador j = new Jugador();
 
@@ -23,20 +32,35 @@ public class Jugador {
         j.vidas = readIntLE(in);
         j.puntaje = readIntLE(in);
 
-        // Leer float vy (4 bytes LE)
         j.vy = readFloatLE(in);
-        // Leer en_el_aire (int, 4 bytes LE)
         j.en_el_aire = readIntLE(in);
-
         byte dir = in.readByte();
         j.direccion = (char) dir;
 
-        // Establecer 'activo' automáticamente si tiene vidas y posición válida
         j.activo = (j.vidas != null && j.vidas > 0) || (j.x != null && j.y != null && (j.x != 0 || j.y != 0));
+        in.readByte(); // relleno
 
-        byte relleno = in.readByte();
+        // Cantidad de objetos destruidos/recolectados
+        j.puntos_hielo = readIntLE(in);
+        j.puntos_ave = readIntLE(in);
+        j.puntos_yeti = readIntLE(in);
+        j.puntos_naranja = readIntLE(in);
+        j.puntos_banano = readIntLE(in);
+        j.puntos_berenjena = readIntLE(in);
+        j.puntos_lechuga = readIntLE(in);
 
         return j;
+    }
+
+    // Cálculo de puntaje total real
+    public int calcularPuntajeTotal() {
+        return puntos_hielo * 10 +
+                puntos_ave * 800 +
+                puntos_yeti * 400 +
+                puntos_naranja * 100 +
+                puntos_banano * 200 +
+                puntos_berenjena * 300 +
+                puntos_lechuga * 400;
     }
 
     private static int readIntLE(DataInputStream in) throws IOException {
@@ -52,7 +76,3 @@ public class Jugador {
         return Float.intBitsToFloat(intBits);
     }
 }
-
-
-
-

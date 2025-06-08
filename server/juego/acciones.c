@@ -156,9 +156,18 @@ void golpear(Jugador* j, Juego* juego) {
         if ((dx == 1 && dy == 0) || (dx == 0 && dy == 1) || (dx == 0 && dy == 0)) {
             // Obstáculo está en una celda alcanzable por golpe
             switch (o->type) {
-                case ICE_BLOCK: puntos += 10; break;
-                case BIRD:      puntos += 800; break;
-                case YETI:      puntos += 400; break;
+                case ICE_BLOCK:
+                    j->puntos_hielo++;
+                    sumar_puntaje(j, 10);
+                    break;
+                case BIRD:
+                    j->puntos_ave++;
+                    sumar_puntaje(j, 800);
+                    break;
+                case YETI:
+                    j->puntos_yeti++;
+                    sumar_puntaje(j, 400);
+                    break;
             }
             printf("%s destruyó obstáculo tipo %d en (%d, %d)\n", j->nombre, o->type, o->x, o->y);
             remove_obstacle(&juego->obstacles, i);

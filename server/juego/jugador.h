@@ -12,7 +12,15 @@ typedef struct Jugador {
     int puntaje;         // Puntaje acumulado
     char direccion;      // Dirección actual: 'L' = izquierda, 'R' = derecha
     float vy;            // Velocidad vertical (para salto/gravedad)
-    int en_el_aire;      // 1 si está en el aire, 0 si está sobre un bloque
+    int en_el_aire;      // 1 si está en el aire, 0 si está sobre un
+
+    int puntos_hielo;
+    int puntos_ave;
+    int puntos_yeti;
+    int puntos_naranja;
+    int puntos_banano;
+    int puntos_berenjena;
+    int puntos_lechuga;
 } Jugador;
 /**
  * Resta una vida al jugador (si tiene) y muestra mensaje en consola.

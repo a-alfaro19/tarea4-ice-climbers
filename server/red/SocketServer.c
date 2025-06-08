@@ -166,6 +166,8 @@ DWORD WINAPI consoleThread(LPVOID lpParameter) {
 
     }
 }
+
+
 /**
  * Hilo que maneja la conexión con un cliente específico.
  * Identifica si es jugador u observador, verifica disponibilidad,
@@ -356,7 +358,10 @@ DWORD WINAPI handle_client(LPVOID param) {
         if (strcmp(buffer, "STATE") == 0) {
             snprintf(buffer, sizeof(buffer), "STATE %d %d", player_clients, observer_clients);
             send_response(clientSocket, buffer);
-        } else if (
+        } else if (strcmp(buffer, "CERRAR") == 0) {
+            printf("Cliente pidió cerrar sesión.\n");
+            break;
+        }else if (
             strncmp(buffer, "MOVER:", 6) == 0 ||
             strcmp(buffer, "BRINCAR") == 0 ||
             strcmp(buffer, "GOLPEAR") == 0

@@ -43,7 +43,6 @@ public class GameOverPanel extends JPanel {
             yetiImg = ImageIO.read(getClass().getResource("/ui/figuras/yeti.png"));
             popoImg = ImageIO.read(getClass().getResource("/ui/figuras/popo.png"));
             nanaImg = ImageIO.read(getClass().getResource("/ui/figuras/nana.png"));
-
             bananaImg = ImageIO.read(getClass().getResource("/ui/figuras/banana.png"));
             eggplantImg = ImageIO.read(getClass().getResource("/ui/figuras/egg_plant.png"));
             orangeImg = ImageIO.read(getClass().getResource("/ui/figuras/orange.png"));
@@ -66,74 +65,57 @@ public class GameOverPanel extends JPanel {
             crearBloquesJugador(jugadores[1], 610, "JUGADOR 2", nanaImg);
         }
     }
-
     private void crearBloquesJugador(Jugador jugador, int xBase, String titulo, BufferedImage avatar) {
-        int y = 120;
+        int yInicio = 120;
         JLabel textLabel = new JLabel(titulo);
         textLabel.setForeground(Color.WHITE);
         textLabel.setFont(new Font("Monospaced", Font.BOLD, 20));
-        textLabel.setBounds(xBase + 10, y, 200, 20);
+        textLabel.setBounds(xBase + 60, yInicio, 200, 20); // centrado sobre dos columnas
         add(textLabel);
 
-        y += 30;
-        addImagenTexto(xBase, y, hieloImg, "10 X 0");
-        addFrutaALaPar(xBase + 160, y, 0);
+        int col1X = xBase;
+        int col2X = xBase + 160;
+        int y1 = yInicio + 30;
+        int y2 = yInicio + 30;
 
-        y += 50;
-        addImagenTexto(xBase, y, aveImg, "800 X 0");
-        addFrutaALaPar(xBase + 160, y, 1);
+        y1 = addLineaConImagen(col1X, y1, hieloImg, jugador.puntos_hielo, 10);       // hielo
+        y1 = addLineaConImagen(col1X, y1, aveImg, jugador.puntos_ave, 800);          // ave
+        y1 = addLineaConImagen(col1X, y1, yetiImg, jugador.puntos_yeti, 400);        // yeti
 
-        y += 50;
-        addImagenTexto(xBase, y, yetiImg, "400 X 0");
-        addFrutaALaPar(xBase + 160, y, 2);
+        y2 = addLineaConImagen(col2X, y2, orangeImg, jugador.puntos_naranja, 100);   // naranja
+        y2 = addLineaConImagen(col2X, y2, bananaImg, jugador.puntos_banano, 200);    // banana
+        y2 = addLineaConImagen(col2X, y2, eggplantImg, jugador.puntos_berenjena, 300); // berenjena
+        y2 = addLineaConImagen(col2X, y2, lettuceImg, jugador.puntos_lechuga, 400);    // lechuga
 
-        y += 50;
-        addImagenTexto(xBase, y, avatar, "");
-        addFrutaALaPar(xBase + 160, y, 3);
-
-        y += 50;
-        JLabel total = new JLabel("TOTAL: " + jugador.puntaje);
+        int yFinal = Math.max(y1, y2) + 10;
+        JLabel total = new JLabel("TOTAL: " + jugador.calcularPuntajeTotal());
         total.setForeground(Color.WHITE);
         total.setFont(new Font("Monospaced", Font.BOLD, 20));
-        total.setBounds(xBase + 20, y, 200, 20);
+        total.setBounds(xBase + 60, yFinal, 250, 30);
         add(total);
     }
 
-    private void addFrutaALaPar(int x, int y, int tipo) {
-        BufferedImage img = switch (tipo) {
-            case 0 -> orangeImg;
-            case 1 -> bananaImg;
-            case 2 -> eggplantImg;
-            case 3 -> lettuceImg;
-            default -> null;
-        };
+    private int addLineaConImagen(int x, int y, BufferedImage img, int cantidad, int valorUnidad) {
+        String texto = cantidad + " X " + valorUnidad;
 
-        int valor = switch (tipo) {
-            case 0 -> 100;
-            case 1 -> 200;
-            case 2 -> 300;
-            case 3 -> 400;
-            default -> 0;
-        };
+        JLabel imgLabel = new JLabel(new ImageIcon(img.getScaledInstance(50, 50, Image.SCALE_SMOOTH)));
+        imgLabel.setBounds(x, y, 50, 50);
+        add(imgLabel);
 
-        if (img != null) {
-            JLabel frutaLabel = new JLabel(new ImageIcon(img.getScaledInstance(50, 50, Image.SCALE_SMOOTH)));
-            frutaLabel.setBounds(x, y, 50, 50);
-            add(frutaLabel);
+        JLabel label = new JLabel(texto);
+        label.setForeground(Color.WHITE);
+        label.setFont(new Font("Monospaced", Font.BOLD, 18));
+        label.setBounds(x + 60, y + 15, 120, 20);
+        add(label);
 
-            JLabel text = new JLabel(valor + " X 0");
-            text.setForeground(Color.WHITE);
-            text.setFont(new Font("Monospaced", Font.BOLD, 18));
-            text.setBounds(x + 55, y + 15, 100, 20);
-            add(text);
-        }
+        return y + 50;
     }
 
     private void agregarSeparadorVertical(int x) {
         JLabel separator = new JLabel();
         separator.setOpaque(true);
         separator.setBackground(Color.GRAY);
-        separator.setBounds(x, 100, 2, 280);
+        separator.setBounds(x, 100, 2, 360);
         add(separator);
     }
 
@@ -141,12 +123,22 @@ public class GameOverPanel extends JPanel {
         Color teal = new Color(0, 180, 180);
 
         JButton volverBtn = new JButton("Volver al Menú");
-        volverBtn.setBounds(220, 450, 180, 45);
+        volverBtn.setBounds(220, 520, 180, 45);
         volverBtn.setFocusPainted(false);
         estilizarBoton(volverBtn, teal);
         volverBtn.addActionListener(e -> {
+            try {
+                if (output != null) {
+                    output.write("CERRAR\n");
+                    output.flush();
+                }
+            } catch (IOException ex) {
+                System.err.println("Error al enviar CERRAR al servidor: " + ex.getMessage());
+            }
+
             JFrame frame = (JFrame) SwingUtilities.getWindowAncestor(this);
             frame.dispose();
+
             SwingUtilities.invokeLater(() -> {
                 JFrame menu = new JFrame("iCE Climber");
                 menu.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -158,7 +150,7 @@ public class GameOverPanel extends JPanel {
         });
 
         JButton continuarBtn = new JButton("Continuar");
-        continuarBtn.setBounds(420, 450, 180, 45);
+        continuarBtn.setBounds(420, 520, 180, 45);
         continuarBtn.setFocusPainted(false);
         estilizarBoton(continuarBtn, teal);
         continuarBtn.addActionListener(e -> {
@@ -167,8 +159,6 @@ public class GameOverPanel extends JPanel {
                     output.write("CONTINUAR\n");
                     output.flush();
                     System.out.println("Comando CONTINUAR enviado al servidor.");
-                } else {
-                    System.err.println("No se pudo continuar: output es null.");
                 }
             } catch (IOException ex) {
                 ex.printStackTrace();
@@ -184,18 +174,6 @@ public class GameOverPanel extends JPanel {
         boton.setForeground(Color.WHITE);
         boton.setFont(new Font("Monospaced", Font.BOLD, 16));
         boton.setBorder(new RoundedBorder(30));
-    }
-
-    private void addImagenTexto(int x, int y, BufferedImage img, String texto) {
-        JLabel imgLabel = new JLabel(new ImageIcon(img.getScaledInstance(50, 50, Image.SCALE_SMOOTH)));
-        imgLabel.setBounds(x, y, 50, 50);
-        add(imgLabel);
-
-        JLabel text = new JLabel(texto);
-        text.setForeground(Color.WHITE);
-        text.setFont(new Font("Monospaced", Font.BOLD, 20));
-        text.setBounds(x + 60, y + 15, 200, 20);
-        add(text);
     }
 
     static class RoundedBorder extends AbstractBorder {

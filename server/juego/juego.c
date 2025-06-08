@@ -51,6 +51,16 @@ void inicializar_juego(Juego* juego) {
     juego->ptero.x = 0;
     juego->ptero.y = 0;
     juego->ptero.direccion = 1;
+
+    // Conteos en 0
+    popo->puntos_naranja = 0;
+    popo->puntos_banano = 0;
+    popo->puntos_berenjena = 0;
+    popo->puntos_lechuga = 0;
+    popo->puntos_hielo = 0;
+    popo->puntos_ave = 0;
+    popo->puntos_yeti = 0;
+
 }
 
 /**
@@ -245,16 +255,15 @@ void actualizar_juego(Juego* juego, Nivel* mapa) {
             Fruta* fruta = &juego->frutas.frutas[f];
             if (fruta->activa && j->x == fruta->x && j->y == fruta->y) {
                 fruta->activa = 0;
-                int puntos = 0;
                 switch (fruta->tipo) {
-                    case NARANJA: puntos = 100; break;
-                    case BANANO: puntos = 200; break;
-                    case BERENJENA: puntos = 300; break;
-                    case LECHUGA: puntos = 400; break;
+                    case NARANJA: j->puntos_naranja++; sumar_puntaje(j, 100); break;
+                    case BANANO: j->puntos_banano++; sumar_puntaje(j, 200); break;
+                    case BERENJENA: j->puntos_berenjena++; sumar_puntaje(j, 300); break;
+                    case LECHUGA: j->puntos_lechuga++; sumar_puntaje(j, 400); break;
                 }
-                sumar_puntaje(j, puntos);
-                printf("%s recogió una fruta tipo %d por %d pts\n", j->nombre, fruta->tipo, puntos);
+                printf("%s recogió una fruta tipo %d\n", j->nombre, fruta->tipo);
             }
+
         }
     }
 

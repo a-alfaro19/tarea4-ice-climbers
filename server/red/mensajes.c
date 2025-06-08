@@ -28,6 +28,15 @@ int enviar_juego(SOCKET socket, Juego* juego) {
         if (send(socket, &j->direccion, 1, 0) != 1) return -1;
         char relleno = 0;
         if (send(socket, &relleno, 1, 0) != 1) return -1;
+
+        if (send(socket, &j->puntos_hielo, 4, 0) != 4) return -1;
+        if (send(socket, &j->puntos_ave, 4, 0) != 4) return -1;
+        if (send(socket, &j->puntos_yeti, 4, 0) != 4) return -1;
+        if (send(socket, &j->puntos_naranja, 4, 0) != 4) return -1;
+        if (send(socket, &j->puntos_banano, 4, 0) != 4) return -1;
+        if (send(socket, &j->puntos_berenjena, 4, 0) != 4) return -1;
+        if (send(socket, &j->puntos_lechuga, 4, 0) != 4) return -1;
+
     }
 
     // Enviar cantidad de obstáculos
