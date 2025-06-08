@@ -376,9 +376,9 @@ DWORD WINAPI handle_client(LPVOID param) {
                     golpear(jug, &juego);
                 }
             }
-            printf("Acción recibida: %s\n", buffer);
+            //printf("Acción recibida: %s\n", buffer);
         } else {
-            printf("Comando no reconocido: %s\n", buffer);
+            //printf("Comando no reconocido: %s\n", buffer);
         }
     }
     // Manejar desconexión del cliente

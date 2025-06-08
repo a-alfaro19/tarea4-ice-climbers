@@ -139,7 +139,7 @@ void activar_pterodactilo(Juego* juego) {
     juego->ptero.x = 7;
     juego->ptero.direccion = 1;
     juego->ptero.y = 88;
-    printf("Pterodáctilo ACTIVADO en (%d, %d)\n", juego->ptero.x, juego->ptero.y);
+    //printf("Pterodáctilo ACTIVADO en (%d, %d)\n", juego->ptero.x, juego->ptero.y);
 }
 
 /**
@@ -379,7 +379,7 @@ void generate_obstacle(Juego* juego, const ObstacleType type) {
 
         case ICE_BLOCK:
             x = rand() % 30;
-            y = 19;
+            y = y_base + 1;;
             break;
     }
 

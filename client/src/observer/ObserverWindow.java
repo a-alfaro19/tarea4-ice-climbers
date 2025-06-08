@@ -95,8 +95,15 @@ public class ObserverWindow extends JFrame implements GameObserver {
         SwingUtilities.invokeLater(() -> {
             if (juegoTerminado) return;
 
+            // Verificar si algún jugador atrapó al pterodáctilo
+            if (juego.atrapo_ptero != null && juego.atrapo_ptero == 1) {
+                juegoTerminado = true;
+                mostrarFinDeJuego(juego);
+                return;
+            }
+
             // Verificar si todos los jugadores han muerto
-            Boolean todosMuertos = true;
+            boolean todosMuertos = true;
             for (Jugador j : juego.jugadores) {
                 if (j != null && j.vidas != null && j.vidas > 0) {
                     todosMuertos = false;

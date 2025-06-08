@@ -170,13 +170,13 @@ public class GameOverPanel extends JPanel {
     }
 
     /**
-     * Agrega los botones "Volver al Menú" y "Continuar".
+     * Agrega los boton "Volver al Menú".
      */
     private void agregarBotones() {
         Color teal = new Color(0, 180, 180);
 
         JButton volverBtn = new JButton("Volver al Menú");
-        volverBtn.setBounds(220, 520, 180, 45);
+        volverBtn.setBounds(335, 520, 180, 45);
         volverBtn.setFocusPainted(false);
         estilizarBoton(volverBtn, teal);
         volverBtn.addActionListener(e -> {
@@ -202,24 +202,7 @@ public class GameOverPanel extends JPanel {
             });
         });
 
-        JButton continuarBtn = new JButton("Continuar");
-        continuarBtn.setBounds(420, 520, 180, 45);
-        continuarBtn.setFocusPainted(false);
-        estilizarBoton(continuarBtn, teal);
-        continuarBtn.addActionListener(e -> {
-            try {
-                if (output != null) {
-                    output.write("CONTINUAR\n");
-                    output.flush();
-                    System.out.println("Comando CONTINUAR enviado al servidor.");
-                }
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
-        });
-
         add(volverBtn);
-        add(continuarBtn);
     }
 
     /**
