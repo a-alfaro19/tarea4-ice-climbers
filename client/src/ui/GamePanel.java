@@ -286,8 +286,9 @@ public class GamePanel extends JPanel {
             g.setColor(Color.WHITE);
             g.setFont(new Font("Arial", Font.BOLD, 14));
             for (Jugador j : jugadores) {
-                if (j == null) continue;
+                if (j == null || j.nombre == null || j.nombre.isBlank()) continue;
                 if (!dosJugadores && j.nombre.equalsIgnoreCase("Nana")) continue;
+
                 String texto = j.nombre + ": " + j.vidas + " vidas";
                 int x = j.nombre.equalsIgnoreCase("Popo") ? 10 : getWidth() - g.getFontMetrics().stringWidth(texto) - 10;
                 g.drawString(texto, x, 25);
