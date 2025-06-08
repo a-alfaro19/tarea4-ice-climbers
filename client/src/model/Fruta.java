@@ -4,7 +4,7 @@ import java.io.DataInputStream;
 import java.io.IOException;
 
 public class Fruta {
-    public int x, y, tipo, activa;
+    public Integer x, y, tipo, activa;
 
     public static Fruta readFrom(DataInputStream in) throws IOException {
         Fruta fruta = new Fruta();

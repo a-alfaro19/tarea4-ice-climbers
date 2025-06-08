@@ -67,7 +67,7 @@ public class Obstacle {
         return new Obstacle(ObstacleType.values()[type], x, y);
     }
 
-    private static int readIntLE(DataInputStream in) throws IOException {
+    private static Integer readIntLE(DataInputStream in) throws IOException {
         int b1 = in.readUnsignedByte();
         int b2 = in.readUnsignedByte();
         int b3 = in.readUnsignedByte();

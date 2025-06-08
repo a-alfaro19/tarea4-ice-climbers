@@ -25,14 +25,14 @@ public class Juego {
         }
 
         // Receive Obstacles size
-        int obstaclesSize = readIntLE(in);
+        Integer obstaclesSize = readIntLE(in);
 
         juego.obstacles.clear();
         for (int i = 0; i < obstaclesSize; i++) {
             juego.obstacles.add(Obstacle.readFrom(in));
         }
         // Leer frutas
-        int cantidadFrutas = readIntLE(in);
+        Integer cantidadFrutas = readIntLE(in);
         juego.frutas.clear();
         for (int i = 0; i < cantidadFrutas; i++) {
             juego.frutas.add(Fruta.readFrom(in));
@@ -46,12 +46,12 @@ public class Juego {
         return juego;
     }
 
-    static int readIntLE(DataInputStream in) throws IOException {
+    static Integer readIntLE(DataInputStream in) throws IOException {
         int b1 = in.readUnsignedByte();
         int b2 = in.readUnsignedByte();
         int b3 = in.readUnsignedByte();
         int b4 = in.readUnsignedByte();
-        return (b4 << 24) | (b3 << 16) | (b2 << 8) | b1;
+        return b4 << 24 | (b3 << 16) | (b2 << 8) | b1;
     }
 }
 

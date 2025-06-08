@@ -12,7 +12,7 @@ import java.util.List;
 
 public class PlayerClient extends Client implements IClient {
     private String nombreJugador;
-    private boolean dosJugadores = false;
+    private Boolean dosJugadores = false;
     private GameWindow window;
 
     public PlayerClient(String host, int port) throws IOException {
@@ -108,9 +108,6 @@ public class PlayerClient extends Client implements IClient {
         return window;
     }
 
-    public boolean isDosJugadores() {
-        return dosJugadores;
-    }
 
     private int readIntLE(DataInputStream in) throws IOException {
         int b1 = in.readUnsignedByte();

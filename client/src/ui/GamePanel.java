@@ -14,28 +14,73 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+/**
+ * Panel principal del juego iCE Climber.
+ * Se encarga de renderizar el estado visual, procesar entradas de teclado,
+ * controlar condiciones de victoria y derrota, y mostrar el panel de fin de juego.
+ */
 public class GamePanel extends JPanel {
+
+    /** Nombre del jugador local (Popo o Nana). */
     private final String miNombre;
+
+    /** Canal de salida hacia el servidor. */
     private final BufferedWriter output;
+
+    /** Imagen del personaje Popo. */
     private BufferedImage popoImg;
+
+    /** Imagen del personaje Nana. */
     private BufferedImage nanaImg;
+
+    /** Imagenes de frutas por tipo (0 = naranja, 1 = banana, etc). */
     private BufferedImage[] frutaImgs = new BufferedImage[4];
 
-    private int nivelActual = 0;
-    private final boolean dosJugadores;
-    private Jugador[] jugadores;
-    private ArrayList<Obstacle> obstacles = new ArrayList<>();
-    private List<Fruta> frutas = new ArrayList<>();
-    private Pterodactilo pterodactilo;
-    private BufferedImage pteroImg;
-    private Tile[][] mapa;
-    private final boolean esControlable;
-    private int atrapo_ptero = 0;
+    /** Nivel actual del juego. */
+    private Integer nivelActual = 0;
 
-    private boolean gameOver = false;
+    /** Indica si el juego es de dos jugadores. */
+    private final Boolean dosJugadores;
+
+    /** Arreglo de jugadores activos (maximo 2). */
+    private Jugador[] jugadores;
+
+    /** Lista de obstaculos activos (pajaros, yetis, etc). */
+    private ArrayList<Obstacle> obstacles = new ArrayList<>();
+
+    /** Lista de frutas disponibles. */
+    private List<Fruta> frutas = new ArrayList<>();
+
+    /** Pterodactilo visible en la fase bonus. */
+    private Pterodactilo pterodactilo;
+
+    /** Imagen del pterodactilo. */
+    private BufferedImage pteroImg;
+
+    /** Mapa del nivel en forma de matriz de Tiles. */
+    private Tile[][] mapa;
+
+    /** True si este panel puede recibir entradas del teclado. */
+    private final Boolean esControlable;
+
+    /** Bandera para detectar si un jugador atrapo al pterodactilo. */
+    private Integer atrapo_ptero = 0;
+
+    /** True si el juego ha terminado. */
+    private Boolean gameOver = false;
+
+    /** Referencia a la ventana principal del juego (opcional). */
     private GameWindow gameWindow;
 
-    public GamePanel(String miNombre, BufferedWriter output, boolean dosJugadores, boolean esControlable) {
+    /**
+     * Crea un nuevo GamePanel que representa el estado visual del juego.
+     *
+     * @param miNombre nombre del jugador local (Popo o Nana)
+     * @param output flujo de salida al servidor
+     * @param dosJugadores indica si la partida es de dos jugadores
+     * @param esControlable indica si este cliente controla un jugador
+     */
+    public GamePanel(String miNombre, BufferedWriter output, Boolean dosJugadores, Boolean esControlable) {
         this.miNombre = miNombre;
         this.output = output;
         this.dosJugadores = dosJugadores;
@@ -50,18 +95,17 @@ public class GamePanel extends JPanel {
             popoImg = ImageIO.read(Objects.requireNonNull(getClass().getResource("/ui/figuras/popo.png")));
             nanaImg = ImageIO.read(Objects.requireNonNull(getClass().getResource("/ui/figuras/nana.png")));
 
-            frutaImgs[0] = ImageIO.read(Objects.requireNonNull(getClass().getResource("/ui/figuras/orange.png")));    // Naranja
-            frutaImgs[1] = ImageIO.read(Objects.requireNonNull(getClass().getResource("/ui/figuras/banana.png")));    // Banano
-            frutaImgs[2] = ImageIO.read(Objects.requireNonNull(getClass().getResource("/ui/figuras/egg_plant.png"))); // Berenjena
-            frutaImgs[3] = ImageIO.read(Objects.requireNonNull(getClass().getResource("/ui/figuras/lettuce.png")));   // Lechuga
+            frutaImgs[0] = ImageIO.read(Objects.requireNonNull(getClass().getResource("/ui/figuras/orange.png")));
+            frutaImgs[1] = ImageIO.read(Objects.requireNonNull(getClass().getResource("/ui/figuras/banana.png")));
+            frutaImgs[2] = ImageIO.read(Objects.requireNonNull(getClass().getResource("/ui/figuras/egg_plant.png")));
+            frutaImgs[3] = ImageIO.read(Objects.requireNonNull(getClass().getResource("/ui/figuras/lettuce.png")));
 
             pteroImg = ImageIO.read(Objects.requireNonNull(getClass().getResource("/ui/figuras/pterodactilo.png")));
 
         } catch (IOException e) {
-            System.err.println("Error cargando imágenes: " + e.getMessage());
+            System.err.println("Error cargando imagenes: " + e.getMessage());
         }
 
-        // Solo agregar controles si es un jugador
         if (esControlable) {
             addKeyListener(new KeyAdapter() {
                 @Override
@@ -110,34 +154,66 @@ public class GamePanel extends JPanel {
         }
     }
 
-    public void setNivelActual(int nivelActual) {
+    /** Asigna el nivel actual. */
+    public void setNivelActual(Integer nivelActual) {
         this.nivelActual = nivelActual;
     }
 
+    /** Asigna los jugadores actuales. */
     public void setJugadores(Jugador[] jugadores) {
         this.jugadores = jugadores;
     }
+
+    /** Asigna la lista de frutas. */
     public void setFrutas(List<Fruta> frutas) {
         this.frutas = frutas;
     }
-    public void setObstacles(ArrayList<Obstacle> obstacles) { this.obstacles = obstacles; }
 
+    /** Asigna la lista de obstaculos. */
+    public void setObstacles(ArrayList<Obstacle> obstacles) {
+        this.obstacles = obstacles;
+    }
+
+    /**
+     * Asigna los bloques y genera el mapa visual.
+     *
+     * @param bloques lista de bloques
+     * @param ancho cantidad de columnas
+     * @param alto cantidad de filas
+     */
     public void setBloques(List<Bloque> bloques, int ancho, int alto) {
         this.mapa = convertirBloquesAMatriz(bloques, ancho, alto);
     }
+
+    /** Asigna el pterodactilo. */
     public void setPterodactilo(Pterodactilo pterodactilo) {
         this.pterodactilo = pterodactilo;
     }
+
+    /** Indica si se ha atrapado al pterodactilo. */
     public void setAtrapoPtero(int valor) {
         this.atrapo_ptero = valor;
     }
 
+    /**
+     * Actualiza el estado del juego con los jugadores y bloques.
+     *
+     * @param jugadores arreglo de jugadores
+     * @param bloques bloques del mapa
+     * @param ancho cantidad de columnas
+     * @param alto cantidad de filas
+     */
     public void updateGame(Jugador[] jugadores, List<Bloque> bloques, int ancho, int alto) {
         setJugadores(jugadores);
         setBloques(bloques, ancho, alto);
         repaint();
     }
 
+    /**
+     * Dibuja el mapa, personajes, frutas, pterodactilo y obstaculos.
+     *
+     * @param g contexto grafico
+     */
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
@@ -164,7 +240,6 @@ public class GamePanel extends JPanel {
         final int TILE_HEIGHT = PANEL_HEIGHT / VISIBLE_ROWS;
 
         // Dibujar mapa
-        // Dibujar tiles
         for (int i = FIRST_VISIBLE_ROW, visibleRow = 0; i < ROWS && visibleRow < VISIBLE_ROWS; i++, visibleRow++) {
             int nivel = i / filasPorNivel;
             boolean esBonus = nivel >= 9;
@@ -194,107 +269,78 @@ public class GamePanel extends JPanel {
             }
         }
 
-        // Dibujar jugadores
+        // Jugadores
         if (jugadores != null) {
             for (Jugador j : jugadores) {
                 if (j == null || j.vidas <= 0) continue;
-
-                // Jugador controlable en modo 1 jugador: ocultar Nana
-                if (esControlable && !dosJugadores && j.nombre.equalsIgnoreCase("Nana")) continue;
-
-                // Observador: si no es controlable, y el juego es de 1 jugador, ocultar a Nana
-                if (!esControlable && !dosJugadores && j.nombre.equalsIgnoreCase("Nana")) continue;
-
+                if (!dosJugadores && j.nombre.equalsIgnoreCase("Nana")) continue;
                 int visibleRow = j.y - FIRST_VISIBLE_ROW;
                 if (visibleRow < 0 || visibleRow >= VISIBLE_ROWS) continue;
-
                 int drawX = j.x * TILE_WIDTH;
                 int drawY = PANEL_HEIGHT - (visibleRow + 1) * TILE_HEIGHT;
-
-                if (j.nombre.equalsIgnoreCase("Popo") && popoImg != null) {
-                    g.drawImage(popoImg, drawX, drawY, TILE_WIDTH, TILE_HEIGHT, this);
-                } else if (j.nombre.equalsIgnoreCase("Nana") && nanaImg != null) {
-                    g.drawImage(nanaImg, drawX, drawY, TILE_WIDTH, TILE_HEIGHT, this);
-                }
+                BufferedImage img = j.nombre.equalsIgnoreCase("Popo") ? popoImg : nanaImg;
+                if (img != null) g.drawImage(img, drawX, drawY, TILE_WIDTH, TILE_HEIGHT, this);
             }
-        }
 
-        // Dibujar vidas
-        if (jugadores != null) {
+            // Vidas
             g.setColor(Color.WHITE);
             g.setFont(new Font("Arial", Font.BOLD, 14));
-
             for (Jugador j : jugadores) {
                 if (j == null) continue;
-
-                // Jugador controlable
-                if (esControlable) {
-                    if (!dosJugadores && j.nombre.equalsIgnoreCase("Nana")) continue;
-                }
-
-                // Observador: si es solo Popo, no mostrar a Nana
-                if (!esControlable && !dosJugadores && j.nombre.equalsIgnoreCase("Nana")) continue;
-
+                if (!dosJugadores && j.nombre.equalsIgnoreCase("Nana")) continue;
                 String texto = j.nombre + ": " + j.vidas + " vidas";
-                if (j.nombre.equalsIgnoreCase("Popo")) {
-                    g.drawString(texto, 10, 25);
-                } else if (j.nombre.equalsIgnoreCase("Nana")) {
-                    int textWidth = g.getFontMetrics().stringWidth(texto);
-                    g.drawString(texto, getWidth() - textWidth - 10, 25);
-                }
+                int x = j.nombre.equalsIgnoreCase("Popo") ? 10 : getWidth() - g.getFontMetrics().stringWidth(texto) - 10;
+                g.drawString(texto, x, 25);
             }
         }
 
+        // Obstaculos
+        for (Obstacle o : obstacles) {
+            int row = o.getY() - FIRST_VISIBLE_ROW;
+            int drawX = o.getX() * TILE_WIDTH;
+            int drawY = PANEL_HEIGHT - (row + 1) * TILE_HEIGHT;
+            g.drawImage(o.getImage(), drawX, drawY, TILE_WIDTH, TILE_HEIGHT, this);
+        }
 
-
-        // Draw Obstacles
-        if (!obstacles.isEmpty()) {
-            for (Obstacle obstacle : obstacles) {
-                int visibleRow = obstacle.getY() - FIRST_VISIBLE_ROW;
-                int drawX = obstacle.getX() * TILE_WIDTH;
-                int drawY = PANEL_HEIGHT - (visibleRow + 1) * TILE_HEIGHT;
-                g.drawImage(obstacle.getImage(), drawX, drawY, TILE_WIDTH, TILE_HEIGHT, this);
+        // Frutas
+        for (Fruta f : frutas) {
+            if (f.activa == 0) continue;
+            int row = f.y - FIRST_VISIBLE_ROW;
+            if (row < 0 || row >= VISIBLE_ROWS) continue;
+            int x = f.x * TILE_WIDTH;
+            int y = PANEL_HEIGHT - (row + 1) * TILE_HEIGHT;
+            if (f.tipo >= 0 && f.tipo < frutaImgs.length && frutaImgs[f.tipo] != null) {
+                g.drawImage(frutaImgs[f.tipo], x, y, TILE_WIDTH, TILE_HEIGHT, this);
             }
         }
-        // Dibujar frutas
-        if (frutas != null) {
-            for (Fruta fruta : frutas) {
-                if (fruta.activa == 0) continue;
 
-                int visibleRow = fruta.y - FIRST_VISIBLE_ROW;
-                if (visibleRow < 0 || visibleRow >= VISIBLE_ROWS) continue;
-
-                int drawX = fruta.x * TILE_WIDTH;
-                int drawY = PANEL_HEIGHT - (visibleRow + 1) * TILE_HEIGHT;
-
-                if (fruta.tipo >= 0 && fruta.tipo < frutaImgs.length && frutaImgs[fruta.tipo] != null) {
-                    g.drawImage(frutaImgs[fruta.tipo], drawX, drawY, TILE_WIDTH, TILE_HEIGHT, this);
-                }
-
-            }
-        }
-        // Dibujar pterodáctilo
+        // Pterodactilo
         if (pterodactilo != null && pterodactilo.activo == 1 && pteroImg != null) {
-            int visibleRow = pterodactilo.y - FIRST_VISIBLE_ROW;
-            if (visibleRow >= 0 && visibleRow < VISIBLE_ROWS) {
-                int drawX = pterodactilo.x * TILE_WIDTH;
-                int drawY = PANEL_HEIGHT - (visibleRow + 1) * TILE_HEIGHT;
-
+            int row = pterodactilo.y - FIRST_VISIBLE_ROW;
+            if (row >= 0 && row < VISIBLE_ROWS) {
+                int x = pterodactilo.x * TILE_WIDTH;
+                int y = PANEL_HEIGHT - (row + 1) * TILE_HEIGHT;
                 Graphics2D g2d = (Graphics2D) g.create();
                 if (pterodactilo.direccion == -1) {
-                    // Dibujar volteado horizontalmente
-                    g2d.translate(drawX + TILE_WIDTH, drawY);
+                    g2d.translate(x + TILE_WIDTH, y);
                     g2d.scale(-1, 1);
                     g2d.drawImage(pteroImg, 0, 0, TILE_WIDTH, TILE_HEIGHT, this);
                 } else {
-                    g2d.drawImage(pteroImg, drawX, drawY, TILE_WIDTH, TILE_HEIGHT, this);
+                    g2d.drawImage(pteroImg, x, y, TILE_WIDTH, TILE_HEIGHT, this);
                 }
                 g2d.dispose();
             }
         }
     }
 
-
+    /**
+     * Convierte una lista de bloques en matriz de tiles para renderizar.
+     *
+     * @param bloques lista de bloques
+     * @param ancho cantidad de columnas
+     * @param alto cantidad de filas
+     * @return matriz de tiles
+     */
     public static Tile[][] convertirBloquesAMatriz(List<Bloque> bloques, int ancho, int alto) {
         Tile[][] mapa = new Tile[alto][ancho];
         for (int y = 0; y < alto; y++) {
@@ -302,18 +348,20 @@ public class GamePanel extends JPanel {
                 mapa[y][x] = new Tile(x, y, TileType.EMPTY);
             }
         }
-
         for (Bloque b : bloques) {
             if (b.activo == 1 && b.y < alto && b.x < ancho) {
                 mapa[b.y][b.x] = new Tile(b.x, b.y, TileType.fromInt(b.tipo));
             }
         }
-
         return mapa;
     }
-
+    /**
+     * Verifica si todos los jugadores han perdido sus vidas.
+     * <p>
+     * En partidas de un solo jugador, termina el juego si ese jugador pierde todas sus vidas.
+     * En partidas de dos jugadores, el juego termina solo si ambos han perdido todas sus vidas.
+     */
     public void verificarSiTodosMuertos() {
-
         if (jugadores == null || jugadores.length == 0) {
             System.out.println("Lista de jugadores vacía o nula");
             return;
@@ -331,20 +379,40 @@ public class GamePanel extends JPanel {
         }
     }
 
+    /**
+     * Verifica si algún jugador atrapó al pterodáctilo.
+     * Si se detecta el valor correspondiente, se termina el juego.
+     */
     public void verificarAtrapoPtero() {
-        if (!gameOver && atrapo_ptero == 1) {
+        if (!gameOver && atrapo_ptero.equals(1)) {
             terminarJuego("¡Un jugador atrapó al pterodáctilo!");
         }
     }
 
-    private boolean esPartidaUnJugador() {
+    /**
+     * Determina si la partida es de un solo jugador.
+     *
+     * @return true si no es de dos jugadores.
+     */
+    private Boolean esPartidaUnJugador() {
         return !dosJugadores;
     }
 
-    public boolean esPartidaDosJugadores() {
+    /**
+     * Determina si la partida es de dos jugadores.
+     *
+     * @return true si participan dos jugadores.
+     */
+    public Boolean esPartidaDosJugadores() {
         return dosJugadores;
     }
 
+    /**
+     * Busca un jugador por su nombre en el arreglo actual.
+     *
+     * @param nombre nombre del jugador a buscar
+     * @return instancia del jugador si se encuentra, null si no
+     */
     private Jugador obtenerJugadorPorNombre(String nombre) {
         for (Jugador j : jugadores) {
             if (j != null && j.nombre.equalsIgnoreCase(nombre)) {
@@ -354,18 +422,37 @@ public class GamePanel extends JPanel {
         return null;
     }
 
+    /**
+     * Verifica si el único jugador activo ha perdido todas sus vidas.
+     * Si es así, termina la partida.
+     *
+     * @param jugador el único jugador en juego
+     */
     private void verificarJugadorUnicoMuerto(Jugador jugador) {
         if (jugador != null && jugador.vidas == 0 && !gameOver) {
             terminarJuego("Solo " + jugador.nombre + " está jugando y ha perdido todas sus vidas.");
         }
     }
 
+    /**
+     * Verifica si ambos jugadores han perdido sus vidas.
+     * Si es así, termina la partida.
+     *
+     * @param j1 jugador 1 (Popo)
+     * @param j2 jugador 2 (Nana)
+     */
     private void verificarAmbosJugadoresMuertos(Jugador j1, Jugador j2) {
         if (j1 != null && j2 != null && j1.vidas == 0 && j2.vidas == 0 && !gameOver) {
-            terminarJuego(" " + j1.nombre + " y " + j2.nombre + " han perdido todas sus vidas.");
+            terminarJuego(j1.nombre + " y " + j2.nombre + " han perdido todas sus vidas.");
         }
     }
 
+    /**
+     * Termina la partida y muestra el panel de fin de juego.
+     * Se envía el comando "GAME_OVER" al servidor.
+     *
+     * @param mensaje mensaje que se mostrará en consola como causa del fin del juego
+     */
     private void terminarJuego(String mensaje) {
         gameOver = true;
         System.out.println("Fin del juego: " + mensaje);
@@ -393,4 +480,3 @@ public class GamePanel extends JPanel {
     }
 
 }
-

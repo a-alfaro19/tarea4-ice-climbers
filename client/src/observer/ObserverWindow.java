@@ -13,13 +13,31 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.List;
 
+/**
+ * Ventana del cliente observador. Permite visualizar en tiempo real el avance del juego
+ * desde la perspectiva de un jugador (Popo o Nana), sin posibilidad de interacción.
+ */
 public class ObserverWindow extends JFrame implements GameObserver {
-    private final String observado;
-    private final boolean dosJugadores;
-    private final GamePanel panel;
-    private boolean juegoTerminado = false; // para no mostrar GameOver múltiples veces
 
-    public ObserverWindow(String observado, boolean dosJugadores) {
+    /** Nombre del jugador observado (Popo o Nana). */
+    private final String observado;
+
+    /** Indica si la partida es de dos jugadores. */
+    private final Boolean dosJugadores;
+
+    /** Panel de juego renderizado visualmente para el observador. */
+    private final GamePanel panel;
+
+    /** Control para evitar que el panel de Game Over se muestre más de una vez. */
+    private Boolean juegoTerminado = false;
+
+    /**
+     * Crea una nueva ventana de observador para un jugador específico.
+     *
+     * @param observado nombre del jugador a observar ("Popo" o "Nana")
+     * @param dosJugadores indica si la partida es multijugador
+     */
+    public ObserverWindow(String observado, Boolean dosJugadores) {
         this.observado = observado;
         this.dosJugadores = dosJugadores;
 
@@ -28,11 +46,12 @@ public class ObserverWindow extends JFrame implements GameObserver {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
-        // Panel de juego
+        // Crear panel de juego en modo no controlable (observador)
         panel = new GamePanel(observado, null, dosJugadores, false);
         add(panel);
         setVisible(true);
 
+        // Al cerrar ventana, volver al menú principal
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
@@ -41,6 +60,10 @@ public class ObserverWindow extends JFrame implements GameObserver {
         });
     }
 
+    /**
+     * Muestra una notificación de finalización y regresa al menú principal.
+     * Se llama cuando el usuario cierra manualmente la ventana de observación.
+     */
     private void mostrarMenuObservadorFinalizado() {
         JOptionPane.showMessageDialog(
                 null,
@@ -60,12 +83,20 @@ public class ObserverWindow extends JFrame implements GameObserver {
         });
     }
 
+    /**
+     * Metodo llamdo cuando el servidor envía una actualización del juego.
+     * Se actualiza el panel visual y se verifica si la partida ha terminado.
+     *
+     * @param juego estado completo del juego
+     * @param bloques bloques visibles en pantalla
+     */
     @Override
     public void onGameUpdate(Juego juego, List<Bloque> bloques) {
         SwingUtilities.invokeLater(() -> {
             if (juegoTerminado) return;
 
-            boolean todosMuertos = true;
+            // Verificar si todos los jugadores han muerto
+            Boolean todosMuertos = true;
             for (Jugador j : juego.jugadores) {
                 if (j != null && j.vidas != null && j.vidas > 0) {
                     todosMuertos = false;
@@ -79,6 +110,7 @@ public class ObserverWindow extends JFrame implements GameObserver {
                 return;
             }
 
+            // Actualizar vista del juego
             panel.setJugadores(juego.jugadores);
             panel.setNivelActual(juego.nivelActual);
             panel.setObstacles(juego.obstacles);
@@ -89,6 +121,11 @@ public class ObserverWindow extends JFrame implements GameObserver {
         });
     }
 
+    /**
+     * Muestra el panel de Game Over cuando se detecta el fin de la partida.
+     *
+     * @param juego estado del juego al momento de finalizar
+     */
     private void mostrarFinDeJuego(Juego juego) {
         getContentPane().removeAll();
         JPanel panelGameOver = new GameOverPanel(
@@ -97,7 +134,7 @@ public class ObserverWindow extends JFrame implements GameObserver {
                 juego.obstacles,
                 juego.pterodactilo,
                 dosJugadores,
-                null // output es null para observadores
+                null // No hay output para observador
         );
         add(panelGameOver);
         revalidate();

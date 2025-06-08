@@ -6,12 +6,12 @@ import java.io.IOException;
 public class Jugador {
     public String nombre;
     public Integer x, y, vidas, puntaje;
-    public float vy;
-    public int en_el_aire;
+    public Float vy;
+    public Integer en_el_aire;
     public Character direccion;
-    public boolean activo = false;
+    public Boolean activo = false;
 
-    // CAMPOS: cantidades de objetos recolectados o destruidos
+    // Cantidades de objetos recolectados o destruidos
     public Integer puntos_hielo;
     public Integer puntos_ave;
     public Integer puntos_yeti;
@@ -53,7 +53,7 @@ public class Jugador {
     }
 
     // Cálculo de puntaje total real
-    public int calcularPuntajeTotal() {
+    public Integer calcularPuntajeTotal() {
         return puntos_hielo * 10 +
                 puntos_ave * 800 +
                 puntos_yeti * 400 +
@@ -63,7 +63,7 @@ public class Jugador {
                 puntos_lechuga * 400;
     }
 
-    private static int readIntLE(DataInputStream in) throws IOException {
+    private static Integer readIntLE(DataInputStream in) throws IOException {
         int b1 = in.readUnsignedByte();
         int b2 = in.readUnsignedByte();
         int b3 = in.readUnsignedByte();
@@ -71,7 +71,7 @@ public class Jugador {
         return (b4 << 24) | (b3 << 16) | (b2 << 8) | b1;
     }
 
-    private static float readFloatLE(DataInputStream in) throws IOException {
+    private static Float readFloatLE(DataInputStream in) throws IOException {
         int intBits = readIntLE(in);
         return Float.intBitsToFloat(intBits);
     }

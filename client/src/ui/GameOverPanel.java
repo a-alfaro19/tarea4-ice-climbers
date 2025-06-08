@@ -1,5 +1,4 @@
 package ui;
-
 import model.Fruta;
 import model.Jugador;
 import model.Obstacle;
@@ -14,14 +13,33 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.util.List;
 
+/**
+ * Panel que se muestra cuando finaliza una partida.
+ * Muestra los puntajes de los jugadores y permite volver al menú o continuar con mayor velocidad.
+ */
 public class GameOverPanel extends JPanel {
-    private final boolean dosJugadores;
+
+    /** Indica si la partida fue de dos jugadores. */
+    private final Boolean dosJugadores;
+
+    /** Flujo de salida hacia el servidor. */
     private final BufferedWriter output;
 
+    /** Recursos gráficos utilizados para representar entidades y frutas. */
     private BufferedImage aveImg, hieloImg, yetiImg, popoImg, nanaImg;
     private BufferedImage bananaImg, eggplantImg, orangeImg, lettuceImg;
 
-    public GameOverPanel(Jugador[] jugadores, List<Fruta> frutas, List<Obstacle> obstacles, Pterodactilo ptero, boolean dosJugadores, BufferedWriter output) {
+    /**
+     * Constructor del panel Game Over.
+     *
+     * @param jugadores arreglo de jugadores con sus puntajes
+     * @param frutas lista de frutas recolectadas
+     * @param obstacles lista de obstáculos
+     * @param ptero pterodáctilo final
+     * @param dosJugadores indica si fue una partida de dos jugadores
+     * @param output flujo de comunicación con el servidor
+     */
+    public GameOverPanel(Jugador[] jugadores, List<Fruta> frutas, List<Obstacle> obstacles, Pterodactilo ptero, Boolean dosJugadores, BufferedWriter output) {
         this.dosJugadores = dosJugadores;
         this.output = output;
         setLayout(null);
@@ -36,6 +54,9 @@ public class GameOverPanel extends JPanel {
         }
     }
 
+    /**
+     * Carga las imágenes necesarias desde el sistema de archivos.
+     */
     private void cargarImagenes() {
         try {
             aveImg = ImageIO.read(getClass().getResource("/ui/figuras/aveN.png"));
@@ -52,6 +73,11 @@ public class GameOverPanel extends JPanel {
         }
     }
 
+    /**
+     * Construye la interfaz gráfica con los datos de los jugadores.
+     *
+     * @param jugadores arreglo con la información de los jugadores
+     */
     private void construirUI(Jugador[] jugadores) {
         JLabel gameOverTitle = new JLabel("El juego ha finalizado", SwingConstants.CENTER);
         gameOverTitle.setForeground(Color.WHITE);
@@ -65,29 +91,38 @@ public class GameOverPanel extends JPanel {
             crearBloquesJugador(jugadores[1], 610, "JUGADOR 2", nanaImg);
         }
     }
-    private void crearBloquesJugador(Jugador jugador, int xBase, String titulo, BufferedImage avatar) {
-        int yInicio = 120;
+
+    /**
+     * Crea los bloques visuales que muestran los puntajes por categoría.
+     *
+     * @param jugador jugador al que se le van a mostrar los puntajes
+     * @param xBase posición horizontal base para la columna
+     * @param titulo título identificador del jugador
+     * @param avatar imagen del personaje correspondiente
+     */
+    private void crearBloquesJugador(Jugador jugador, Integer xBase, String titulo, BufferedImage avatar) {
+        Integer yInicio = 120;
         JLabel textLabel = new JLabel(titulo);
         textLabel.setForeground(Color.WHITE);
         textLabel.setFont(new Font("Monospaced", Font.BOLD, 20));
-        textLabel.setBounds(xBase + 60, yInicio, 200, 20); // centrado sobre dos columnas
+        textLabel.setBounds(xBase + 60, yInicio, 200, 20);
         add(textLabel);
 
-        int col1X = xBase;
-        int col2X = xBase + 160;
-        int y1 = yInicio + 30;
-        int y2 = yInicio + 30;
+        Integer col1X = xBase;
+        Integer col2X = xBase + 160;
+        Integer y1 = yInicio + 30;
+        Integer y2 = yInicio + 30;
 
-        y1 = addLineaConImagen(col1X, y1, hieloImg, jugador.puntos_hielo, 10);       // hielo
-        y1 = addLineaConImagen(col1X, y1, aveImg, jugador.puntos_ave, 800);          // ave
-        y1 = addLineaConImagen(col1X, y1, yetiImg, jugador.puntos_yeti, 400);        // yeti
+        y1 = addLineaConImagen(col1X, y1, hieloImg, jugador.puntos_hielo, 10);
+        y1 = addLineaConImagen(col1X, y1, aveImg, jugador.puntos_ave, 800);
+        y1 = addLineaConImagen(col1X, y1, yetiImg, jugador.puntos_yeti, 400);
 
-        y2 = addLineaConImagen(col2X, y2, orangeImg, jugador.puntos_naranja, 100);   // naranja
-        y2 = addLineaConImagen(col2X, y2, bananaImg, jugador.puntos_banano, 200);    // banana
-        y2 = addLineaConImagen(col2X, y2, eggplantImg, jugador.puntos_berenjena, 300); // berenjena
-        y2 = addLineaConImagen(col2X, y2, lettuceImg, jugador.puntos_lechuga, 400);    // lechuga
+        y2 = addLineaConImagen(col2X, y2, orangeImg, jugador.puntos_naranja, 100);
+        y2 = addLineaConImagen(col2X, y2, bananaImg, jugador.puntos_banano, 200);
+        y2 = addLineaConImagen(col2X, y2, eggplantImg, jugador.puntos_berenjena, 300);
+        y2 = addLineaConImagen(col2X, y2, lettuceImg, jugador.puntos_lechuga, 400);
 
-        int yFinal = Math.max(y1, y2) + 10;
+        Integer yFinal = Math.max(y1, y2) + 10;
         JLabel total = new JLabel("TOTAL: " + jugador.calcularPuntajeTotal());
         total.setForeground(Color.WHITE);
         total.setFont(new Font("Monospaced", Font.BOLD, 20));
@@ -95,7 +130,17 @@ public class GameOverPanel extends JPanel {
         add(total);
     }
 
-    private int addLineaConImagen(int x, int y, BufferedImage img, int cantidad, int valorUnidad) {
+    /**
+     * Dibuja una línea con una imagen de elemento y su puntaje.
+     *
+     * @param x posición horizontal
+     * @param y posición vertical
+     * @param img imagen a mostrar
+     * @param cantidad cantidad de objetos obtenidos
+     * @param valorUnidad valor individual de cada objeto
+     * @return nueva coordenada vertical para continuar el layout
+     */
+    private Integer addLineaConImagen(Integer x, Integer y, BufferedImage img, Integer cantidad, Integer valorUnidad) {
         String texto = cantidad + " X " + valorUnidad;
 
         JLabel imgLabel = new JLabel(new ImageIcon(img.getScaledInstance(50, 50, Image.SCALE_SMOOTH)));
@@ -111,7 +156,12 @@ public class GameOverPanel extends JPanel {
         return y + 50;
     }
 
-    private void agregarSeparadorVertical(int x) {
+    /**
+     * Dibuja un separador vertical entre las secciones de los jugadores.
+     *
+     * @param x posición horizontal del separador
+     */
+    private void agregarSeparadorVertical(Integer x) {
         JLabel separator = new JLabel();
         separator.setOpaque(true);
         separator.setBackground(Color.GRAY);
@@ -119,6 +169,9 @@ public class GameOverPanel extends JPanel {
         add(separator);
     }
 
+    /**
+     * Agrega los botones "Volver al Menú" y "Continuar".
+     */
     private void agregarBotones() {
         Color teal = new Color(0, 180, 180);
 
@@ -169,6 +222,12 @@ public class GameOverPanel extends JPanel {
         add(continuarBtn);
     }
 
+    /**
+     * Aplica estilo personalizado a un botón con fondo y borde redondeado.
+     *
+     * @param boton botón al que se aplicará el estilo
+     * @param colorFondo color de fondo del botón
+     */
     private void estilizarBoton(JButton boton, Color colorFondo) {
         boton.setBackground(colorFondo);
         boton.setForeground(Color.WHITE);
@@ -176,10 +235,18 @@ public class GameOverPanel extends JPanel {
         boton.setBorder(new RoundedBorder(30));
     }
 
+    /**
+     * Clase interna para definir un borde redondeado para los botones.
+     */
     static class RoundedBorder extends AbstractBorder {
-        private final int radius;
+        private final Integer radius;
 
-        RoundedBorder(int radius) {
+        /**
+         * Crea un nuevo borde redondeado con el radio especificado.
+         *
+         * @param radius radio de curvatura
+         */
+        RoundedBorder(Integer radius) {
             this.radius = radius;
         }
 

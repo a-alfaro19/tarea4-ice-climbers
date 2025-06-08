@@ -1,4 +1,5 @@
 package ui;
+
 import client.PlayerClient;
 import model.Bloque;
 import model.Fruta;
@@ -13,15 +14,32 @@ import java.io.BufferedWriter;
 import javax.imageio.ImageIO;
 import java.io.IOException;
 
+/**
+ * Ventana principal del jugador en el juego iCE Climber.
+ * Esta clase se encarga de crear la interfaz visual del cliente jugador y actualizar el estado del juego.
+ */
 public class GameWindow extends JFrame {
+
+    /** Nombre del jugador que usa esta ventana. */
     private String nombreJugador = "";
+
+    /** Panel grafico donde se renderiza el estado del juego. */
     private final GamePanel gamePanel;
 
-
+    /** Referencia al cliente jugador que controla esta ventana. */
     private PlayerClient playerClient;
+
+    /** Instancia unica de GameWindow. */
     private static GameWindow instancia;
 
-    public GameWindow(String nombreJugador, BufferedWriter output, boolean dosJugadores) {
+    /**
+     * Constructor de la ventana del juego.
+     *
+     * @param nombreJugador nombre del jugador asignado
+     * @param output salida hacia el servidor
+     * @param dosJugadores indica si el juego es de dos jugadores
+     */
+    public GameWindow(String nombreJugador, BufferedWriter output, Boolean dosJugadores) {
         this.nombreJugador = nombreJugador;
         setTitle("iCE Climber - Cliente Jugador");
         setSize(1250, 660);
@@ -36,8 +54,13 @@ public class GameWindow extends JFrame {
 
         setContentPane(mainPanel);
         setVisible(true);
-
     }
+
+    /**
+     * Actualiza el estado general del juego a partir del objeto Juego recibido del servidor.
+     *
+     * @param juego instancia con el estado actual del juego
+     */
     public void updateGame(Juego juego) {
         gamePanel.setJugadores(juego.jugadores);
         gamePanel.setObstacles(juego.obstacles);
@@ -50,18 +73,30 @@ public class GameWindow extends JFrame {
         gamePanel.repaint();
     }
 
-    public void updateBloques(java.util.List<Bloque> bloques) {
+    /**
+     * Actualiza los bloques del mapa visibles por el jugador.
+     *
+     * @param bloques lista de bloques a mostrar
+     */
+    public void updateBloques(List<Bloque> bloques) {
         gamePanel.setBloques(bloques, 30, 89);
         gamePanel.repaint();
     }
 
-    public void getWindow(){
+    /**
+     * Obtiene una referencia a la instancia de la ventana desde el cliente.
+     * (Advertencia: si playerClient es null, esta llamada fallara.)
+     */
+    public void getWindow() {
         // Guardamos la instancia actual
         instancia = playerClient.getWindow();
     }
 
+    /**
+     * Cierra la ventana actual del juego si existe.
+     */
     public void cerrarVentana() {
-        if (instancia == null){
+        if (instancia == null) {
             getWindow();
             cerrarVentana();
         }
@@ -71,12 +106,19 @@ public class GameWindow extends JFrame {
         }
     }
 
-
-    // Clase para mostrar imagen y texto en horizontal
+    /**
+     * Panel interno que combina una imagen y una etiqueta de texto, usado para mostrar informacion visualmente.
+     */
     class CharacterPanel extends JPanel {
         private BufferedImage image;
         private String label;
 
+        /**
+         * Constructor del panel con imagen y texto.
+         *
+         * @param resourcePath ruta al recurso de imagen
+         * @param label texto a mostrar junto a la imagen
+         */
         public CharacterPanel(String resourcePath, String label) {
             this.label = label;
             setBackground(Color.DARK_GRAY);

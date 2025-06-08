@@ -12,7 +12,7 @@ import java.util.List;
 
 public class ObserverClient extends Client {
     private final GameObservable observable = new GameObservable();
-    private boolean dosJugadores = false;
+    private Boolean dosJugadores = false;
 
     public ObserverClient(String host, int port) throws IOException {
         super(host, port);

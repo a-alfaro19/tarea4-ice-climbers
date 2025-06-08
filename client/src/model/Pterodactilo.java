@@ -4,10 +4,7 @@ import java.io.DataInputStream;
 import java.io.IOException;
 
 public class Pterodactilo {
-    public int activo;
-    public int x;
-    public int y;
-    public int direccion;
+    public Integer activo, x, y, direccion;
 
     public static Pterodactilo readFrom(DataInputStream in) throws IOException {
         Pterodactilo p = new Pterodactilo();

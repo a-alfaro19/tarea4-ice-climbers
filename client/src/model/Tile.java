@@ -1,7 +1,7 @@
 package model;
 
 public class Tile {
-    public int x, y;
+    public Integer x, y;
     public TileType type;
 
     public Tile(int x, int y, TileType type) {
