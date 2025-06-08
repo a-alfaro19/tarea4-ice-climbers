@@ -41,6 +41,8 @@ void inicializar_juego(Juego* juego) {
         nana->vidas = 3;
         nana->puntaje = 0;
         nana->direccion = 'L';
+    } else {
+        // Limpiar datos de Nana en modo 1 jugador
         memset(&juego->jugadores[1], 0, sizeof(Jugador));
     }
 
@@ -176,16 +178,25 @@ void actualizar_juego(Juego* juego, Nivel* mapa) {
         if (j->y < y_limite - 2) {
             perder_vida(j);
 
-            int nivel_jugador = obtener_nivel_actual_de_jugador(j);
-            if (nivel_jugador < 0) nivel_jugador = juego->nivel_actual;
+            int nivel_reinicio = j->ultimo_nivel_seguro;
 
-            int y_base = nivel_jugador * (TOTAL_FLOOR_HEIGHT + ROWS_BETWEEN_FLOORS);
+            // Si nivel es inválido, usar nivel actual
+            if (nivel_reinicio < 0) nivel_reinicio = juego->nivel_actual;
+
+            // En modo 2 jugadores, considerar el nivel del otro jugador si es mayor
+            if (modo_actual == MODO_DOS_JUGADORES) {
+                Jugador* otro = &juego->jugadores[1 - i];
+                if (otro->vidas > 0 && otro->ultimo_nivel_seguro > nivel_reinicio) {
+                    nivel_reinicio = otro->ultimo_nivel_seguro;
+                }
+            }
+
+            int y_base = nivel_reinicio * (TOTAL_FLOOR_HEIGHT + ROWS_BETWEEN_FLOORS);
             j->x = 5 + rand() % 20;
             j->y_real = (float)(y_base + 1);
             j->y = y_base + 1;
             j->vy = 0;
             j->en_el_aire = 0;
-
         }
     }
 

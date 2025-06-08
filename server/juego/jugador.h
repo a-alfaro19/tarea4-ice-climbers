@@ -21,6 +21,9 @@ typedef struct Jugador {
     int puntos_banano;
     int puntos_berenjena;
     int puntos_lechuga;
+
+    int ultimo_nivel_seguro;
+
 } Jugador;
 /**
  * Resta una vida al jugador (si tiene) y muestra mensaje en consola.

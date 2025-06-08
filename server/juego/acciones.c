@@ -24,7 +24,7 @@ void actualizar_fisica(Jugador* j) {
     if (!j->en_el_aire && !bloque_abajo) {
         j->en_el_aire = 1;
         j->vy = -0.1f;
-        printf("→ Comienza a caer\n");
+        //printf("→ Comienza a caer\n");
     }
 
     if (!j->en_el_aire) return;
@@ -59,14 +59,15 @@ void actualizar_fisica(Jugador* j) {
                     j->vy = 0;
                     j->en_el_aire = 0;
                     j->y = y_int + 1;
-                    printf("Aterrizó en y=%d (y_real=%.2f)\n", j->y, j->y_real);
+                    j->ultimo_nivel_seguro = obtener_nivel_actual_de_jugador(j);
+
                 } else {
-                    printf("No pudo aterrizar, hay bloque arriba en y=%d\n", y_int + 1);
+
                 }
             } else {
                 j->y_real = (float)(y_int - 1);
                 j->vy = 0;
-                printf("Pegó techo en y=%d\n", y_int);
+
             }
             break;
         }
@@ -80,15 +81,12 @@ void actualizar_fisica(Jugador* j) {
  * Permite al jugador iniciar un salto si está en el suelo.
  */
 void brincar_jugador(Jugador* j) {
-    printf("Intentando brincar... en_el_aire=%d, bloque_abajo=%d\n",
-           j->en_el_aire, hay_bloque_en(j->x, j->y - 1));
-
     if (!j->en_el_aire && hay_bloque_en(j->x, j->y - 1)) {
         j->vy = FUERZA_SALTO; // Velocidad inicial del salto
         j->en_el_aire = 1;
-        printf("%s inició salto con vy=%.2f\n", j->nombre, j->vy);
+        //printf("%s inició salto con vy=%.2f\n", j->nombre, j->vy);
     } else {
-        printf("%s no puede saltar ahora\n", j->nombre);
+        //printf("%s no puede saltar ahora\n", j->nombre);
     }
 }
 
@@ -115,7 +113,7 @@ void mover_jugador(Jugador* j, char dir, Juego* juego) {
 
         j->x = nuevo_x;
         j->direccion = dir;
-        printf("%s se movió a x=%d\n", j->nombre, j->x);
+        //printf("%s se movió a x=%d\n", j->nombre, j->x);
     }
 }
 
@@ -129,7 +127,7 @@ void mover_jugador(Jugador* j, char dir, Juego* juego) {
  * - YETI: 400 pts
  */
 void golpear(Jugador* j, Juego* juego) {
-    printf("%s intentó golpear desde (%d, %d)\n", j->nombre, j->x, j->y);
+    //printf("%s intentó golpear desde (%d, %d)\n", j->nombre, j->x, j->y);
 
     int puntos = 0;
     int obstaculo_destruido = 0;
@@ -169,7 +167,7 @@ void golpear(Jugador* j, Juego* juego) {
                     sumar_puntaje(j, 400);
                     break;
             }
-            printf("%s destruyó obstáculo tipo %d en (%d, %d)\n", j->nombre, o->type, o->x, o->y);
+            //printf("%s destruyó obstáculo tipo %d en (%d, %d)\n", j->nombre, o->type, o->x, o->y);
             remove_obstacle(&juego->obstacles, i);
             obstaculo_destruido = 1;
             break;
@@ -181,7 +179,7 @@ void golpear(Jugador* j, Juego* juego) {
     }
 
     if (puntos == 0 && !obstaculo_destruido) {
-        printf("%s golpeó pero no había bloque u obstáculo en la zona\n", j->nombre);
+        //printf("%s golpeó pero no había bloque u obstáculo en la zona\n", j->nombre);
     }
 }
 
